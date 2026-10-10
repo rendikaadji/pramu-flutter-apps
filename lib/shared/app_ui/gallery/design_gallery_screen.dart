@@ -20,6 +20,9 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
   int _nav = 0;
   int _rating = 3;
   bool _loading = false;
+  int _tab = 0;
+  bool _saved = false;
+  RangeValues _range = const RangeValues(2, 6);
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
         ),
       ],
       scrollable: true,
+      glow: true,
       banner: const OfflineBanner(updatedAt: 'diperbarui 14.02'),
       bottomNavigationBar: AppBottomNav(
         role: _role,
@@ -73,6 +77,111 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
           Text('Metadata body-sm 14/20', style: context.text.bodySm),
           Text('Caption 12/16', style: context.text.caption),
           const MoneyText('Rp1.250.000', size: MoneySize.hero),
+          const SectionHeader('Beranda & pencarian'),
+          const SearchField(),
+          const SizedBox(height: AppSpace.s12),
+          const HeroBannerCard(
+            title: 'Temukan asisten tepercaya',
+            subtitle: 'Terverifikasi dan siap membantu rumah Anda.',
+            ctaLabel: 'Mulai cari',
+          ),
+          const SizedBox(height: AppSpace.s12),
+          FeaturedCard(
+            title: 'Asisten rumah tangga',
+            subtitle: 'Bu Rina, Jakarta Selatan',
+            tags: const ['Penuh waktu', 'Menginap'],
+            trailing: 'Rp3,5 jt / bulan',
+            bookmarked: _saved,
+            onBookmark: () => setState(() => _saved = !_saved),
+            onTap: () {},
+          ),
+          const SectionHeader('Kategori', actionLabel: 'Lihat semua'),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: CategoryTile(
+                  icon: LucideIcons.house,
+                  label: 'Kebersihan',
+                  onTap: () {},
+                ),
+              ),
+              Expanded(
+                child: CategoryTile(
+                  icon: LucideIcons.baby,
+                  label: 'Pengasuh anak',
+                  onTap: () {},
+                  color: t.accentContainer,
+                  iconColor: t.accent,
+                ),
+              ),
+              Expanded(
+                child: CategoryTile(
+                  icon: LucideIcons.heartPulse,
+                  label: 'Perawat lansia',
+                  onTap: () {},
+                  color: t.assistantContainer,
+                  iconColor: t.assistant,
+                ),
+              ),
+              Expanded(
+                child: CategoryTile(
+                  icon: LucideIcons.chefHat,
+                  label: 'Masak',
+                  onTap: () {},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpace.s12),
+          SegmentedTabs(
+            labels: const ['Semua', 'Dilamar', 'Diwawancara', 'Diterima'],
+            index: _tab,
+            onChanged: (i) => setState(() => _tab = i),
+          ),
+          const SizedBox(height: AppSpace.s16),
+          const StatsRow(
+            items: [
+              StatItem('12', 'Pekerjaan selesai'),
+              StatItem('4,8', 'Rating'),
+              StatItem('9', 'Ulasan'),
+            ],
+          ),
+          const SizedBox(height: AppSpace.s16),
+          ListTileCard(
+            children: [
+              SettingsRow(
+                icon: LucideIcons.user,
+                title: 'Profil saya',
+                subtitle: 'Nama, foto, kota',
+                onTap: () {},
+              ),
+              SettingsRow(
+                icon: LucideIcons.bell,
+                title: 'Notifikasi',
+                trailing: Switch(value: true, onChanged: (_) {}),
+              ),
+              SettingsRow(
+                icon: LucideIcons.logOut,
+                title: 'Keluar',
+                destructive: true,
+                onTap: () {},
+              ),
+            ],
+          ),
+          const SectionHeader('Ilustrasi'),
+          const Wrap(
+            spacing: AppSpace.s8,
+            runSpacing: AppSpace.s8,
+            children: [
+              WelcomeIllustration(size: 150),
+              SuccessIllustration(size: 150),
+              EmptyListIllustration(size: 150),
+              VerifyIllustration(size: 150),
+              MoneySafeIllustration(size: 150),
+              ChatIllustration(size: 150),
+            ],
+          ),
           const SectionHeader('Tombol'),
           Wrap(
             spacing: AppSpace.s8,
@@ -321,6 +430,36 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
             onSecondary: () {},
             denied: true,
           ),
+          const SectionHeader('Sukses & onboarding'),
+          SizedBox(
+            height: 440,
+            child: SuccessView(
+              title: 'Lamaran terkirim',
+              message: 'Kami kabari Anda begitu pemberi kerja menanggapi.',
+              actionLabel: 'Lihat lamaran',
+              onAction: () {},
+              secondaryLabel: 'Kembali ke beranda',
+              onSecondary: () {},
+            ),
+          ),
+          SizedBox(
+            height: 480,
+            child: OnboardingPager(
+              onFinish: () {},
+              pages: const [
+                OnboardingPage(
+                  illustration: WelcomeIllustration(size: 200),
+                  title: 'Cari dengan tenang',
+                  body: 'Semua profil terverifikasi sebelum Anda menghubungi.',
+                ),
+                OnboardingPage(
+                  illustration: MoneySafeIllustration(size: 200),
+                  title: 'Dana ditahan aman',
+                  body: 'Pembayaran baru diteruskan setelah pekerjaan selesai.',
+                ),
+              ],
+            ),
+          ),
           const SectionHeader('Overlay'),
           Wrap(
             spacing: AppSpace.s8,
@@ -337,6 +476,57 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
                       'Anda tidak dapat melamar ulang pekerjaan yang sama.',
                   confirmLabel: 'Tarik lamaran',
                   destructive: true,
+                ),
+              ),
+              AppButton(
+                label: 'Filter',
+                variant: AppButtonVariant.secondary,
+                expand: false,
+                onPressed: () => FilterSheet.show<void>(
+                  context,
+                  title: 'Filter',
+                  onApply: () {},
+                  onReset: () {},
+                  builder: (_) => StatefulBuilder(
+                    builder: (ctx, set) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Kota'),
+                        const SizedBox(height: AppSpace.s8),
+                        const Wrap(
+                          spacing: AppSpace.s8,
+                          children: [
+                            FilterChip(
+                              label: Text('Jakarta'),
+                              selected: true,
+                              onSelected: null,
+                            ),
+                            FilterChip(
+                              label: Text('Bandung'),
+                              selected: false,
+                              onSelected: null,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpace.s16),
+                        const Text('Rentang tarif (juta)'),
+                        RangeSlider(
+                          values: _range,
+                          min: 0,
+                          max: 10,
+                          divisions: 10,
+                          labels: RangeLabels(
+                            _range.start.round().toString(),
+                            _range.end.round().toString(),
+                          ),
+                          onChanged: (v) {
+                            set(() {});
+                            setState(() => _range = v);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               AppButton(
@@ -371,6 +561,11 @@ class _Swatches extends StatelessWidget {
       ('primary c', t.primaryContainer),
       ('accent', t.accent),
       ('accent c', t.accentContainer),
+      ('assistant', t.assistant),
+      ('asst c', t.assistantContainer),
+      ('bright', t.primaryBright),
+      ('feat', t.featuredFrom),
+      ('feat 2', t.featuredTo),
       ('success', t.success),
       ('warning', t.warning),
       ('danger', t.danger),

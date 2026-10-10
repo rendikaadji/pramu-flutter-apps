@@ -32,6 +32,8 @@ versi: 1.0
 
 ## 2. Arah visual — "Buku Kas Rumah" (ringkas; alasan lengkap di Web §2)
 
+> **Catatan perubahan (2026-10-10):** arah visual diubah mengikuti contoh UI aplikasi lowongan kerja dari user: terang, bersih, airy, biru langit dengan glow gradien di header, kartu putih radius 16, tombol penuh radius 14, ilustrasi flat vektor (biru + aksen oranye), Pencari = biru dan Asisten = teal. Seluruh isi §2-§3 di bawah (krem, indigo, soga, Fraunces/serif) digantikan oleh [10-Design-System-App](10-Design-System-App.md) v2; bagian lain dokumen ini (alur, status, trust, aksesibilitas) tetap berlaku.
+
 Kertas hangat + tinta indigo + segel soga. **Peran** dibedakan lewat tint: **Pencari = indigo (`primary`)**, **Asisten = soga (`accent`)** pada indikator bottom nav, chip peran, dan header beranda. Mengapa: kesalahan peran (mis. melamar sebagai pencari) dicegah visual, bukan hanya teks. **Segel verifikasi** adalah elemen khas yang muncul di profil, kartu pelamar, dan chat. **Garis ledger** (timeline berpetak) menampilkan period & dana. Foto = foto profil asli pengguna; tidak ada ilustrasi orang generik.
 
 ## 3. Design tokens (ringkas; nilai identik dengan Web §3)

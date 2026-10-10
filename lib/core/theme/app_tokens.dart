@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Peran aktif pengguna. Pencari = primary (indigo), Asisten = accent (soga).
+/// Peran aktif pengguna. Pencari = primary (biru langit), Asisten = assistant (teal).
 enum AppRole {
   seeker,
   assistant;
@@ -8,7 +8,7 @@ enum AppRole {
   String get label => this == seeker ? 'Pencari' : 'Asisten';
 }
 
-/// Spacing basis 4 (Brief §3.3).
+/// Spacing basis 4.
 abstract final class AppSpace {
   static const double s0 = 0,
       s2 = 2,
@@ -32,15 +32,24 @@ abstract final class AppSpace {
 
 abstract final class AppRadius {
   static const double xs = 4, sm = 8, md = 12, lg = 20;
+
+  /// Peran semantik: kartu 16, tombol 14, input 12, sheet 24.
+  static const double card = 16, button = 14, input = 12, sheet = 24;
+
   static const BorderRadius brXs = BorderRadius.all(Radius.circular(xs));
   static const BorderRadius brSm = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius brMd = BorderRadius.all(Radius.circular(md));
+  static const BorderRadius brCard = BorderRadius.all(Radius.circular(card));
+  static const BorderRadius brButton = BorderRadius.all(
+    Radius.circular(button),
+  );
+  static const BorderRadius brInput = BorderRadius.all(Radius.circular(input));
   static const BorderRadius brLgTop = BorderRadius.vertical(
-    top: Radius.circular(lg),
+    top: Radius.circular(sheet),
   );
 }
 
-/// Motion (Brief §3.4). Hanya transform/opacity. Bungkus dengan `context.motion(d)`
+/// Motion. Hanya transform/opacity. Bungkus dengan `context.motion(d)`
 /// agar hormati reduce motion.
 abstract final class AppMotion {
   static const Duration instant = Duration(milliseconds: 100);
@@ -52,8 +61,9 @@ abstract final class AppMotion {
   static const Curve exit = Cubic(.3, 0, .8, .15);
 }
 
-/// Token warna + elevasi (Brief §3.1). Nilai identik dengan tabel; kolom `on*`
-/// untuk success/warning tidak ada karena status chip memakai warna di atas container.
+/// Token warna + elevasi (docs/10 §2). Biru langit dingin, aksen oranye hangat.
+/// `primary` = isian tombol/teks (lulus AA dengan putih); biru cerah hanya lewat
+/// `primaryBright`, gradien (`featured*`, `heroSoft*`), `glow` dan container.
 @immutable
 class AppTokens extends ThemeExtension<AppTokens> {
   const AppTokens({
@@ -82,6 +92,18 @@ class AppTokens extends ThemeExtension<AppTokens> {
     required this.onDanger,
     required this.focusRing,
     required this.scrim,
+    required this.assistant,
+    required this.assistantContainer,
+    required this.primaryBright,
+    required this.featuredFrom,
+    required this.featuredTo,
+    required this.heroSoftFrom,
+    required this.heroSoftTo,
+    required this.glow,
+    required this.illoSoft,
+    required this.illoAccent,
+    required this.illoInk,
+    required this.illoPaper,
     required this.e1,
     required this.e2,
     required this.e3,
@@ -98,76 +120,122 @@ class AppTokens extends ThemeExtension<AppTokens> {
   final Color danger, dangerContainer, onDanger;
   final Color focusRing, scrim;
 
+  /// Peran Asisten (teal) + container-nya.
+  final Color assistant, assistantContainer;
+
+  /// Biru cerah/pastel: hanya dekorasi (gradien, glow, ilustrasi), bukan teks.
+  final Color primaryBright;
+
+  /// Gradien FeaturedCard (teks putih; kedua ujung >= 4.5:1 dengan putih).
+  final Color featuredFrom, featuredTo;
+
+  /// Gradien HeroBannerCard (lembut, teks textPrimary).
+  final Color heroSoftFrom, heroSoftTo;
+
+  /// Warna glow header (diberi alpha di HeaderGlow).
+  final Color glow;
+
+  /// Palet ilustrasi: biru lembut, aksen oranye, tinta garis, kertas.
+  final Color illoSoft, illoAccent, illoInk, illoPaper;
+
   /// e1 kartu, e2 sheet/menu, e3 dialog. Dark: kosong (permukaan lebih terang).
   final List<BoxShadow> e1, e2, e3;
 
-  Color roleColor(AppRole r) => r == AppRole.seeker ? primary : accent;
+  Color roleColor(AppRole r) => r == AppRole.seeker ? primary : assistant;
   Color roleContainer(AppRole r) =>
-      r == AppRole.seeker ? primaryContainer : accentContainer;
+      r == AppRole.seeker ? primaryContainer : assistantContainer;
 
   static const light = AppTokens(
     isDark: false,
-    canvas: Color(0xFFFAF7F2),
+    canvas: Color(0xFFFFFFFF),
     surface: Color(0xFFFFFFFF),
-    sunken: Color(0xFFF3EEE6),
+    sunken: Color(0xFFF1F5F9),
     raised: Color(0xFFFFFFFF),
-    borderSubtle: Color(0xFFE2D9CC),
-    borderStrong: Color(0xFF8C8070),
-    textPrimary: Color(0xFF1F1B16),
-    textMuted: Color(0xFF5A5146),
-    textSubtle: Color(0xFF6F6558),
-    primary: Color(0xFF244C7C),
-    primaryContainer: Color(0xFFE4ECF7),
+    borderSubtle: Color(0xFFE2E8F0),
+    borderStrong: Color(0xFF7A8AA0),
+    textPrimary: Color(0xFF0F172A),
+    textMuted: Color(0xFF475569),
+    textSubtle: Color(0xFF536278),
+    primary: Color(0xFF0770BC),
+    primaryContainer: Color(0xFFE0F2FE),
     onPrimary: Color(0xFFFFFFFF),
-    accent: Color(0xFF9A4E1C),
-    accentContainer: Color(0xFFF8E9DC),
+    accent: Color(0xFFA8450A),
+    accentContainer: Color(0xFFFFEDD5),
     onAccent: Color(0xFFFFFFFF),
-    success: Color(0xFF1B6E45),
-    successContainer: Color(0xFFE3F2EA),
-    warning: Color(0xFF8A5200),
-    warningContainer: Color(0xFFFFF1D6),
-    danger: Color(0xFFB3261E),
-    dangerContainer: Color(0xFFFBE5E3),
+    success: Color(0xFF166534),
+    successContainer: Color(0xFFDCFCE7),
+    warning: Color(0xFF92400E),
+    warningContainer: Color(0xFFFEF3C7),
+    danger: Color(0xFFB91C1C),
+    dangerContainer: Color(0xFFFEE2E2),
     onDanger: Color(0xFFFFFFFF),
-    focusRing: Color(0xFF244C7C),
-    scrim: Color(0x7A1F1B16), // rgba(31,27,22,.48)
+    focusRing: Color(0xFF0770BC),
+    scrim: Color(0x7A0F172A),
+    assistant: Color(0xFF0D6B63),
+    assistantContainer: Color(0xFFD5F5F0),
+    primaryBright: Color(0xFF38BDF8),
+    featuredFrom: Color(0xFF0B2F6B),
+    featuredTo: Color(0xFF0770BC),
+    heroSoftFrom: Color(0xFFE0F2FE),
+    heroSoftTo: Color(0xFFBAE0FB),
+    glow: Color(0xFF7DD3FC),
+    illoSoft: Color(0xFFBAE6FD),
+    illoAccent: Color(0xFFFB923C),
+    illoInk: Color(0xFF0B2F6B),
+    illoPaper: Color(0xFFFFFFFF),
     e1: [
-      BoxShadow(color: Color(0x141F1B16), blurRadius: 3, offset: Offset(0, 1)),
+      BoxShadow(color: Color(0x0F0F172A), blurRadius: 8, offset: Offset(0, 2)),
     ],
     e2: [
-      BoxShadow(color: Color(0x1F1F1B16), blurRadius: 12, offset: Offset(0, 4)),
+      BoxShadow(color: Color(0x1A0F172A), blurRadius: 16, offset: Offset(0, 6)),
     ],
     e3: [
-      BoxShadow(color: Color(0x291F1B16), blurRadius: 24, offset: Offset(0, 8)),
+      BoxShadow(
+        color: Color(0x290F172A),
+        blurRadius: 28,
+        offset: Offset(0, 10),
+      ),
     ],
   );
 
   static const dark = AppTokens(
     isDark: true,
-    canvas: Color(0xFF15130F),
-    surface: Color(0xFF1E1B16),
-    sunken: Color(0xFF100E0B),
-    raised: Color(0xFF27231D),
-    borderSubtle: Color(0xFF3A342B),
-    borderStrong: Color(0xFF7A6F60),
-    textPrimary: Color(0xFFF2EDE4),
-    textMuted: Color(0xFFBDB3A4),
-    textSubtle: Color(0xFFA39989),
-    primary: Color(0xFF9DBDEB),
-    primaryContainer: Color(0xFF1F3350),
-    onPrimary: Color(0xFF0F2542),
-    accent: Color(0xFFE8A472),
-    accentContainer: Color(0xFF3A2616),
+    canvas: Color(0xFF0B1220),
+    surface: Color(0xFF111A2E),
+    sunken: Color(0xFF0A0F1C),
+    raised: Color(0xFF172238),
+    borderSubtle: Color(0xFF243049),
+    borderStrong: Color(0xFF7A8BA6),
+    textPrimary: Color(0xFFE8EEF7),
+    textMuted: Color(0xFFA9B6C9),
+    textSubtle: Color(0xFF9AA7BC),
+    primary: Color(0xFF5FB7F5),
+    primaryContainer: Color(0xFF0F2A47),
+    onPrimary: Color(0xFF04223D),
+    accent: Color(0xFFFDBA74),
+    accentContainer: Color(0xFF3A2210),
     onAccent: Color(0xFF2B1708),
-    success: Color(0xFF6FCB9A),
-    successContainer: Color(0xFF143323),
-    warning: Color(0xFFF0B95B),
-    warningContainer: Color(0xFF3A2B0E),
-    danger: Color(0xFFFF9A92),
-    dangerContainer: Color(0xFF4A1A17),
-    onDanger: Color(0xFF3A0B08),
-    focusRing: Color(0xFF9DBDEB),
-    scrim: Color(0xA3000000), // rgba(0,0,0,.64)
+    success: Color(0xFF4ADE80),
+    successContainer: Color(0xFF0F2E1B),
+    warning: Color(0xFFFCD34D),
+    warningContainer: Color(0xFF3A2C08),
+    danger: Color(0xFFFCA5A5),
+    dangerContainer: Color(0xFF451616),
+    onDanger: Color(0xFF450A0A),
+    focusRing: Color(0xFF5FB7F5),
+    scrim: Color(0xA3000000),
+    assistant: Color(0xFF5EEAD4),
+    assistantContainer: Color(0xFF0B2E2B),
+    primaryBright: Color(0xFF38BDF8),
+    featuredFrom: Color(0xFF0B2A5B),
+    featuredTo: Color(0xFF1D6FB8),
+    heroSoftFrom: Color(0xFF0F2A47),
+    heroSoftTo: Color(0xFF16406B),
+    glow: Color(0xFF1A5490),
+    illoSoft: Color(0xFF1B3A5E),
+    illoAccent: Color(0xFFFB923C),
+    illoInk: Color(0xFF9AD4FA),
+    illoPaper: Color(0xFF1F2E4A),
     e1: [],
     e2: [],
     e3: [],
@@ -207,6 +275,18 @@ class AppTokens extends ThemeExtension<AppTokens> {
       onDanger: c(onDanger, other.onDanger),
       focusRing: c(focusRing, other.focusRing),
       scrim: c(scrim, other.scrim),
+      assistant: c(assistant, other.assistant),
+      assistantContainer: c(assistantContainer, other.assistantContainer),
+      primaryBright: c(primaryBright, other.primaryBright),
+      featuredFrom: c(featuredFrom, other.featuredFrom),
+      featuredTo: c(featuredTo, other.featuredTo),
+      heroSoftFrom: c(heroSoftFrom, other.heroSoftFrom),
+      heroSoftTo: c(heroSoftTo, other.heroSoftTo),
+      glow: c(glow, other.glow),
+      illoSoft: c(illoSoft, other.illoSoft),
+      illoAccent: c(illoAccent, other.illoAccent),
+      illoInk: c(illoInk, other.illoInk),
+      illoPaper: c(illoPaper, other.illoPaper),
       e1: t < .5 ? e1 : other.e1,
       e2: t < .5 ? e2 : other.e2,
       e3: t < .5 ? e3 : other.e3,

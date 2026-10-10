@@ -26,6 +26,7 @@ class AppTextField extends StatefulWidget {
     this.inputFormatters,
     this.autofillHints,
     this.prefixText,
+    this.prefixIcon,
     this.maxLength,
     this.maxLines = 1,
     this.obscure = false,
@@ -46,6 +47,9 @@ class AppTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
   final String? prefixText;
+
+  /// Ikon di depan field (gaya referensi: ikon + outline radius 12).
+  final IconData? prefixIcon;
   final int? maxLength;
   final int maxLines;
   final bool obscure;
@@ -100,6 +104,9 @@ class _AppTextFieldState extends State<AppTextField> {
             decoration: InputDecoration(
               hintText: widget.hint,
               counterText: '',
+              prefixIcon: widget.prefixIcon == null
+                  ? null
+                  : Icon(widget.prefixIcon, size: 20),
               prefixText: widget.prefixText == null
                   ? null
                   : '${widget.prefixText} ',

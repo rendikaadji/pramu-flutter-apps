@@ -2,19 +2,24 @@ import 'package:flutter/material.dart';
 
 import 'app_tokens.dart';
 
-/// Nama keluarga font. File font dibundel lewat pubspec (lihat docs/10-Design-System-App.md);
-/// selama belum terpasang, Flutter jatuh ke font sistem lewat fallback di bawah.
+/// Nama keluarga font. Tidak ada font yang diunduh/dibundel: nama di bawah hanya
+/// "slot" (bisa diisi lewat pubspec nanti); selama kosong Flutter memakai font
+/// sistem lewat fallback. Judul memakai sans yang sama dengan UI (tanpa serif).
 abstract final class AppFonts {
-  static const display = 'Fraunces';
   static const ui = 'IBMPlexSans';
   static const mono = 'IBMPlexMono';
 
-  static const displayFallback = ['Georgia', 'Noto Serif', 'serif'];
-  static const uiFallback = ['Roboto', 'Noto Sans', 'Helvetica Neue', 'Arial'];
+  static const uiFallback = [
+    'Roboto',
+    'SF Pro Text',
+    'Noto Sans',
+    'Helvetica Neue',
+    'Arial',
+  ];
   static const monoFallback = ['Roboto Mono', 'Menlo', 'Consolas', 'monospace'];
 }
 
-/// Skala tipografi Brief §3.2 (sp / line-height).
+/// Skala tipografi (sp / line-height). Judul semi-bold bersih, rapat sedikit.
 abstract final class AppText {
   static TextStyle _ui(double s, double lh, FontWeight w) => TextStyle(
     fontFamily: AppFonts.ui,
@@ -24,13 +29,15 @@ abstract final class AppText {
     fontWeight: w,
   );
 
-  static TextStyle _display(double s, double lh) => TextStyle(
-    fontFamily: AppFonts.display,
-    fontFamilyFallback: AppFonts.displayFallback,
-    fontSize: s,
-    height: lh / s,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle _display(double s, double lh, FontWeight w) =>
+      _ui(s, lh, w).copyWith(letterSpacing: -.3);
+
+  /// Wordmark "Pramu": sans tebal 800, rapat.
+  static TextStyle wordmark({double size = 28, Color? color}) => _ui(
+    size,
+    size * 1.2,
+    FontWeight.w800,
+  ).copyWith(letterSpacing: -.6, color: color);
 
   /// Mono tabular untuk uang, ID, kode OTP.
   static TextStyle mono({
@@ -49,10 +56,10 @@ abstract final class AppText {
   );
 
   static TextTheme theme(AppTokens t) {
-    final display = _display(32, 40); // display
-    final h1 = _display(26, 34);
+    final display = _display(32, 40, FontWeight.w700); // display
+    final h1 = _display(26, 34, FontWeight.w700);
     final h2 = _ui(20, 28, FontWeight.w600);
-    final h3 = _ui(18, 26, FontWeight.w600);
+    final h3 = _ui(17, 24, FontWeight.w600);
     final body = _ui(16, 24, FontWeight.w400);
     final bodySm = _ui(14, 20, FontWeight.w400);
     final label = _ui(14, 20, FontWeight.w500);

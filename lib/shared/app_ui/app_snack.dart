@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../core/theme/app_theme.dart';
+
 /// Snackbar untuk info/sukses ringan saja ("Sekarang sebagai Asisten").
 /// Error kritis memakai FieldErrorText / ErrorState / ConfirmDialog, bukan snackbar.
 abstract final class AppSnack {
@@ -12,6 +14,8 @@ abstract final class AppSnack {
     VoidCallback? onAction,
   }) {
     final m = ScaffoldMessenger.of(context);
+    // Latar snackbar = kebalikan tema; ikon sukses memakai hijau dari tema kebalikan.
+    final inverse = context.tokens.isDark ? AppTokens.light : AppTokens.dark;
     m.hideCurrentSnackBar();
     m.showSnackBar(
       SnackBar(
@@ -21,7 +25,9 @@ abstract final class AppSnack {
             Icon(
               success ? LucideIcons.circleCheck : LucideIcons.info,
               size: 20,
-              color: Theme.of(context).colorScheme.onInverseSurface,
+              color: success
+                  ? inverse.success
+                  : Theme.of(context).colorScheme.onInverseSurface,
             ),
             const SizedBox(width: 12),
             Expanded(child: Text(message)),

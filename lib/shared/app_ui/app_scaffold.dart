@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+import 'header_glow.dart';
 
 /// Kerangka layar: SafeArea, margin horizontal 16 (>= 600dp: 24), konten maks 600dp
 /// di tengah pada layar besar. `scrollable` untuk form; daftar mengelola scroll sendiri
@@ -18,6 +19,7 @@ class AppScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.scrollable = false,
     this.padded = true,
+    this.glow = false,
   });
 
   final Widget body;
@@ -31,6 +33,9 @@ class AppScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final bool scrollable;
   final bool padded;
+
+  /// Latar `HeaderGlow` biru muda lembut di atas layar (beranda, profil).
+  final bool glow;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +65,8 @@ class AppScaffold extends StatelessWidget {
         child: content,
       ),
     );
-    return Scaffold(
+    final scaffold = Scaffold(
+      backgroundColor: glow ? Colors.transparent : null,
       appBar: bar,
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
@@ -75,6 +81,17 @@ class AppScaffold extends StatelessWidget {
                   Expanded(child: content),
                 ],
               ),
+      ),
+    );
+    if (!glow) return scaffold;
+    return ColoredBox(
+      color: context.tokens.canvas,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const Positioned(top: 0, left: 0, right: 0, child: HeaderGlow()),
+          scaffold,
+        ],
       ),
     );
   }

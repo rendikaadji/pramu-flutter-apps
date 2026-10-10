@@ -25,7 +25,7 @@ class RoleChip extends StatelessWidget {
       onTap: onTap,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.brSm,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSpace.tap),
           child: Center(
@@ -33,7 +33,7 @@ class RoleChip extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: t.roleContainer(role),
-                borderRadius: AppRadius.brSm,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(color: fg.withValues(alpha: .4)),
               ),
               child: Padding(

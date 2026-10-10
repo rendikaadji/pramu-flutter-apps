@@ -5,7 +5,7 @@ import '../../core/theme/app_theme.dart';
 import 'app_card.dart';
 
 /// Kartu "Langkah berikutnya": satu tugas yang paling penting sekarang.
-/// Tint mengikuti peran (Pencari indigo, Asisten soga).
+/// Tint mengikuti peran (Pencari biru langit, Asisten teal).
 class NextStepCard extends StatelessWidget {
   const NextStepCard({
     super.key,
