@@ -13,6 +13,7 @@ class PagedListView<T> extends StatefulWidget {
     this.onRetryMore,
     required this.itemBuilder,
     required this.empty,
+    this.skeletonKind = SkeletonCardKind.listing,
   });
 
   final PagedState<T> state;
@@ -21,6 +22,7 @@ class PagedListView<T> extends StatefulWidget {
   final VoidCallback? onRetryMore;
   final Widget Function(BuildContext, T) itemBuilder;
   final Widget empty;
+  final SkeletonCardKind skeletonKind;
 
   @override
   State<PagedListView<T>> createState() => _PagedListViewState<T>();
@@ -47,7 +49,9 @@ class _PagedListViewState<T> extends State<PagedListView<T>> {
   Widget build(BuildContext context) {
     final s = widget.state;
     if (s.loading && s.items.isEmpty) {
-      return const SingleChildScrollView(child: ListSkeleton());
+      return SingleChildScrollView(
+        child: ListSkeleton(kind: widget.skeletonKind),
+      );
     }
     if (s.error != null && s.items.isEmpty) {
       return SingleChildScrollView(
@@ -69,7 +73,9 @@ class _PagedListViewState<T> extends State<PagedListView<T>> {
           if (s.loadingMore) {
             return Semantics(
               label: 'Memuat lainnya',
-              child: const ExcludeSemantics(child: ListSkeleton(count: 1)),
+              child: ExcludeSemantics(
+                child: ListSkeleton(count: 1, kind: widget.skeletonKind),
+              ),
             );
           }
           if (s.error != null && !offline) {

@@ -73,6 +73,7 @@ class _State extends ConsumerState<ListingManageScreen> with ApiActionMixin {
       body: AsyncBody<Listing>(
         value: listing,
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (ctx, l) => RefreshIndicator(
           onRefresh: () async => _reload(),
           child: ListView(
@@ -249,7 +250,7 @@ class _Applicants extends ConsumerWidget {
                 ref.invalidate(listingApplicantsProvider(listing.id)),
           )
         else
-          const ListSkeleton(count: 2),
+          const ListSkeleton(count: 2, kind: SkeletonCardKind.assistant),
       ],
     );
   }

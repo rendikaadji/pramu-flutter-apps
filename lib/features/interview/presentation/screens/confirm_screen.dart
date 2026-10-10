@@ -62,6 +62,7 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
       body: AsyncBody<InterviewContext>(
         value: async,
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (ctx, c) {
           final iv = c.interview;
           if (iv.status != InterviewStatus.proposed || c.isSeeker) {

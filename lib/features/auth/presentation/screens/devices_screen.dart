@@ -61,6 +61,10 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen>
       body: AsyncBody<List<Device>>(
         value: value,
         onRetry: () => ref.invalidate(devicesProvider),
+        skeleton: const ListSkeleton(
+          count: 3,
+          kind: SkeletonCardKind.notification,
+        ),
         data: (context, devices) {
           if (devices.isEmpty) {
             return const EmptyState(

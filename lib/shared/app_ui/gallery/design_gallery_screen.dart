@@ -395,22 +395,10 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
           const SectionHeader('Alur'),
           const StepProgress(current: 2, total: 4, title: 'Deskripsi'),
           const SizedBox(height: AppSpace.s16),
-          const Row(
-            children: [
-              AppSkeleton.box(48, radius: 24),
-              SizedBox(width: AppSpace.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppSkeleton.line(),
-                    SizedBox(height: AppSpace.s8),
-                    AppSkeleton.line(width: 120),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          const SectionHeader('Memuat'),
+          const ListSkeleton(count: 2, kind: SkeletonCardKind.assistant),
+          const SizedBox(height: AppSpace.s12),
+          const ListSkeleton(count: 2, kind: SkeletonCardKind.conversation),
           const SectionHeader('Status layar'),
           const EmptyState(
             icon: LucideIcons.search,

@@ -59,8 +59,10 @@ class PrivacyScreen extends ConsumerWidget {
           const SizedBox(height: AppSpace.s24),
           const SectionHeader('Laporan dan persetujuan Anda'),
           reports.when(
-            loading: () =>
-                Semantics(label: 'Memuat', child: const AppSkeleton.box(72)),
+            loading: () => const ListSkeleton(
+              count: 2,
+              kind: SkeletonCardKind.notification,
+            ),
             error: (e, _) => ApiErrorView(
               error: asApiException(e),
               onRetry: () => ref.invalidate(reportListProvider),

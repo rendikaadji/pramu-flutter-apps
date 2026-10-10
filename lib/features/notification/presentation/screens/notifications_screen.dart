@@ -92,17 +92,10 @@ class NotificationsScreen extends ConsumerWidget {
       title: 'Notifikasi',
       glow: true,
       body: s.when(
-        loading: () => Semantics(
-          label: 'Memuat',
-          child: const Column(
-            children: [
-              SizedBox(height: AppSpace.s16),
-              AppSkeleton.box(72),
-              SizedBox(height: AppSpace.s12),
-              AppSkeleton.box(72),
-              SizedBox(height: AppSpace.s12),
-              AppSkeleton.box(72),
-            ],
+        loading: () => const SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(top: AppSpace.s8),
+            child: ListSkeleton(count: 5, kind: SkeletonCardKind.notification),
           ),
         ),
         error: (e, _) => Padding(

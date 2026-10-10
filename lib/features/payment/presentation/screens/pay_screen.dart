@@ -93,6 +93,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
       body: AsyncBody<BookingPeriod>(
         value: value,
         onRetry: () => ref.invalidate(payPeriodProvider(widget.periodId)),
+        skeleton: const DetailSkeleton(),
         data: (context, p) => SingleChildScrollView(
           padding: const EdgeInsets.only(
             top: AppSpace.s8,

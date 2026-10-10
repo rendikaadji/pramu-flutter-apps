@@ -62,6 +62,7 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
       body: AsyncBody<RefundPreview>(
         value: value,
         onRetry: () => ref.invalidate(cancelPreviewProvider(widget.bookingId)),
+        skeleton: const DetailSkeleton(),
         data: (context, pv) => SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: AppSpace.s24),
           child: Column(

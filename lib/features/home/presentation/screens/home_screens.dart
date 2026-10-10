@@ -211,20 +211,6 @@ class _ListingTile extends StatelessWidget {
   }
 }
 
-Widget _loadingSkeleton() => const Padding(
-  padding: EdgeInsets.symmetric(vertical: AppSpace.s16),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      AppSkeleton.box(96, radius: AppRadius.md),
-      SizedBox(height: AppSpace.s16),
-      AppSkeleton.line(width: 160),
-      SizedBox(height: AppSpace.s12),
-      AppSkeleton.box(72, radius: AppRadius.md),
-    ],
-  ),
-);
-
 /// M-20 Beranda Pencari.
 class SeekerHomeScreen extends ConsumerWidget {
   const SeekerHomeScreen({super.key});
@@ -244,7 +230,7 @@ class SeekerHomeScreen extends ConsumerWidget {
               child: AsyncBody<SeekerHome>(
                 value: value,
                 onRetry: () => ref.invalidate(seekerHomeProvider),
-                skeleton: Semantics(label: 'Memuat', child: _loadingSkeleton()),
+                skeleton: const HomeSkeleton(),
                 data: (context, d) => _seeker(context, d),
               ),
             ),
@@ -386,7 +372,7 @@ class AssistantHomeScreen extends ConsumerWidget {
               child: AsyncBody<AssistantHome>(
                 value: value,
                 onRetry: () => ref.invalidate(assistantHomeProvider),
-                skeleton: Semantics(label: 'Memuat', child: _loadingSkeleton()),
+                skeleton: const HomeSkeleton(),
                 data: (context, d) => _assistant(context, d),
               ),
             ),

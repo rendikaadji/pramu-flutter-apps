@@ -156,6 +156,7 @@ class _State extends ConsumerState<ListingPayScreen>
       body: AsyncBody<Listing>(
         value: async,
         onRetry: () => ref.invalidate(listingDetailProvider(widget.id)),
+        skeleton: const DetailSkeleton(),
         data: (ctx, l) => l.status == ListingStatus.open
             ? _success(ctx, l)
             : SingleChildScrollView(child: _content(ctx, l)),

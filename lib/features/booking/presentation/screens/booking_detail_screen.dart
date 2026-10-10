@@ -69,6 +69,7 @@ class _State extends ConsumerState<BookingDetailScreen>
       body: AsyncBody<Booking>(
         value: ref.watch(bookingProvider(widget.bookingId)),
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (context, b) => RefreshIndicator(
           onRefresh: () =>
               ref.refresh(bookingProvider(widget.bookingId).future),

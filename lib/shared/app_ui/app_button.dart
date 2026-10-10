@@ -74,9 +74,9 @@ class AppButton extends StatelessWidget {
         Opacity(opacity: loading ? 0 : 1, child: content),
         if (loading)
           SizedBox.square(
-            dimension: 20,
+            dimension: 18,
             child: CircularProgressIndicator(
-              strokeWidth: 2.5,
+              strokeWidth: 2,
               color: fgC,
               semanticsLabel: '$label, sedang diproses',
             ),

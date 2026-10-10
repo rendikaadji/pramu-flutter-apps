@@ -7,11 +7,13 @@
 // Hasil: tool/screenshots/out/<layar>__<varian>.png  (varian: light, dark, light-x13)
 // Font: Segoe UI (UI), Georgia (display), Consolas (mono) dari C:\Windows\Fonts agar teks bukan kotak
 // Ahem. Ini perkiraan; font nyata (Plex/Fraunces) berbeda tipis.
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pramu_apps/app.dart';
 import 'package:pramu_apps/core/mock/mock_backend.dart';
@@ -21,7 +23,10 @@ import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/theme/app_theme.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
+import 'package:pramu_apps/features/home/presentation/state/home_state.dart';
 import 'package:pramu_apps/features/verification/presentation/state/verification_state.dart';
+import 'package:pramu_apps/features/wallet/domain/wallet.dart';
+import 'package:pramu_apps/features/wallet/presentation/state/wallet_state.dart';
 import 'package:pramu_apps/shared/app_ui/gallery/design_gallery_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -79,6 +84,7 @@ void main() {
     String? user,
     required bool dark,
     required double scale,
+    List<Override> extra = const [],
   }) async {
     t.view.physicalSize = const Size(390, 844);
     t.view.devicePixelRatio = 1;
@@ -104,6 +110,7 @@ void main() {
         tokenStoreProvider.overrideWithValue(tokens),
         mockBackendProvider.overrideWithValue(backend),
         photoServiceProvider.overrideWithValue(FakePhotoService()),
+        ...extra,
       ],
     );
     addTearDown(container.dispose);
@@ -304,6 +311,55 @@ void main() {
     ('dark', true, 1.0),
     ('light-x13', false, 1.3),
   ];
+
+  // State memuat: provider tak pernah selesai (Completer tanpa complete).
+  final loading = <String, (String, String, List<Override>)>{
+    'L1-home-seeker': (
+      'Bu Rina',
+      '',
+      [
+        seekerHomeProvider.overrideWith(
+          (ref) => Completer<SeekerHome>().future,
+        ),
+      ],
+    ),
+    'L2-home-assistant': (
+      'Siti',
+      '',
+      [
+        assistantHomeProvider.overrideWith(
+          (ref) => Completer<AssistantHome>().future,
+        ),
+      ],
+    ),
+    'L3-wallet': (
+      'Siti',
+      '/a/wallet',
+      [walletProvider.overrideWith((ref) => Completer<Wallet>().future)],
+    ),
+  };
+  for (final entry in loading.entries) {
+    if (_filter != null && !entry.key.contains(_filter!)) continue;
+    for (final (vn, dark, scale) in variants.take(2)) {
+      testWidgets('${entry.key} $vn', (t) async {
+        final e = await boot(
+          t,
+          user: entry.value.$1,
+          dark: dark,
+          scale: scale,
+          extra: entry.value.$3,
+        );
+        if (entry.value.$2.isNotEmpty) e.go(entry.value.$2);
+        await t.pump(const Duration(milliseconds: 700));
+        await expectLater(
+          find.byType(PramuApp),
+          matchesGoldenFile('out/${entry.key}__$vn.png'),
+        );
+        await t.pumpWidget(const SizedBox());
+        await t.pump(const Duration(seconds: 6));
+      });
+    }
+  }
 
   for (final entry in screens.entries) {
     if (_filter != null && !entry.key.contains(_filter!)) continue;

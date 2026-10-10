@@ -31,6 +31,7 @@ class WalletScreen extends ConsumerWidget {
         body: AsyncBody<Wallet>(
           value: ref.watch(walletProvider),
           onRetry: reload,
+          skeleton: const WalletSkeleton(),
           data: (context, w) => RefreshIndicator(
             onRefresh: () async => reload(),
             child: ListView(
@@ -107,7 +108,8 @@ class _Recent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tx = ref.watch(walletTxProvider);
     return tx.when(
-      loading: () => const ListSkeleton(count: 2),
+      loading: () =>
+          const ListSkeleton(count: 3, kind: SkeletonCardKind.transaction),
       error: (e, _) => ApiErrorView(
         error: asApiException(e),
         onRetry: () => ref.invalidate(walletTxProvider),

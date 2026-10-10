@@ -76,6 +76,7 @@ class _State extends ConsumerState<ProposeScreen> with ApiActionMixin {
         value: async,
         onRetry: () =>
             ref.invalidate(proposeTargetProvider(widget.applicationId)),
+        skeleton: const DetailSkeleton(),
         data: (ctx, app) => ListView(
           padding: const EdgeInsets.only(
             top: AppSpace.s8,

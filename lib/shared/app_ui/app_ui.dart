@@ -37,6 +37,7 @@ export 'role_chip.dart';
 export 'search_field.dart';
 export 'section_header.dart';
 export 'segmented_tabs.dart';
+export 'skeletons/skeletons.dart';
 export 'stats_row.dart';
 export 'status_chip.dart';
 export 'status_presets.dart' show StatusDomain;

@@ -43,6 +43,7 @@ class MyListingsScreen extends ConsumerWidget {
       body: AsyncBody<List<Listing>>(
         value: async,
         onRetry: () => ref.invalidate(myListingsProvider),
+        skeleton: const ListSkeleton(kind: SkeletonCardKind.listing),
         data: (ctx, list) => list.isEmpty
             ? EmptyState(
                 icon: LucideIcons.clipboardList,

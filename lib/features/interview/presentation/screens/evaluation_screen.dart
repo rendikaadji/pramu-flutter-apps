@@ -87,6 +87,7 @@ class _State extends ConsumerState<EvaluationScreen> with ApiActionMixin {
       body: AsyncBody<InterviewContext>(
         value: async,
         onRetry: () => ref.invalidate(interviewContextProvider(widget.id)),
+        skeleton: const DetailSkeleton(),
         data: (ctx, c) {
           if (!c.isSeeker) {
             return const EmptyState(

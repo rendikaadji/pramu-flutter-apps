@@ -97,6 +97,7 @@ class _State extends ConsumerState<AssistantSearchScreen> {
           Expanded(
             child: PagedListView<AssistantProfile>(
               state: s,
+              skeletonKind: SkeletonCardKind.assistant,
               onRefresh: () => n.reload(keep: true),
               onLoadMore: n.loadMore,
               onRetryMore: () => n.loadMore(retry: true),

@@ -10,10 +10,12 @@ import 'package:pramu_apps/core/router/routes.dart';
 import '../../core/theme/app_theme.dart';
 import 'app_button.dart';
 import 'app_card.dart';
-import 'app_skeleton.dart';
 import 'empty_state.dart';
 import 'error_state.dart';
 import 'offline_banner.dart';
+import 'skeletons/skeletons.dart';
+
+export 'skeletons/skeletons.dart' show ListSkeleton;
 
 /// Kembali; bila tak ada halaman sebelumnya (mis. deep link) ke [fallback].
 void popOrGo(BuildContext context, String fallback) =>
@@ -32,48 +34,6 @@ ApiException asApiException(Object e) => e is ApiException
 
 bool isVerificationRequired(ApiException e) =>
     e.status == 403 && e.code == 'VERIFICATION_REQUIRED';
-
-/// Skeleton daftar generik (satu `Semantics` "Memuat").
-class ListSkeleton extends StatelessWidget {
-  const ListSkeleton({super.key, this.count = 4});
-  final int count;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: 'Memuat',
-    child: ExcludeSemantics(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpace.s8),
-        child: Column(
-          children: [
-            for (var i = 0; i < count; i++)
-              const Padding(
-                padding: EdgeInsets.only(bottom: AppSpace.s12),
-                child: AppCard(
-                  child: Row(
-                    children: [
-                      AppSkeleton.box(48, radius: 24),
-                      SizedBox(width: AppSpace.s12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppSkeleton.line(width: 160),
-                            SizedBox(height: AppSpace.s8),
-                            AppSkeleton.line(width: 100),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
 /// Error muat: 403 verifikasi -> arahkan ke gerbang; selain itu kartu error + Coba lagi.
 class ApiErrorView extends StatelessWidget {
@@ -120,26 +80,50 @@ class AsyncBody<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Satu tahap = satu key: loading -> data memudar 200 ms, sedangkan
+    // data -> data (refresh) tidak memicu transisi maupun mount ulang.
+    final (stage, child) = _content(context);
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      layoutBuilder: (current, previous) => Stack(
+        fit: StackFit.passthrough,
+        alignment: Alignment.topCenter,
+        children: [...previous, ?current],
+      ),
+      child: KeyedSubtree(key: ValueKey(stage), child: child),
+    );
+  }
+
+  (String, Widget) _content(BuildContext context) {
     if (value.hasValue) {
       final child = data(context, value.requireValue);
       final err = value.hasError ? asApiException(value.error!) : null;
-      if (err == null || !err.isNetwork) return child;
-      return Column(
-        children: [
-          const OfflineBanner(),
-          Expanded(child: child),
-        ],
-      );
-    }
-    if (value.hasError) {
-      return SingleChildScrollView(
-        child: ApiErrorView(
-          error: asApiException(value.error!),
-          onRetry: onRetry,
+      if (err == null || !err.isNetwork) return ('data', child);
+      return (
+        'data',
+        Column(
+          children: [
+            const OfflineBanner(),
+            Expanded(child: child),
+          ],
         ),
       );
     }
-    return SingleChildScrollView(child: skeleton ?? const ListSkeleton());
+    if (value.hasError) {
+      return (
+        'error',
+        SingleChildScrollView(
+          child: ApiErrorView(
+            error: asApiException(value.error!),
+            onRetry: onRetry,
+          ),
+        ),
+      );
+    }
+    return (
+      'loading',
+      SingleChildScrollView(child: skeleton ?? const ListSkeleton()),
+    );
   }
 }
 

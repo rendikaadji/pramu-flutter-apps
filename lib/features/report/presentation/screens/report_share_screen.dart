@@ -36,8 +36,7 @@ class ReportShareScreen extends ConsumerWidget {
       title: 'Bagikan percakapan',
       scrollable: true,
       body: target.when(
-        loading: () =>
-            Semantics(label: 'Memuat', child: const AppSkeleton.box(200)),
+        loading: () => const DetailSkeleton(),
         error: (e, _) => ApiErrorView(
           error: asApiException(e),
           onRetry: () => ref.invalidate(shareTargetProvider(reportId)),

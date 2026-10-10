@@ -132,14 +132,7 @@ Widget _async(
 ) => AsyncBody<Verification>(
   value: value,
   onRetry: retry,
-  skeleton: Column(
-    children: const [
-      SizedBox(height: AppSpace.s32),
-      AppSkeleton.box(48, radius: 24),
-      SizedBox(height: AppSpace.s16),
-      AppSkeleton.line(),
-    ],
-  ),
+  skeleton: const DetailSkeleton(),
   data: (_, v) => data(v),
 );
 

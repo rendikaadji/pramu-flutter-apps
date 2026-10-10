@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pramu_apps/core/router/role_shell.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
+import 'package:pramu_apps/core/theme/app_theme.dart';
 import 'package:pramu_apps/features/application/presentation/application_routes.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/auth/presentation/auth_routes.dart';
@@ -149,11 +150,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (context, state) => null, // dialihkan global redirect
         builder: (context, state) => const SizedBox.shrink(),
       ),
-      GoRoute(
-        path: _splash,
-        builder: (context, state) =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
-      ),
+      GoRoute(path: _splash, builder: (context, state) => const _Splash()),
       shellFor(Role.seeker),
       shellFor(Role.assistant),
       for (final r in allFeatureRoutes)
@@ -163,3 +160,43 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
+
+/// Layar boot: wordmark Pramu + indikator garis tipis (bukan spinner besar).
+class _Splash extends StatelessWidget {
+  const _Splash();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Scaffold(
+      body: Center(
+        child: Semantics(
+          label: 'Memuat',
+          child: ExcludeSemantics(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Pramu',
+                  style: AppText.wordmark(size: 36, color: t.textPrimary),
+                ),
+                const SizedBox(height: AppSpace.s24),
+                SizedBox(
+                  width: 72,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      minHeight: 3,
+                      color: t.primary,
+                      backgroundColor: t.borderSubtle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
