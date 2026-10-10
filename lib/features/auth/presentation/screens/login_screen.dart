@@ -72,11 +72,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
     final phoneUnverified = err?.code == 'PHONE_NOT_VERIFIED';
     return AppScaffold(
       title: 'Masuk',
+      glow: true,
       scrollable: true,
       banner: offlineBannerFor(err),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const AuthHeader(
+            icon: LucideIcons.logIn,
+            title: 'Selamat datang kembali',
+            subtitle: 'Lanjutkan mencari asisten atau pekerjaan Anda.',
+          ),
           if (expired)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpace.s16),
@@ -124,6 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
           AppTextField(
             key: K.loginPhone,
             label: 'Nomor HP atau email',
+            prefixIcon: LucideIcons.user,
             controller: _id,
             errorText: _idError,
             keyboardType: TextInputType.emailAddress,
@@ -134,6 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
           AppTextField(
             key: K.loginPassword,
             label: 'Kata sandi',
+            prefixIcon: LucideIcons.lock,
             controller: _password,
             errorText: _pwError,
             obscure: true,
@@ -157,25 +165,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
             loading: busy,
             onPressed: canAct ? _submit : null,
           ),
-          const SizedBox(height: AppSpace.s12),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            children: [
-              AppButton(
-                key: K.loginForgot,
-                label: 'Lupa sandi?',
-                variant: AppButtonVariant.text,
-                expand: false,
-                onPressed: () => context.push(Routes.forgot),
-              ),
-              AppButton(
-                key: K.loginRegister,
-                label: 'Daftar',
-                variant: AppButtonVariant.text,
-                expand: false,
-                onPressed: () => context.go(Routes.register),
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child: AppButton(
+              key: K.loginForgot,
+              label: 'Lupa sandi?',
+              variant: AppButtonVariant.text,
+              expand: false,
+              onPressed: () => context.push(Routes.forgot),
+            ),
+          ),
+          AuthSwitchRow(
+            prompt: 'Belum punya akun?',
+            child: AppButton(
+              key: K.loginRegister,
+              label: 'Daftar',
+              variant: AppButtonVariant.text,
+              expand: false,
+              onPressed: () => context.go(Routes.register),
+            ),
           ),
         ],
       ),

@@ -78,17 +78,20 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
     final t = context.tokens;
     return AppScaffold(
       title: 'Verifikasi nomor HP',
+      glow: true,
       scrollable: true,
       banner: offlineBannerFor(actionError),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AuthHeader(
+            icon: LucideIcons.messageSquare,
+            title: 'Masukkan kode',
+            subtitle:
+                'Masukkan 6 digit kode yang kami kirim ke ${maskPhone(phone)}.',
+          ),
           const StepProgress(current: 2, total: 2, title: 'Verifikasi nomor'),
           const SizedBox(height: AppSpace.s24),
-          Text(
-            'Masukkan 6 digit kode yang kami kirim ke ${maskPhone(phone)}.',
-            style: context.text.body,
-          ),
           const SizedBox(height: AppSpace.s24),
           OtpInput(
             key: K.otpInput,

@@ -49,6 +49,12 @@ class _StatusBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (s != VerificationStatus.rejected)
+          Center(
+            child: s.isVerified
+                ? const SuccessIllustration(size: 200)
+                : const VerifyIllustration(size: 200),
+          ),
         Semantics(
           liveRegion: true,
           container: true,
@@ -181,6 +187,7 @@ class _VerificationStatusScreenState
     final value = ref.watch(verificationProvider);
     return AppScaffold(
       title: 'Status verifikasi',
+      glow: true,
       banner: value.hasError && value.hasValue ? const OfflineBanner() : null,
       body: RefreshIndicator(
         onRefresh: () async => ref.refresh(verificationProvider.future),
@@ -303,6 +310,7 @@ class _SkckScreenState extends ConsumerState<SkckScreen> with ApiActionMixin {
     return SecureScreenGuard(
       child: AppScaffold(
         title: 'SKCK',
+        glow: true,
         banner: err != null && err.isNetwork ? const OfflineBanner() : null,
         body: RefreshIndicator(
           onRefresh: () async => ref.refresh(skckProvider.future),

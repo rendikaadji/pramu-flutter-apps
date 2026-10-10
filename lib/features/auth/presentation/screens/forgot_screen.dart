@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/validators.dart';
@@ -89,11 +90,17 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
     const titles = ['Nomor HP atau email', 'Kode verifikasi', 'Sandi baru'];
     return AppScaffold(
       title: 'Lupa sandi',
+      glow: true,
       scrollable: true,
       banner: offlineBannerFor(actionError),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AuthHeader(
+            icon: _step == 2 ? LucideIcons.keyRound : LucideIcons.shieldCheck,
+            title: 'Pulihkan akun',
+            subtitle: 'Tiga langkah singkat untuk membuat kata sandi baru.',
+          ),
           StepProgress(current: _step + 1, total: 3, title: titles[_step]),
           const SizedBox(height: AppSpace.s24),
           if (actionError != null && _codeError == null)
@@ -107,6 +114,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
             AppTextField(
               key: K.forgotIdentifier,
               label: 'Nomor HP atau email',
+              prefixIcon: LucideIcons.user,
               controller: _id,
               errorText: _localError,
               keyboardType: TextInputType.emailAddress,
@@ -140,6 +148,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
             AppTextField(
               key: K.forgotNewPassword,
               label: 'Kata sandi baru',
+              prefixIcon: LucideIcons.lock,
               controller: _password,
               errorText: _localError ?? fieldError('password'),
               helper: 'Minimal 8 karakter',

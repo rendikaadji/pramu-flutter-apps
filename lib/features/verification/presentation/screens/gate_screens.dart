@@ -58,6 +58,7 @@ class VerificationGateScreen extends ConsumerWidget {
     );
     return AppScaffold(
       title: 'Verifikasi identitas',
+      glow: true,
       scrollable: true,
       bottomNavigationBar: PinnedActionsBar(
         children: [
@@ -87,18 +88,7 @@ class VerificationGateScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppSpace.s16),
-          ExcludeSemantics(
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: t.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(LucideIcons.shieldCheck, size: 28, color: t.primary),
-            ),
-          ),
+          const Center(child: VerifyIllustration(size: 200)),
           const SizedBox(height: AppSpace.s16),
           Semantics(
             header: true,
@@ -189,6 +179,7 @@ class VerificationGuideScreen extends StatelessWidget {
     );
     return AppScaffold(
       title: 'Panduan foto',
+      glow: true,
       scrollable: true,
       bottomNavigationBar: PinnedActionsBar(
         children: [

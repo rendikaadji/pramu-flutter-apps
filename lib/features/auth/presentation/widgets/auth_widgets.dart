@@ -57,3 +57,72 @@ class _CountdownBuilderState extends State<CountdownBuilder> {
 /// Banner offline untuk layar form saat aksi terakhir gagal karena jaringan.
 Widget? offlineBannerFor(ApiException? e) =>
     e != null && e.isNetwork ? const OfflineBanner() : null;
+
+/// Kepala layar auth di atas glow: ikon di kotak lembut, judul, penjelasan singkat.
+class AuthHeader extends StatelessWidget {
+  const AuthHeader({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpace.s8, bottom: AppSpace.s24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ExcludeSemantics(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: t.surface,
+                borderRadius: AppRadius.brCard,
+                border: Border.all(color: t.borderSubtle),
+                boxShadow: t.e1,
+              ),
+              child: SizedBox.square(
+                dimension: 56,
+                child: Icon(icon, size: 28, color: t.primary),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpace.s16),
+          Semantics(header: true, child: Text(title, style: context.text.h1)),
+          const SizedBox(height: AppSpace.s4),
+          Text(subtitle, style: context.text.body.copyWith(color: t.textMuted)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Satu baris tautan sekunder di bawah tombol utama: teks prompt + aksi.
+class AuthSwitchRow extends StatelessWidget {
+  const AuthSwitchRow({super.key, required this.prompt, required this.child});
+
+  final String prompt;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: AppSpace.s8),
+    child: Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          prompt,
+          style: context.text.body.copyWith(color: context.tokens.textMuted),
+        ),
+        child,
+      ],
+    ),
+  );
+}

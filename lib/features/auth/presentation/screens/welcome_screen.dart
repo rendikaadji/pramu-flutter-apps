@@ -1,56 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 
-/// M-01 Welcome: lockup merek, satu kalimat janji, tiga nilai, CTA menempel bawah.
-class WelcomeScreen extends StatelessWidget {
+/// M-01 Welcome: wordmark, carousel tiga nilai produk berilustrasi, CTA menempel bawah.
+/// Daftar/Masuk selalu tersedia (tidak menunggu slide terakhir).
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  final _controller = PageController();
+  int _index = 0;
+
+  static const _slides = [
+    (
+      title: 'Cari, sepakati, dan bayar dalam satu aplikasi',
+      body:
+          'Temukan asisten rumah tangga atau lowongan kerja yang cocok '
+          'tanpa perantara.',
+    ),
+    (
+      title: 'Semua pengguna terverifikasi',
+      body:
+          'KTP dan selfie setiap pengguna diperiksa petugas. Lihat segel '
+          'verifikasi dan rating sebelum menyepakati apa pun.',
+    ),
+    (
+      title: 'Dana aman, privasi terjaga',
+      body:
+          'Uang ditahan aman dan dicairkan setelah pekerjaan selesai. '
+          'Kontak pribadi disembunyikan sampai pembayaran dilakukan.',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _art(int i) => switch (i) {
+    0 => const WelcomeIllustration(size: 260),
+    1 => const VerifyIllustration(size: 240),
+    _ => const MoneySafeIllustration(size: 240),
+  };
 
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
-
-    Widget value(IconData icon, String title, String body) => Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ExcludeSemantics(
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: t.accentContainer,
-              borderRadius: AppRadius.brMd,
-            ),
-            child: Icon(icon, size: 20, color: t.accent),
-          ),
-        ),
-        const SizedBox(width: AppSpace.s12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: context.text.h3),
-              const SizedBox(height: AppSpace.s4),
-              Text(
-                body,
-                style: context.text.bodySm.copyWith(color: t.textMuted),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-
-    final divider = Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
-      child: Divider(height: 1, color: t.borderSubtle),
-    );
-
     return AppScaffold(
+      glow: true,
       bottomNavigationBar: PinnedActionsBar(
         children: [
           AppButton(
@@ -59,83 +64,96 @@ class WelcomeScreen extends StatelessWidget {
             large: true,
             onPressed: () => context.push(Routes.register),
           ),
-          const SizedBox(height: AppSpace.s4),
+          const SizedBox(height: AppSpace.s8),
           AppButton(
             key: K.welcomeLogin,
             label: 'Masuk',
             large: true,
-            variant: AppButtonVariant.text,
+            variant: AppButtonVariant.secondary,
             onPressed: () => context.push(Routes.login),
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, c) => SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: c.maxHeight),
-            child: Align(
-              alignment: const Alignment(0, -0.35),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppSpace.s24),
-                  Row(
-                    children: [
-                      const ExcludeSemantics(
-                        child: VerificationSeal(
-                          state: SealState.verified,
-                          size: SealSize.lg,
-                          showLabel: false,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpace.s12),
-                      Semantics(
-                        header: true,
-                        child: Text('Pramu', style: context.text.display),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpace.s24),
-                  Text(
-                    'Asisten rumah tangga yang sudah terverifikasi.',
-                    style: context.text.h1,
-                  ),
-                  const SizedBox(height: AppSpace.s8),
-                  Text(
-                    'Cari, sepakati, dan bayar lewat dana aman dalam satu aplikasi.',
-                    style: context.text.body.copyWith(color: t.textMuted),
-                  ),
-                  const SizedBox(height: AppSpace.s32),
-                  AppCard(
+      body: Column(
+        children: [
+          const SizedBox(height: AppSpace.s24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const ExcludeSemantics(
+                child: VerificationSeal(
+                  state: SealState.verified,
+                  size: SealSize.lg,
+                  showLabel: false,
+                ),
+              ),
+              const SizedBox(width: AppSpace.s8),
+              Semantics(
+                header: true,
+                child: Text(
+                  'Pramu',
+                  style: AppText.wordmark(size: 30, color: t.textPrimary),
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: _slides.length,
+              onPageChanged: (i) => setState(() => _index = i),
+              itemBuilder: (context, i) => LayoutBuilder(
+                builder: (context, c) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: c.maxHeight),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        value(
-                          LucideIcons.shieldCheck,
-                          'Terverifikasi',
-                          'KTP dan selfie setiap pengguna diperiksa petugas.',
+                        _art(i),
+                        const SizedBox(height: AppSpace.s24),
+                        Text(
+                          _slides[i].title,
+                          style: context.text.h1,
+                          textAlign: TextAlign.center,
                         ),
-                        divider,
-                        value(
-                          LucideIcons.wallet,
-                          'Dana aman',
-                          'Uang ditahan aman dan dicairkan setelah pekerjaan selesai.',
-                        ),
-                        divider,
-                        value(
-                          LucideIcons.lock,
-                          'Privasi chat',
-                          'Kontak pribadi disembunyikan sampai pembayaran dilakukan.',
+                        const SizedBox(height: AppSpace.s12),
+                        Text(
+                          _slides[i].body,
+                          style: context.text.body.copyWith(color: t.textMuted),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpace.s24),
+                ),
+              ),
+            ),
+          ),
+          Semantics(
+            label: 'Halaman ${_index + 1} dari ${_slides.length}',
+            child: ExcludeSemantics(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < _slides.length; i++)
+                    AnimatedContainer(
+                      duration: context.motion(AppMotion.base),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: i == _index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: i == _index
+                            ? t.primary
+                            : t.borderStrong.withValues(alpha: .4),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
                 ],
               ),
             ),
           ),
-        ),
+          const SizedBox(height: AppSpace.s16),
+        ],
       ),
     );
   }

@@ -10,7 +10,11 @@ import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/theme_mode_controller.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/auth/presentation/widgets/auth_widgets.dart';
+import 'package:pramu_apps/features/booking/domain/booking.dart';
+import 'package:pramu_apps/features/home/presentation/state/home_state.dart';
+import 'package:pramu_apps/features/listing/domain/listing.dart';
 import 'package:pramu_apps/features/notification/data/push_providers.dart';
+import 'package:pramu_apps/features/profile/data/my_profile_provider.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/shell_app_bar.dart';
@@ -18,50 +22,6 @@ import 'package:pramu_apps/shared/app_ui/shell_app_bar.dart';
 /// M-24 Akun & pengaturan (+ M-22 ganti peran lewat sheet).
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
-
-  Widget _row(
-    BuildContext context, {
-    Key? key,
-    required IconData icon,
-    required String label,
-    String? value,
-    required VoidCallback onTap,
-  }) {
-    final t = context.tokens;
-    return Semantics(
-      button: true,
-      excludeSemantics: true,
-      label: value == null ? label : '$label, $value',
-      onTap: onTap,
-      child: InkWell(
-        key: key,
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppSpace.tap),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpace.s16,
-              vertical: AppSpace.s8,
-            ),
-            child: Row(
-              children: [
-                Icon(icon, color: t.textMuted),
-                const SizedBox(width: AppSpace.s16),
-                Expanded(child: Text(label, style: context.text.body)),
-                if (value != null)
-                  Text(
-                    value,
-                    style: context.text.bodySm.copyWith(color: t.textMuted),
-                  ),
-                const SizedBox(width: AppSpace.s8),
-                Icon(LucideIcons.chevronRight, color: t.textSubtle, size: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _caption(BuildContext context, String text) => Padding(
     padding: const EdgeInsets.fromLTRB(
@@ -79,31 +39,36 @@ class AccountScreen extends ConsumerWidget {
     ),
   );
 
-  /// Satu kartu berisi baris-baris menu dengan pemisah di antaranya.
-  Widget _group(BuildContext context, List<Widget> rows) {
-    final t = context.tokens;
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: ClipRRect(
-        borderRadius: AppRadius.brMd,
-        child: Material(
-          type: MaterialType.transparency,
-          child: Column(
-            children: [
-              for (var i = 0; i < rows.length; i++) ...[
-                if (i > 0)
-                  Divider(
-                    height: 1,
-                    indent: AppSpace.s16 + 24 + AppSpace.s16,
-                    color: t.borderSubtle,
-                  ),
-                rows[i],
-              ],
-            ],
-          ),
+  List<StatItem>? _stats(WidgetRef ref, bool isAssistant) {
+    if (isAssistant) {
+      final p = ref.watch(myProfileProvider).value;
+      if (p == null) return null;
+      return [
+        StatItem('${p.completedJobs}', 'Selesai'),
+        StatItem(
+          p.ratingCount == 0 ? '-' : p.ratingAvg.toStringAsFixed(1),
+          'Rating',
         ),
-      ),
+        StatItem('${p.ratingCount}', 'Ulasan'),
+      ];
+    }
+    final h = ref.watch(seekerHomeProvider).value;
+    if (h == null) return null;
+    final active = h.bookings.where(
+      (b) =>
+          b.status == BookingStatus.active || b.status == BookingStatus.paused,
     );
+    return [
+      StatItem(
+        '${h.listings.where((l) => l.status == ListingStatus.open).length}',
+        'Lowongan',
+      ),
+      StatItem('${active.length}', 'Kontrak'),
+      StatItem(
+        '${h.bookings.where((b) => b.status == BookingStatus.completed).length}',
+        'Selesai',
+      ),
+    ];
   }
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
@@ -139,8 +104,10 @@ class AccountScreen extends ConsumerWidget {
       VerificationStatus.rejected => SealState.rejected,
       _ => null,
     };
+    final stats = _stats(ref, isAssistant);
     return AppScaffold(
       title: 'Akun',
+      glow: true,
       scrollable: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,18 +115,18 @@ class AccountScreen extends ConsumerWidget {
           AppCard(
             child: Row(
               children: [
-                AvatarImage(name: user.name, size: 56),
+                AvatarImage(name: user.name, size: 64),
                 const SizedBox(width: AppSpace.s16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.name, style: context.text.h3),
+                      Text(user.name, style: context.text.h2),
                       Text(
                         maskPhone(user.phone),
                         style: context.text.bodySm.copyWith(color: t.textMuted),
                       ),
-                      const SizedBox(height: AppSpace.s4),
+                      const SizedBox(height: AppSpace.s8),
                       if (seal != null)
                         VerificationSeal(state: seal, size: SealSize.sm)
                       else
@@ -175,69 +142,69 @@ class AccountScreen extends ConsumerWidget {
               ],
             ),
           ),
+          if (stats != null) ...[
+            const SizedBox(height: AppSpace.s12),
+            StatsRow(items: stats),
+          ],
           _caption(context, isAssistant ? 'Identitas & profil' : 'Identitas'),
-          _group(context, [
-            _row(
-              context,
-              icon: LucideIcons.shieldCheck,
-              label: 'Verifikasi identitas',
-              value: verified.label,
-              onTap: () => context.push(
-                verified == VerificationStatus.none
-                    ? Routes.verificationGate
-                    : Routes.verificationStatus,
+          ListTileCard(
+            children: [
+              SettingsRow(
+                icon: LucideIcons.shieldCheck,
+                title: 'Verifikasi identitas',
+                subtitle: verified.label,
+                onTap: () => context.push(
+                  verified == VerificationStatus.none
+                      ? Routes.verificationGate
+                      : Routes.verificationStatus,
+                ),
               ),
-            ),
-            if (isAssistant) ...[
-              _row(
-                context,
-                icon: LucideIcons.fileCheck,
-                label: 'SKCK',
-                onTap: () => context.push(Routes.skck),
+              if (isAssistant) ...[
+                SettingsRow(
+                  icon: LucideIcons.fileCheck,
+                  title: 'SKCK',
+                  onTap: () => context.push(Routes.skck),
+                ),
+                SettingsRow(
+                  icon: LucideIcons.userPen,
+                  title: 'Edit profil asisten',
+                  onTap: () => context.push(Routes.profileEdit),
+                ),
+                SettingsRow(
+                  icon: LucideIcons.landmark,
+                  title: 'Rekening bank',
+                  onTap: () => context.push(Routes.bank),
+                ),
+              ],
+            ],
+          ),
+          _caption(context, 'Pengaturan'),
+          ListTileCard(
+            children: [
+              SettingsRow(
+                key: K.accountRoleRow,
+                icon: LucideIcons.repeat,
+                title: 'Ganti peran',
+                subtitle: user.activeRole?.label,
+                onTap: () => showRoleSwitch(context, ref),
               ),
-              _row(
-                context,
-                icon: LucideIcons.userPen,
-                label: 'Edit profil asisten',
-                onTap: () => context.push(Routes.profileEdit),
+              SettingsRow(
+                icon: LucideIcons.bell,
+                title: 'Notifikasi',
+                onTap: () => context.push(Routes.notifications),
               ),
-              _row(
-                context,
-                icon: LucideIcons.landmark,
-                label: 'Rekening bank',
-                onTap: () => context.push(Routes.bank),
+              SettingsRow(
+                icon: LucideIcons.smartphone,
+                title: 'Perangkat masuk',
+                onTap: () => context.push(Routes.devices),
+              ),
+              SettingsRow(
+                icon: LucideIcons.lock,
+                title: 'Pusat privasi',
+                onTap: () => context.push(Routes.privacy),
               ),
             ],
-          ]),
-          _caption(context, 'Pengaturan'),
-          _group(context, [
-            _row(
-              context,
-              key: K.accountRoleRow,
-              icon: LucideIcons.repeat,
-              label: 'Ganti peran',
-              value: user.activeRole?.label,
-              onTap: () => showRoleSwitch(context, ref),
-            ),
-            _row(
-              context,
-              icon: LucideIcons.bell,
-              label: 'Notifikasi',
-              onTap: () => context.push(Routes.notifications),
-            ),
-            _row(
-              context,
-              icon: LucideIcons.smartphone,
-              label: 'Perangkat masuk',
-              onTap: () => context.push(Routes.devices),
-            ),
-            _row(
-              context,
-              icon: LucideIcons.lock,
-              label: 'Pusat privasi',
-              onTap: () => context.push(Routes.privacy),
-            ),
-          ]),
+          ),
           _caption(context, 'Tema'),
           SizedBox(
             width: double.infinity,
@@ -275,12 +242,16 @@ class AccountScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpace.s32),
-          AppButton(
-            key: K.logout,
-            label: 'Keluar',
-            icon: LucideIcons.logOut,
-            variant: AppButtonVariant.secondary,
-            onPressed: () => _logout(context, ref),
+          ListTileCard(
+            children: [
+              SettingsRow(
+                key: K.logout,
+                icon: LucideIcons.logOut,
+                title: 'Keluar',
+                destructive: true,
+                onTap: () => _logout(context, ref),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpace.s16),
           Center(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/validators.dart';
@@ -95,17 +96,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'Daftar',
+      glow: true,
       scrollable: true,
       banner: offlineBannerFor(actionError),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const AuthHeader(
+            icon: LucideIcons.userPlus,
+            title: 'Buat akun Pramu',
+            subtitle: 'Cukup beberapa data. Verifikasi identitas menyusul.',
+          ),
           const StepProgress(current: 1, total: 2, title: 'Data akun'),
           const SizedBox(height: AppSpace.s24),
           if (actionError != null) ActionErrorBox(error: actionError!),
           AppTextField(
             key: K.registerName,
             label: 'Nama lengkap',
+            prefixIcon: LucideIcons.user,
             controller: _name,
             focusNode: _focus['name'],
             errorText: _err('name'),
@@ -116,6 +124,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           AppTextField(
             key: K.registerPhone,
             label: 'Nomor HP',
+            prefixIcon: LucideIcons.phone,
             hint: '08xx atau +62xx',
             controller: _phone,
             focusNode: _focus['phone'],
@@ -128,6 +137,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           AppTextField(
             key: K.registerEmail,
             label: 'Email',
+            prefixIcon: LucideIcons.mail,
             controller: _email,
             focusNode: _focus['email'],
             errorText: _err('email'),
@@ -139,6 +149,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           AppTextField(
             key: K.registerPassword,
             label: 'Kata sandi',
+            prefixIcon: LucideIcons.lock,
             controller: _password,
             focusNode: _focus['password'],
             errorText: _err('password'),
@@ -178,9 +189,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             onPressed: canAct ? _submit : null,
           ),
           const SizedBox(height: AppSpace.s12),
-          Center(
+          AuthSwitchRow(
+            prompt: 'Sudah punya akun?',
             child: AppButton(
-              label: 'Sudah punya akun? Masuk',
+              label: 'Masuk',
               variant: AppButtonVariant.text,
               expand: false,
               onPressed: () => context.go(Routes.login),
