@@ -98,7 +98,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
     final selfie = draft.selfie;
     if (ktp == null || selfie == null) {
       return AppScaffold(
-        title: 'Tinjau & kirim',
+        title: 'Tinjau dan kirim',
         body: EmptyState(
           icon: LucideIcons.camera,
           title: 'Foto belum lengkap',
@@ -134,13 +134,13 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
     );
     return SecureScreenGuard(
       child: AppScaffold(
-        title: 'Tinjau & kirim',
+        title: 'Tinjau dan kirim',
         scrollable: true,
         banner: err != null && err.isNetwork ? const OfflineBanner() : null,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const StepProgress(current: 3, total: 3, title: 'Tinjau & kirim'),
+            const StepProgress(current: 3, total: 3, title: 'Tinjau dan kirim'),
             const SizedBox(height: AppSpace.s16),
             if (err != null) ActionErrorBox(error: err),
             Row(
@@ -148,7 +148,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
               children: [
                 thumb('Foto KTP', ktp, Routes.verificationKtp),
                 const SizedBox(width: AppSpace.s12),
-                thumb('Selfie + KTP', selfie, Routes.verificationSelfie),
+                thumb('Selfie dengan KTP', selfie, Routes.verificationSelfie),
               ],
             ),
             const SizedBox(height: AppSpace.s16),

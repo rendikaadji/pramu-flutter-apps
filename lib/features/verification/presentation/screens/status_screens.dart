@@ -34,12 +34,14 @@ class _StatusBody extends StatelessWidget {
     required this.v,
     required this.pendingText,
     required this.verifiedText,
+    this.rejectedTitle = 'Verifikasi belum berhasil',
     this.extra = const [],
   });
 
   final Verification v;
   final String pendingText;
   final String verifiedText;
+  final String rejectedTitle;
   final List<Widget> extra;
 
   @override
@@ -93,22 +95,19 @@ class _StatusBody extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpace.s8),
                     Expanded(
-                      child: Text(
-                        'Verifikasi belum berhasil',
-                        style: context.text.h3,
-                      ),
+                      child: Text(rejectedTitle, style: context.text.h3),
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpace.s8),
                 Text(
-                  v.rejectReason ?? 'Berkas belum memenuhi syarat.',
+                  v.rejectReason ?? 'Berkas Anda belum memenuhi syarat.',
                   style: context.text.body,
                 ),
                 const SizedBox(height: AppSpace.s12),
                 Text(
-                  'Tips: foto di tempat terang, seluruh kartu terlihat, tanpa '
-                  'pantulan. Bila terus gagal, hubungi bantuan.',
+                  'Coba foto di tempat terang, pastikan seluruh kartu terlihat '
+                  'dan tanpa pantulan. Jika tetap gagal, hubungi bantuan.',
                   style: context.text.bodySm,
                 ),
               ],
@@ -205,7 +204,7 @@ class _VerificationStatusScreenState
               pendingText:
                   'Berkas Anda sedang diperiksa. Biasanya selesai dalam 1x24 '
                   'jam. Kami kabari lewat notifikasi.',
-              verifiedText: 'Akun Anda sudah terverifikasi. Selamat!',
+              verifiedText: 'Identitas Anda sudah terverifikasi. Terima kasih.',
               extra: [
                 if (v.status.canUpload) ...[
                   AppButton(
@@ -336,8 +335,13 @@ class _SkckScreenState extends ConsumerState<SkckScreen> with ApiActionMixin {
                   if (err != null) ActionErrorBox(error: err),
                   _StatusBody(
                     v: v,
-                    pendingText: 'SKCK Anda sedang diperiksa. Kami kabari lewat notifikasi.',
-                    verifiedText: 'SKCK terverifikasi dan dapat dipakai untuk lamaran lain.',
+                    pendingText:
+                        'SKCK Anda sedang diperiksa. Kami kabari lewat '
+                        'notifikasi.',
+                    verifiedText:
+                        'SKCK Anda sudah terverifikasi dan bisa dipakai untuk '
+                        'lamaran lain.',
+                    rejectedTitle: 'SKCK belum berhasil diverifikasi',
                     extra: [
                       if (v.status.isVerified && listing != null)
                         AppButton(
@@ -376,7 +380,7 @@ class _SkckScreenState extends ConsumerState<SkckScreen> with ApiActionMixin {
       if (_denied)
         PermissionRationaleCard(
           icon: LucideIcons.cameraOff,
-          title: 'Izin kamera dimatikan',
+          title: 'Izin kamera belum aktif',
           message: 'Aktifkan di Pengaturan, atau pilih foto dari galeri.',
           primaryLabel: 'Buka Pengaturan',
           onPrimary: () => openAppSettings(ref),

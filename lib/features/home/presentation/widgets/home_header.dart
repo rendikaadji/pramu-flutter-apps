@@ -56,7 +56,7 @@ class HomeHeader extends ConsumerWidget {
                 Text(
                   subtitle,
                   style: context.text.caption.copyWith(color: t.textMuted),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -87,10 +87,10 @@ class HomeCategoryRow extends StatelessWidget {
   final String route;
 
   static const _items = [
-    (LucideIcons.house, 'Asisten Rumah'),
-    (LucideIcons.baby, 'Pengasuh Anak'),
-    (LucideIcons.heartPulse, 'Perawat Lansia'),
-    (LucideIcons.chefHat, 'Juru Masak'),
+    (LucideIcons.house, 'Asisten rumah'),
+    (LucideIcons.baby, 'Pengasuh anak'),
+    (LucideIcons.heartPulse, 'Perawat lansia'),
+    (LucideIcons.chefHat, 'Juru masak'),
   ];
 
   @override

@@ -62,7 +62,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
         _round++;
         _otpError = null;
       });
-      AppSnack.show(context, 'Kode baru sudah dikirim', success: true);
+      AppSnack.show(context, 'Kode baru sudah kami kirim.', success: true);
     }
   }
 
@@ -73,7 +73,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.go(Routes.register);
       });
-      return const AppScaffold(title: 'Verifikasi OTP', body: SizedBox());
+      return const AppScaffold(title: 'Verifikasi nomor HP', body: SizedBox());
     }
     final t = context.tokens;
     return AppScaffold(
@@ -87,11 +87,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
           AuthHeader(
             icon: LucideIcons.messageSquare,
             title: 'Masukkan kode',
-            subtitle:
-                'Masukkan 6 digit kode yang kami kirim ke ${maskPhone(phone)}.',
+            subtitle: 'Kami mengirim kode 6 digit ke ${maskPhone(phone)}.',
           ),
           const StepProgress(current: 2, total: 2, title: 'Verifikasi nomor'),
-          const SizedBox(height: AppSpace.s24),
           const SizedBox(height: AppSpace.s24),
           OtpInput(
             key: K.otpInput,
@@ -160,8 +158,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
                       Flexible(
                         child: Text(
                           left > 0
-                              ? 'Kode berlaku ${formatCountdown(left)}'
-                              : 'Kode kedaluwarsa. Kirim ulang kode.',
+                              ? 'Kode berlaku ${formatCountdown(left)} lagi'
+                              : 'Kode sudah kedaluwarsa. Kirim ulang untuk '
+                                    'mendapat kode baru.',
                           style: context.text.bodySm.copyWith(
                             color: t.textMuted,
                           ),

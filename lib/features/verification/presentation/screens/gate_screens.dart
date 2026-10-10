@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
+import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
@@ -96,8 +97,8 @@ class VerificationGateScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpace.s8),
           Text(
-            'Agar semua pengguna aman, kami perlu memastikan Anda orang yang '
-            'sebenarnya.',
+            'Verifikasi menjaga semua pengguna tetap aman. Kami perlu '
+            'memastikan identitas Anda sesuai KTP.',
             style: context.text.body.copyWith(color: t.textMuted),
           ),
           const SizedBox(height: AppSpace.s24),
@@ -119,8 +120,11 @@ class VerificationGateScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpace.s16),
           Text(
-            'Tanpa verifikasi Anda hanya bisa menjelajah, belum bisa memasang '
-            'lowongan atau melamar.',
+            user?.activeRole == Role.seeker
+                ? 'Tanpa verifikasi, Anda baru bisa menjelajah dan belum bisa '
+                      'memasang lowongan.'
+                : 'Tanpa verifikasi, Anda baru bisa menjelajah dan belum bisa '
+                      'melamar pekerjaan.',
             style: context.text.bodySm.copyWith(color: t.textMuted),
           ),
         ],
@@ -217,8 +221,8 @@ class VerificationGuideScreen extends StatelessWidget {
             LucideIcons.circleX,
             t.danger,
             t.dangerContainer,
-            'Hindari',
-            'Foto buram, terpotong, atau KTP tertutup jari dan kacamata.',
+            'Yang perlu dihindari',
+            'Foto buram, kartu terpotong, atau KTP tertutup jari.',
           ),
         ],
       ),

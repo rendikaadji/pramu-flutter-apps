@@ -53,8 +53,8 @@ class ImagePickerPhotoService implements PhotoService {
       final denied = e.code.endsWith('_access_denied');
       throw PhotoException(
         denied
-            ? 'Izin kamera dimatikan. Aktifkan di Pengaturan, atau pilih foto dari galeri.'
-            : 'Kamera tidak dapat dibuka. Coba lagi.',
+            ? 'Izin kamera belum aktif. Aktifkan di Pengaturan, atau pilih foto dari galeri.'
+            : 'Kamera belum bisa dibuka. Coba lagi.',
         permissionDenied: denied,
       );
     }
@@ -83,9 +83,7 @@ class ImagePickerPhotoService implements PhotoService {
     } on PhotoException {
       rethrow;
     } on Object {
-      throw const PhotoException(
-        'Foto tidak dapat diproses. Coba ambil ulang.',
-      );
+      throw const PhotoException('Foto belum bisa diproses. Coba ambil ulang.');
     } finally {
       try {
         await File(picked.path).delete();

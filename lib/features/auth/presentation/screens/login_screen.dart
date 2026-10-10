@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
           const AuthHeader(
             icon: LucideIcons.logIn,
             title: 'Selamat datang kembali',
-            subtitle: 'Lanjutkan mencari asisten atau pekerjaan Anda.',
+            subtitle: 'Masuk dengan nomor HP atau email Anda.',
           ),
           if (expired)
             Padding(
@@ -89,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
               child: AppCard(
                 color: t.warningContainer,
                 child: Text(
-                  'Sesi Anda berakhir. Silakan masuk lagi.',
+                  'Sesi Anda sudah berakhir. Masuk lagi untuk melanjutkan.',
                   style: context.text.body,
                 ),
               ),
@@ -113,8 +113,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
                           children: [
                             Text('Akun ditangguhkan', style: context.text.h3),
                             Text(
-                              '${err!.message} Anda tidak dapat masuk sampai '
-                              'tim bantuan meninjau akun ini.',
+                              '${err!.message} Anda belum bisa masuk sampai '
+                              'tim bantuan selesai meninjau akun ini.',
                               style: context.text.body,
                             ),
                           ],
