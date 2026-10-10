@@ -57,18 +57,33 @@ class SecureScreenGuard extends StatefulWidget {
 class _SecureScreenGuardState extends State<SecureScreenGuard>
     with WidgetsBindingObserver {
   bool _hidden = false;
+  bool _secured = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    PlatformBridge.secureOn();
+  }
+
+  /// Tab yang tidak aktif tetap hidup di memori (TickerMode mati): flag hanya
+  /// boleh menyala saat layar benar-benar terlihat, bukan sepanjang umur widget.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final visible = TickerMode.valuesOf(context).enabled;
+    if (visible && !_secured) {
+      _secured = true;
+      PlatformBridge.secureOn();
+    } else if (!visible && _secured) {
+      _secured = false;
+      PlatformBridge.secureOff();
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    PlatformBridge.secureOff();
+    if (_secured) PlatformBridge.secureOff();
     super.dispose();
   }
 
