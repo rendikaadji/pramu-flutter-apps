@@ -35,7 +35,11 @@ class SegmentedTabs extends StatelessWidget {
               onTap: () => onChanged(i),
               child: Material(
                 color: i == index ? t.primary : t.sunken,
-                shape: const StadiumBorder(),
+                shape: StadiumBorder(
+                  side: t.isDark && i != index
+                      ? BorderSide(color: t.borderSubtle)
+                      : BorderSide.none,
+                ),
                 child: InkWell(
                   customBorder: const StadiumBorder(),
                   onTap: () {

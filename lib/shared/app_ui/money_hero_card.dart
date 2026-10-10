@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
+import 'featured_card.dart' show TopEdgeHighlight;
 
 /// Kartu nominal "unggulan": gradien biru tua, label kecil, nominal mono besar
 /// putih, dan satu baris keterangan opsional (ikon + teks + nominal kecil).
@@ -53,6 +54,7 @@ class MoneyHeroCard extends StatelessWidget {
           borderRadius: radius,
           child: Stack(
             children: [
+              const TopEdgeHighlight(),
               Positioned(
                 right: -32,
                 top: -32,

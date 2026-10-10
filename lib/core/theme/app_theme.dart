@@ -43,14 +43,14 @@ abstract final class AppTheme {
       outlineVariant: t.borderSubtle,
       shadow: Colors.black,
       scrim: t.scrim,
-      inverseSurface: t.textPrimary,
-      onInverseSurface: t.canvas,
+      inverseSurface: dark ? t.overlay : t.textPrimary,
+      onInverseSurface: dark ? t.textPrimary : t.canvas,
       surfaceTint: Colors.transparent,
       surfaceContainerLowest: t.surface,
       surfaceContainerLow: t.surface,
-      surfaceContainer: t.sunken,
+      surfaceContainer: dark ? t.overlay : t.sunken,
       surfaceContainerHigh: t.raised,
-      surfaceContainerHighest: t.sunken,
+      surfaceContainerHighest: dark ? t.overlay : t.sunken,
     );
     final text = AppText.theme(t);
     const none = Colors.transparent;
@@ -113,7 +113,8 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: t.surface,
+        // Dark: isian field sedikit lebih terang dari permukaannya (bukan lubang).
+        fillColor: dark ? t.sunken : t.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
@@ -144,7 +145,7 @@ abstract final class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: t.sunken,
         selectedColor: t.primaryContainer,
-        side: BorderSide.none,
+        side: dark ? BorderSide(color: t.borderSubtle) : BorderSide.none,
         shape: const StadiumBorder(),
         labelStyle: text.bodySm.copyWith(
           color: t.textPrimary,
@@ -170,7 +171,7 @@ abstract final class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         height: 68,
         elevation: 0,
-        backgroundColor: t.surface,
+        backgroundColor: t.raised,
         surfaceTintColor: none,
         indicatorColor: t.primaryContainer,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -196,7 +197,7 @@ abstract final class AppTheme {
         textColor: t.onDanger,
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: t.raised,
+        backgroundColor: t.overlay,
         surfaceTintColor: none,
         elevation: dark ? 0 : 8,
         shadowColor: t.e3.isEmpty ? null : t.e3.first.color,
@@ -208,23 +209,32 @@ abstract final class AppTheme {
         contentTextStyle: text.body,
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: t.raised,
-        modalBackgroundColor: t.raised,
+        backgroundColor: t.overlay,
+        modalBackgroundColor: t.overlay,
         surfaceTintColor: none,
         modalBarrierColor: t.scrim,
         elevation: dark ? 0 : 8,
         showDragHandle: true,
         dragHandleColor: t.borderStrong,
         dragHandleSize: const Size(40, 4),
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.brLgTop),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.brLgTop,
+          side: dark ? BorderSide(color: t.borderSubtle) : BorderSide.none,
+        ),
         clipBehavior: Clip.antiAlias,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: t.textPrimary,
-        contentTextStyle: text.body.copyWith(color: t.canvas),
-        actionTextColor: inverse.primary,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.brInput),
+        // Dark: snackbar = overlay + border tipis (bukan blok krem silau).
+        backgroundColor: dark ? t.overlay : t.textPrimary,
+        contentTextStyle: text.body.copyWith(
+          color: dark ? t.textPrimary : t.canvas,
+        ),
+        actionTextColor: dark ? t.primary : inverse.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.brInput,
+          side: dark ? BorderSide(color: t.borderSubtle) : BorderSide.none,
+        ),
       ),
       listTileTheme: ListTileThemeData(
         minTileHeight: 56,

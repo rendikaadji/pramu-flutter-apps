@@ -87,7 +87,11 @@ class HeroBannerCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [t.heroSoftFrom, t.heroSoftTo],
         ),
-        border: Border.all(color: t.primaryBright.withValues(alpha: .25)),
+        border: Border.all(
+          color: t.isDark
+              ? t.borderSubtle
+              : t.primaryBright.withValues(alpha: .25),
+        ),
       ),
       child: Material(
         type: MaterialType.transparency,

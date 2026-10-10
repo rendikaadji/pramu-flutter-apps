@@ -46,7 +46,7 @@ class AppBottomNav extends StatelessWidget {
         : Icon(i.icon, color: c);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: t.surface,
+        color: t.raised,
         border: Border(top: BorderSide(color: t.borderSubtle)),
       ),
       // Label bottom nav tidak boleh pecah; skala teks dibatasi 130%.

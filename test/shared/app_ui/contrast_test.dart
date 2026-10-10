@@ -24,7 +24,7 @@ void main() {
     group('kontras $name', () {
       final glow = HeaderGlow.peak(t);
       final pairs = <(String, Color, Color, double)>[
-        for (final bg in [t.canvas, t.surface, t.raised]) ...[
+        for (final bg in [t.canvas, t.surface, t.raised, t.overlay]) ...[
           ('textPrimary', t.textPrimary, bg, 4.5),
           ('textMuted (brief: >= 7)', t.textMuted, bg, 7),
           ('textSubtle', t.textSubtle, bg, 4.5),
@@ -35,6 +35,7 @@ void main() {
           ('danger', t.danger, bg, 4.5),
         ],
         ('textMuted/sunken', t.textMuted, t.sunken, 4.5),
+        ('textSubtle/sunken', t.textSubtle, t.sunken, 4.5),
         ('onPrimary/primary', t.onPrimary, t.primary, 4.5),
         ('onAccent/accent', t.onAccent, t.accent, 4.5),
         ('onDanger/danger', t.onDanger, t.danger, 4.5),

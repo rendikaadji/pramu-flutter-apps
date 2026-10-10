@@ -26,7 +26,9 @@ abstract final class AppSnack {
               success ? LucideIcons.circleCheck : LucideIcons.info,
               size: 20,
               color: success
-                  ? inverse.success
+                  ? (context.tokens.isDark
+                        ? context.tokens.success
+                        : inverse.success)
                   : Theme.of(context).colorScheme.onInverseSurface,
             ),
             const SizedBox(width: 12),

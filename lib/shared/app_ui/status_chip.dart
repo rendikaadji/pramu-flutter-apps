@@ -67,6 +67,8 @@ class StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: tone.bg(t),
         borderRadius: BorderRadius.circular(AppRadius.lg),
+        // Dark: hairline bernada agar container gelap tetap terbaca di kanvas.
+        border: t.isDark ? Border.all(color: fg.withValues(alpha: .28)) : null,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(

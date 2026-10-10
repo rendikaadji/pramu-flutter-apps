@@ -94,7 +94,7 @@ class _OtpInputState extends State<OtpInput>
                     height: 56,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: t.surface,
+                      color: t.isDark ? t.sunken : t.surface,
                       borderRadius: AppRadius.brSm,
                       border: Border.all(
                         color: hasError

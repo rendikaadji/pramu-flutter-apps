@@ -4,6 +4,35 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
 
+/// Highlight 1px di tepi atas kartu gradien (hanya dark; light tanpa efek).
+class TopEdgeHighlight extends StatelessWidget {
+  const TopEdgeHighlight({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!context.tokens.isDark) return const SizedBox.shrink();
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: 0,
+      height: 1,
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withValues(alpha: 0),
+                Colors.white.withValues(alpha: .32),
+                Colors.white.withValues(alpha: 0),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Kartu "unggulan": gradien biru tua, teks putih, tag, ikon bookmark.
 /// Teks selalu putih (kedua ujung gradien >= 4.5:1 dengan putih di dua tema).
 class FeaturedCard extends StatelessWidget {
@@ -51,6 +80,7 @@ class FeaturedCard extends StatelessWidget {
         borderRadius: radius,
         child: Stack(
           children: [
+            const TopEdgeHighlight(),
             Positioned(
               right: -28,
               top: -28,
