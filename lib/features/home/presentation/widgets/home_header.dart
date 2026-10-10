@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
+import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/shell_app_bar.dart';
 
@@ -34,7 +35,9 @@ class HomeHeader extends ConsumerWidget {
               label: 'Akun dan pengaturan',
               excludeSemantics: true,
               child: InkWell(
-                onTap: () => context.push(Routes.account),
+                onTap: () => user.activeRole == Role.assistant
+                    ? context.go(Routes.assistantAccount)
+                    : context.push(Routes.account),
                 customBorder: const CircleBorder(),
                 child: SizedBox.square(
                   dimension: AppSpace.tap,

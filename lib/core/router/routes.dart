@@ -31,7 +31,8 @@ abstract final class Routes {
   static const assistantListings = '/a/listings'; // M-41
   static const assistantJobs = '/a/jobs'; // M-44
   static const assistantChat = '/a/chat'; // M-60
-  static const assistantWallet = '/a/wallet'; // M-80
+  static const assistantAccount = '/a/profile'; // M-24 (tab Profil Pelamar)
+  static const assistantWallet = '/a/wallet'; // M-80 (dibuka dari Profil)
 
   // --- notification / report umum
   static const notifications = '/notifications'; // M-23

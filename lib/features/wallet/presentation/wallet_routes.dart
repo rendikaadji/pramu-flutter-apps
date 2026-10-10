@@ -5,7 +5,7 @@ import 'package:pramu_apps/features/wallet/presentation/screens/payout_screen.da
 import 'package:pramu_apps/features/wallet/presentation/screens/wallet_history_screen.dart';
 import 'package:pramu_apps/features/wallet/presentation/screens/wallet_screen.dart';
 
-/// Layar wallet: M-80 (tab root Asisten), M-81..M-83.
+/// Layar wallet: M-80 (dibuka dari tab Profil), M-81..M-83.
 final List<RouteBase> walletRoutes = [
   GoRoute(
     path: Routes.assistantWallet,

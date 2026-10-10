@@ -61,10 +61,10 @@ const assistantTabs = <TabSpec>[
     path: Routes.assistantChat,
   ),
   (
-    id: 'wallet',
-    label: 'Dompet',
-    icon: LucideIcons.wallet,
-    path: Routes.assistantWallet,
+    id: 'profile',
+    label: 'Profil',
+    icon: LucideIcons.user,
+    path: Routes.assistantAccount,
   ),
 ];
 

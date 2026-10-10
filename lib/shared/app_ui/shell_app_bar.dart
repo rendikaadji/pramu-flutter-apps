@@ -76,7 +76,9 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
             label: 'Akun dan pengaturan',
             excludeSemantics: true,
             child: InkWell(
-              onTap: () => context.push(Routes.account),
+              onTap: () => user.activeRole == Role.assistant
+                  ? context.go(Routes.assistantAccount)
+                  : context.push(Routes.account),
               customBorder: const CircleBorder(),
               child: SizedBox.square(
                 dimension: AppSpace.tap,
