@@ -205,6 +205,76 @@ void main() {
     e.go('/notifications');
   });
   screen('18-verification', 'Dewi', (t, e) async {});
+  Future<void> toReview(WidgetTester t) async {
+    await tapKey(t, K.verificationStart);
+    await t.tap(find.text('Siap'));
+    await _settle(t);
+    await tapKey(t, K.ktpCapture);
+    await tapKey(t, K.verificationNext);
+    await tapKey(t, K.selfieCapture);
+    await tapKey(t, K.verificationNext);
+  }
+
+  screen('19-verif-guide', 'Dewi', (t, e) async {
+    await tapKey(t, K.verificationStart);
+  });
+  screen('20-verif-capture', 'Dewi', (t, e) async {
+    await tapKey(t, K.verificationStart);
+    await t.tap(find.text('Siap'));
+    await _settle(t);
+  });
+  screen('21-verif-review', 'Dewi', (t, e) => toReview(t));
+  screen('22-verif-pending', 'Dewi', (t, e) async {
+    await toReview(t);
+    await type(t, K.nikInput, '3201234567890000');
+    await tapKey(t, K.verificationConsent);
+    await tapKey(t, K.verificationSubmit);
+  });
+  screen('23-verif-rejected', 'Dewi', (t, e) async {
+    await toReview(t);
+    await type(t, K.nikInput, '3201234567890000');
+    await tapKey(t, K.verificationConsent);
+    await tapKey(t, K.verificationSubmit);
+    await t.tap(find.text('Periksa status'));
+    await _settle(t);
+  });
+  screen('24-account-assistant', 'Siti', (t, e) async {
+    e.go('/account');
+  });
+  screen('30-my-listings', 'Bu Rina', (t, e) async {
+    e.go('/s/jobs');
+  });
+  screen('31-my-applications', 'Siti', (t, e) async {
+    e.go('/a/jobs');
+  });
+  screen('32-browse-listings', 'Siti', (t, e) async {
+    e.go('/a/listings');
+  });
+  screen('33-application-detail', 'Siti', (t, e) async {
+    final a = e.b.applications.values.firstWhere(
+      (x) => x.assistant.name == 'Siti' && x.interviewId != null,
+    );
+    e.go('/applications/${a.id}');
+  });
+  screen('34-interview', 'Siti', (t, e) async {
+    final i = e.b.interviews.values.first;
+    e.go('/interviews/${i.id}');
+  });
+  screen('35-assistant-profile', 'Bu Rina', (t, e) async {
+    e.go('/assistants/${e.b.userByName('Siti').id}');
+  });
+  screen('36-profile-edit', 'Siti', (t, e) async {
+    e.go('/profile/edit');
+  });
+  screen('37-listing-new', 'Bu Rina', (t, e) async {
+    e.go('/listings/new');
+  });
+  screen('38-apply', 'Siti', (t, e) async {
+    final l = e.b.listings.values.firstWhere(
+      (x) => x.title == 'Juru masak untuk 4 orang',
+    );
+    e.go('/listings/${l.id}/apply');
+  });
 
   const variants = <(String, bool, double)>[
     ('light', false, 1.0),
@@ -223,6 +293,9 @@ void main() {
           find.byType(PramuApp),
           matchesGoldenFile('out/${entry.key}__$vn.png'),
         );
+        // Lepas pohon agar timer polling (mis. status pembayaran) dibatalkan.
+        await t.pumpWidget(const SizedBox());
+        await t.pump(const Duration(seconds: 6));
       });
     }
   }
