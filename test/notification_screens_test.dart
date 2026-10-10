@@ -80,7 +80,7 @@ void main() {
       await t.ensureVisible(find.byKey(K.notificationTile(n.id)));
       await t.tap(find.byKey(K.notificationTile(n.id)));
       await t.pumpAndSettle();
-      expect(find.text('Notifikasi ini tidak dapat dibuka.'), findsOneWidget);
+      expect(find.text('Notifikasi ini belum bisa dibuka.'), findsOneWidget);
       expect(find.text('DETAIL_LAMARAN'), findsNothing);
       expect(t.takeException(), isNull);
     }

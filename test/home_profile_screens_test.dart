@@ -89,8 +89,8 @@ void main() {
     await tapKey(t, K.profileSave);
     await t.fling(find.byType(ListView), const Offset(0, 3000), 3000);
     await t.pumpAndSettle();
-    expect(find.text('Pilih minimal satu kategori'), findsOneWidget);
-    expect(find.text('Kota wajib diisi'), findsOneWidget);
+    expect(find.text('Pilih minimal satu kategori pekerjaan'), findsOneWidget);
+    expect(find.text('Isi kota tempat Anda bekerja'), findsOneWidget);
 
     await tapKey(t, K.profileCategory('Pengasuh Anak'));
     await typeInto(t, K.profileCity, 'Bandung');

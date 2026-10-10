@@ -252,7 +252,7 @@ void main() {
       isTrue,
     );
     await tapKey(tester, K.wizardNext);
-    expect(find.text('Bayar fee lowongan'), findsOneWidget);
+    expect(find.text('Bayar biaya pasang'), findsOneWidget);
 
     await tapKey(tester, K.listingPay);
     expect(env.opened.single.host, 'checkout.xendit.co');
@@ -275,7 +275,7 @@ void main() {
     );
     env.go('${Routes.listingNew}?draft=${l.id}');
     await tester.pumpAndSettle();
-    expect(find.textContaining('Kategori & judul'), findsOneWidget);
+    expect(find.textContaining('Kategori dan judul'), findsOneWidget);
     await typeKey(tester, K.listingTitle, 'Judul baru');
     await tester.tap(find.byIcon(LucideIcons.arrowLeft));
     await tester.pumpAndSettle();
@@ -304,7 +304,7 @@ void main() {
     await tapKey(tester, K.listingApply);
 
     await tapKey(tester, K.applySubmit);
-    expect(find.text('Pesan wajib diisi'), findsOneWidget);
+    expect(find.text('Tulis pesan singkat untuk pencari'), findsOneWidget);
     await typeKey(tester, K.applyMessage, 'Saya siap mulai minggu depan.');
     for (var i = 0; i < l.screeningQuestions.length; i++) {
       await tester.enterText(find.byType(TextField).at(2 + i), 'Bersedia');
@@ -375,7 +375,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tapKey(tester, K.interviewSubmit);
-    expect(find.text('Pilih minimal 1 waktu'), findsOneWidget);
+    expect(find.text('Pilih minimal satu waktu wawancara.'), findsOneWidget);
     await tapKey(tester, K.interviewSlotAdd);
     await pickDialogOk(tester); // tanggal (besok)
     await pickDialogOk(tester); // jam

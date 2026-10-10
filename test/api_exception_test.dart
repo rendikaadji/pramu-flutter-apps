@@ -29,7 +29,7 @@ void main() {
     test('fromBody tahan body tak terduga: $body', () {
       final e = ApiException.fromBody(502, body);
       expect(e.code, 'UNKNOWN');
-      expect(e.message, 'Terjadi kesalahan. Coba lagi.');
+      expect(e.message, 'Ada masalah di sisi kami. Coba lagi sebentar.');
       expect(e.fields, isEmpty);
     });
   }

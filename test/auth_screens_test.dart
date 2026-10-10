@@ -20,7 +20,7 @@ void main() {
     await tapKey(t, K.registerSubmit);
     expect(find.text('Nama wajib diisi'), findsOneWidget);
     expect(
-      find.text('Setujui persyaratan privasi untuk lanjut'),
+      find.text('Centang persetujuan ini untuk melanjutkan'),
       findsOneWidget,
     );
 
@@ -135,8 +135,8 @@ void main() {
   ) async {
     final env = await bootApp(t, user: 'Bu Maya');
     await tapKey(t, K.roleSwitchChip);
-    expect(find.text('Gunakan sebagai'), findsOneWidget);
-    await t.tap(find.text('Cari lowongan dan melamar kerja'));
+    expect(find.text('Gunakan Pramu sebagai'), findsOneWidget);
+    await t.tap(find.text('Cari pekerjaan sebagai asisten'));
     await t.pumpAndSettle();
     expect(
       env.container.read(sessionProvider).user?.activeRole,

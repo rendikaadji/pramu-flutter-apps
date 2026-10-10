@@ -52,7 +52,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Menunggu pembayaran pencari'), findsOneWidget);
+    expect(find.text('Menunggu pembayaran Pencari'), findsOneWidget);
     await tester.pumpWidget(host(StatusChip.of(StatusDomain.payout, 'failed')));
     expect(find.text('Gagal'), findsOneWidget);
     expect(_bg(tester), t.dangerContainer);
