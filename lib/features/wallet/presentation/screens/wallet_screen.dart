@@ -109,9 +109,17 @@ class _Balance extends StatelessWidget {
             child: MoneyText(formatRupiah(w.balance), size: MoneySize.hero),
           ),
           const SizedBox(height: AppSpace.s12),
+          Divider(height: 1, color: t.borderSubtle),
+          const SizedBox(height: AppSpace.s12),
           Row(
             children: [
-              Icon(LucideIcons.shieldCheck, size: 20, color: t.success),
+              ExcludeSemantics(
+                child: Icon(
+                  LucideIcons.shieldCheck,
+                  size: 20,
+                  color: t.success,
+                ),
+              ),
               const SizedBox(width: AppSpace.s8),
               Expanded(
                 child: Text(
@@ -141,13 +149,23 @@ class _Recent extends ConsumerWidget {
         onRetry: () => ref.invalidate(walletTxProvider),
       ),
       data: (s) => s.items.isEmpty
-          ? const EmptyState(
-              icon: LucideIcons.wallet,
-              title: 'Belum ada saldo',
-              message: 'Dana masuk setelah periode kerja selesai.',
+          ? const AppCard(
+              child: EmptyState(
+                icon: LucideIcons.wallet,
+                title: 'Belum ada saldo',
+                message: 'Dana masuk setelah periode kerja selesai.',
+              ),
             )
-          : Column(
-              children: [for (final t in s.items.take(5)) WalletTxTile(tx: t)],
+          : AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
+              child: Column(
+                children: [
+                  for (final (i, t) in s.items.take(5).indexed) ...[
+                    if (i > 0) const Divider(height: 1),
+                    WalletTxTile(tx: t),
+                  ],
+                ],
+              ),
             ),
     );
   }

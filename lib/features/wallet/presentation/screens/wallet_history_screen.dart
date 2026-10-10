@@ -35,7 +35,8 @@ class WalletHistoryScreen extends ConsumerWidget {
                 )
               : ListView.separated(
                   itemCount: s.items.length + (s.nextCursor == null ? 0 : 1),
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (_, _) =>
+                      const Divider(height: 1, indent: 52),
                   itemBuilder: (context, i) {
                     if (i == s.items.length) {
                       return Padding(

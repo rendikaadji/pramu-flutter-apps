@@ -148,12 +148,12 @@ class _State extends ConsumerState<BookingDetailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Langkah berikutnya', style: context.text.label),
-              const SizedBox(height: AppSpace.s4),
               Text(
-                'Periode ${next.index}: ${next.status.labelFor(role)}',
-                style: context.text.h3,
+                'Langkah berikutnya · Periode ${next.index}',
+                style: context.text.label,
               ),
+              const SizedBox(height: AppSpace.s4),
+              Text(next.status.labelFor(role), style: context.text.h3),
               const SizedBox(height: AppSpace.s4),
               Text(periodRange(next), style: context.text.bodySm),
               if (actions.contains(PeriodAction.pay)) ...[
@@ -197,22 +197,22 @@ class _State extends ConsumerState<BookingDetailScreen>
         ),
         const SizedBox(height: AppSpace.s16),
       ],
+      const SectionHeader('Rincian biaya'),
+      AppCard(child: FeeBreakdown(rows: contractFeeRows(b.fees, role))),
+      const SizedBox(height: AppSpace.s16),
       const SectionHeader('Jadwal pembayaran'),
       LedgerTimeline(
         entries: [
           for (final p in b.periods)
             LedgerEntry(
               title: 'Periode ${p.index}',
-              label: p.status.labelFor(role),
+              label: periodShortLabel(p.status, role),
               tone: periodTone(p.status, role),
               date: periodRange(p),
               amount: formatRupiah(seeker ? p.total : p.amount),
             ),
         ],
       ),
-      const SizedBox(height: AppSpace.s16),
-      const SectionHeader('Rincian biaya'),
-      FeeBreakdown(rows: contractFeeRows(b.fees, role)),
       const SizedBox(height: AppSpace.s16),
       if (b.conversationId != null)
         AppButton(

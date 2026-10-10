@@ -73,9 +73,9 @@ class ConversationTile extends StatelessWidget {
                       const SizedBox(height: AppSpace.s4),
                       Text(
                         last ?? 'Belum ada pesan',
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: context.text.body.copyWith(
+                        style: context.text.bodySm.copyWith(
                           color: c.unread > 0 ? t.textPrimary : t.textMuted,
                           fontWeight: c.unread > 0 ? FontWeight.w600 : null,
                         ),
@@ -94,7 +94,7 @@ class ConversationTile extends StatelessWidget {
                       DecoratedBox(
                         decoration: BoxDecoration(
                           color: t.primary,
-                          borderRadius: AppRadius.brSm,
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(

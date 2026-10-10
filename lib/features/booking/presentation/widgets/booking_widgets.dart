@@ -30,6 +30,18 @@ List<FeeRow> contractFeeRows(Fees f, Role role) => role == Role.seeker
 StatusTone periodTone(PeriodStatus s, Role role) =>
     statusPreset(StatusDomain.period, wire(s), appRoleOf(role)).tone;
 
+/// Label ringkas untuk baris jadwal (muat 1 baris di 390dp); label penuh tetap
+/// di kartu "Langkah berikutnya".
+String periodShortLabel(PeriodStatus s, Role role) {
+  final seeker = role == Role.seeker;
+  return switch (s) {
+    PeriodStatus.awaitingPayment => seeker ? 'Perlu dibayar' : 'Belum dibayar',
+    PeriodStatus.awaitingConfirmation =>
+      seeker ? 'Perlu konfirmasi' : 'Menunggu pencari',
+    _ => s.labelFor(role),
+  };
+}
+
 String periodRange(BookingPeriod p) =>
     '${formatDate(p.start)} - ${formatDate(p.end)}';
 

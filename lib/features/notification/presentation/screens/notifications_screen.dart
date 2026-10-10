@@ -127,7 +127,7 @@ class NotificationsScreen extends ConsumerWidget {
                         today: isToday,
                         onTap: () => _open(context, ref, x),
                       ),
-                      const Divider(height: 1),
+                      const Divider(height: 1, indent: 52),
                     ],
                   ],
                 );

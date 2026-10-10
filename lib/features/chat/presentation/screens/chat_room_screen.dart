@@ -167,47 +167,60 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ref.invalidate(chatRoomProvider(widget.conversationId)),
               data: (context, s) {
                 final msgs = s.messages.reversed.toList();
-                return ListView.builder(
-                  reverse: true,
-                  itemCount: msgs.length + 1,
-                  itemBuilder: (context, i) {
-                    if (i == msgs.length) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpace.s8,
-                        ),
-                        child: open
-                            ? const PrivacyNote(
-                                'Kontak pribadi kini dapat dibagikan.',
-                              )
-                            : _bannerClosed
-                            ? const SizedBox.shrink()
-                            : PrivacyNote(
-                                _privacyText,
-                                onTap: () =>
-                                    setState(() => _bannerClosed = true),
-                              ),
+                // Rata atas bila pesan sedikit; menempel bawah saat penuh.
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: ListView.builder(
+                    reverse: true,
+                    shrinkWrap: true,
+                    itemCount: msgs.length + 1,
+                    itemBuilder: (context, i) {
+                      if (i == msgs.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpace.s8,
+                          ),
+                          child: open
+                              ? const PrivacyNote(
+                                  'Kontak pribadi kini dapat dibagikan.',
+                                )
+                              : _bannerClosed
+                              ? const SizedBox.shrink()
+                              : PrivacyNote(
+                                  _privacyText,
+                                  onTap: () =>
+                                      setState(() => _bannerClosed = true),
+                                ),
+                        );
+                      }
+                      final m = msgs[i];
+                      final mine = m.senderId == me;
+                      final VoidCallback? tap = m.status == SendStatus.failed
+                          ? () => ref
+                                .read(
+                                  chatRoomProvider(widget.conversationId)
+                                      .notifier,
+                                )
+                                .retry(m.id)
+                          : m.masked
+                          ? _maskedInfo
+                          : null;
+                      final bubble = MessageBubble(
+                        message: m,
+                        mine: mine,
+                        senderName: other,
+                        onTap: tap,
                       );
-                    }
-                    final m = msgs[i];
-                    final mine = m.senderId == me;
-                    final VoidCallback? tap = m.status == SendStatus.failed
-                        ? () => ref
-                              .read(
-                                chatRoomProvider(widget.conversationId)
-                                    .notifier,
-                              )
-                              .retry(m.id)
-                        : m.masked
-                        ? _maskedInfo
-                        : null;
-                    return MessageBubble(
-                      message: m,
-                      mine: mine,
-                      senderName: other,
-                      onTap: tap,
-                    );
-                  },
+                      final older = i + 1 < msgs.length ? msgs[i + 1] : null;
+                      if (older != null &&
+                          isSameWibDay(older.createdAt, m.createdAt)) {
+                        return bubble;
+                      }
+                      return Column(
+                        children: [DateDivider(m.createdAt), bubble],
+                      );
+                    },
+                  ),
                 );
               },
             ),

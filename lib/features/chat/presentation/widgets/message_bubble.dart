@@ -5,6 +5,54 @@ import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/chat/domain/chat.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
+bool isSameWibDay(DateTime a, DateTime b) {
+  final x = toWib(a);
+  final y = toWib(b);
+  return x.year == y.year && x.month == y.month && x.day == y.day;
+}
+
+/// Pemisah tanggal di ruang chat: "Hari ini" / "Kemarin" / tanggal.
+class DateDivider extends StatelessWidget {
+  const DateDivider(this.at, {super.key});
+  final DateTime at;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    final now = DateTime.now();
+    final label = isSameWibDay(at, now)
+        ? 'Hari ini'
+        : isSameWibDay(at, now.subtract(const Duration(days: 1)))
+        ? 'Kemarin'
+        : formatDate(at);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
+      child: Center(
+        child: Semantics(
+          header: true,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: t.sunken,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: t.borderSubtle),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpace.s12,
+                vertical: AppSpace.s4,
+              ),
+              child: Text(
+                label,
+                style: context.text.caption.copyWith(color: t.textMuted),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Gelembung teks polos (tanpa HTML/markdown). Teks tersamar tampil apa adanya dari server.
 class MessageBubble extends StatelessWidget {
   const MessageBubble({

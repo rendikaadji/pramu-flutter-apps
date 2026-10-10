@@ -36,7 +36,8 @@ class ConversationListScreen extends ConsumerWidget {
                 )
               : ListView.separated(
                   itemCount: list.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (_, _) =>
+                      const Divider(height: 1, indent: 60),
                   itemBuilder: (context, i) => ConversationTile(
                     c: list[i],
                     onTap: () async {

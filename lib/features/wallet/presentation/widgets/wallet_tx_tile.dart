@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/models/wire.dart';
 import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/core/time.dart';
@@ -34,6 +35,25 @@ class WalletTxTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                ExcludeSemantics(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: incoming ? t.successContainer : t.sunken,
+                      shape: BoxShape.circle,
+                    ),
+                    child: SizedBox.square(
+                      dimension: 40,
+                      child: Icon(
+                        incoming
+                            ? LucideIcons.arrowDownLeft
+                            : LucideIcons.arrowUpRight,
+                        size: 20,
+                        color: incoming ? t.success : t.textMuted,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpace.s12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
