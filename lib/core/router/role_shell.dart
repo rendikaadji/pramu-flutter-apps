@@ -7,7 +7,7 @@ import 'package:pramu_apps/features/auth/domain/auth.dart';
 
 typedef TabSpec = ({String id, String label, IconData icon, String path});
 
-/// Tab bawah per peran (UIUX §5.1): Pencari 4, Asisten 5.
+/// Tab bawah per peran (UIUX §5.1): Pencari 4, Pelamar 5.
 const seekerTabs = <TabSpec>[
   (
     id: 'home',

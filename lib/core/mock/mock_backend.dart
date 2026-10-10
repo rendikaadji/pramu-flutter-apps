@@ -181,14 +181,18 @@ class MockBackend {
   MockUser get me {
     final id = currentUserId;
     if (id == null) {
-      apiFail(401, 'UNAUTHENTICATED', 'Sesi berakhir. Silakan masuk lagi.');
+      apiFail(
+        401,
+        'UNAUTHENTICATED',
+        'Sesi Anda berakhir. Silakan masuk lagi.',
+      );
     }
     return users[id]!;
   }
 
   Role get role =>
       me.activeRole ??
-      apiFail(409, 'ROLE_REQUIRED', 'Pilih peran terlebih dahulu.');
+      apiFail(409, 'ROLE_REQUIRED', 'Pilih peran Anda dulu untuk melanjutkan.');
 
   MockUser userByName(String name) =>
       users.values.firstWhere((u) => u.name == name);
@@ -209,7 +213,7 @@ class MockBackend {
       apiFail(
         403,
         'VERIFICATION_REQUIRED',
-        'Verifikasi identitas dulu untuk melanjutkan.',
+        'Verifikasi identitas Anda dulu untuk melanjutkan.',
       );
     }
   }
@@ -301,7 +305,7 @@ class MockBackend {
       notify(
         uid,
         NotificationType.booking,
-        'Kontrak dibuat',
+        'Kontrak dimulai',
         app.listingTitle,
         id,
       );
@@ -312,10 +316,19 @@ class MockBackend {
   /// Booking dengan period terbaru (menjalankan langkah otomatis berbasis waktu).
   Booking booking(String id) {
     final b =
-        bookings[id] ?? apiFail(404, 'NOT_FOUND', 'Kontrak tidak ditemukan.');
+        bookings[id] ??
+        apiFail(
+          404,
+          'NOT_FOUND',
+          'Kontrak tidak ditemukan. Mungkin sudah dihapus.',
+        );
     final uid = currentUserId;
     if (uid != null && b.seeker.id != uid && b.assistant.id != uid) {
-      apiFail(404, 'NOT_FOUND', 'Kontrak tidak ditemukan.');
+      apiFail(
+        404,
+        'NOT_FOUND',
+        'Kontrak tidak ditemukan. Mungkin sudah dihapus.',
+      );
     }
     _advance(b);
     return bookings[id]!.copyWith(
@@ -373,7 +386,7 @@ class MockBackend {
     }
   }
 
-  /// Dana period dicairkan ke dompet asisten; kontrak selesai bila semua period final.
+  /// Dana period dicairkan ke dompet pelamar; kontrak selesai bila semua period final.
   void settle(String periodId) {
     final p = periods[periodId]!;
     periods[periodId] = p.copyWith(status: PeriodStatus.settled);
@@ -395,7 +408,7 @@ class MockBackend {
       aid,
       NotificationType.payment,
       'Dana dicairkan',
-      'Masuk ke dompet Anda.',
+      'Dana sudah masuk ke dompet Anda.',
       p.id,
     );
     final all = bookingPeriods[b.id]!.map((id) => periods[id]!);
@@ -417,7 +430,7 @@ class MockBackend {
                 bookingId: b.id,
                 reviewerName: users[reviewer]!.name,
                 stars: 5,
-                comment: 'Kerja sama lancar, terima kasih.',
+                comment: 'Kerja samanya lancar. Terima kasih.',
                 createdAt: now(),
               ),
               reviewer,
@@ -431,7 +444,7 @@ class MockBackend {
           uid,
           NotificationType.rating,
           'Beri penilaian',
-          'Kontrak selesai. Nilai pihak lain dalam 7 hari.',
+          'Kontrak selesai. Beri penilaian dalam 7 hari.',
           b.id,
         );
       }
@@ -531,7 +544,7 @@ class MockBackend {
       title: title,
       category: category,
       description:
-          'Dibutuhkan $title. Lingkungan nyaman, jam kerja jelas, dan kebutuhan dibicarakan di awal.',
+          'Mencari $title. Lingkungan nyaman, jam kerja jelas, dan kebutuhan dibicarakan sejak awal.',
       city: city,
       unit: unit,
       periodCount: count,
@@ -596,7 +609,7 @@ class MockBackend {
         id: _sid(),
         conversationId: convId,
         senderId: l.owner.id,
-        text: 'Terima kasih sudah melamar. Kita bicarakan lebih lanjut ya.',
+        text: 'Terima kasih sudah melamar. Mari kita bicarakan lebih lanjut.',
         createdAt: now().subtract(const Duration(days: 1)),
       ),
     ];
@@ -981,7 +994,7 @@ class MockBackend {
     notify(
       rina.id,
       NotificationType.application,
-      'Pelamar baru',
+      'Ada pelamar baru',
       'Ani melamar "Pengasuh anak usia 3 tahun".',
       applications.values
           .firstWhere((a) => a.assistant.id == ani.id && a.listingId == l1.id)
@@ -991,14 +1004,14 @@ class MockBackend {
       siti.id,
       NotificationType.interview,
       'Jadwal wawancara diajukan',
-      'Pak Agus mengajukan jadwal wawancara.',
+      'Pak Agus mengajukan jadwal wawancara. Pilih yang cocok.',
       i1.id,
     );
     notify(
       siti.id,
       NotificationType.booking,
       'Tagihan periode 2',
-      'Pencari akan membayar sebelum periode dimulai.',
+      'Pencari membayar sebelum periode dimulai. Kami kabari saat dana masuk.',
       applications[a3.id]!.bookingId,
     );
   }

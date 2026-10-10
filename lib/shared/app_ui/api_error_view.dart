@@ -27,7 +27,7 @@ ApiException asApiException(Object e) => e is ApiException
     : ApiException(
         status: 500,
         code: 'UNKNOWN',
-        message: 'Terjadi masalah di sisi kami. Coba lagi sebentar.',
+        message: ApiException.defaultMessage(500),
       );
 
 bool isVerificationRequired(ApiException e) =>
@@ -87,8 +87,8 @@ class ApiErrorView extends StatelessWidget {
       return EmptyState(
         icon: LucideIcons.lock,
         title: 'Verifikasi dulu',
-        message: 'Selesaikan verifikasi untuk menggunakan fitur ini.',
-        actionLabel: 'Ke verifikasi',
+        message: 'Selesaikan verifikasi dulu agar fitur ini bisa dipakai.',
+        actionLabel: 'Mulai verifikasi',
         onAction: () => context.push(Routes.verificationGate),
       );
     }
@@ -194,7 +194,7 @@ class ActionErrorBox extends StatelessWidget {
               if (isVerificationRequired(error)) ...[
                 const SizedBox(height: AppSpace.s12),
                 AppButton(
-                  label: 'Ke verifikasi',
+                  label: 'Mulai verifikasi',
                   variant: AppButtonVariant.secondary,
                   expand: false,
                   onPressed: () => context.push(Routes.verificationGate),

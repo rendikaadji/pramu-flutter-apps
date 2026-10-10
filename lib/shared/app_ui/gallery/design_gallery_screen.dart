@@ -535,7 +535,7 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
                 expand: false,
                 onPressed: () => AppSnack.show(
                   context,
-                  'Sekarang sebagai Asisten',
+                  'Sekarang sebagai Pelamar',
                   success: true,
                 ),
               ),

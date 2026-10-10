@@ -14,24 +14,28 @@ extension MockFlows on MockBackend {
   Interview confirmInterview(String id, DateTime slot) {
     final i =
         interviews[id] ??
-        apiFail(404, 'NOT_FOUND', 'Wawancara tidak ditemukan.');
+        apiFail(
+          404,
+          'NOT_FOUND',
+          'Wawancara tidak ditemukan. Mungkin sudah dibatalkan.',
+        );
     if (i.status != InterviewStatus.proposed) {
       apiFail(
         409,
         'INTERVIEW_INVALID_STATE',
-        'Status wawancara sudah berubah.',
+        'Jadwal wawancara ini sudah berubah. Muat ulang lalu coba lagi.',
       );
     }
     if (!i.slots.contains(slot)) {
-      apiFail(422, 'VALIDATION_FAILED', 'Slot tidak valid.', {
-        'slot': ['Pilih salah satu slot yang diajukan'],
+      apiFail(422, 'VALIDATION_FAILED', 'Jadwal yang dipilih tidak tersedia.', {
+        'slot': ['Pilih salah satu jadwal yang diajukan'],
       });
     }
     if (slot.minute == 45 && meetFailed.add(id)) {
       apiFail(
         502,
         'MEET_CREATE_FAILED',
-        'Tautan wawancara belum dapat dibuat. Lamaran Anda aman. Coba lagi.',
+        'Tautan wawancara belum dapat dibuat. Lamaran Anda tetap aman. Coba lagi.',
       );
     }
     final done = i.copyWith(
@@ -48,7 +52,7 @@ extension MockFlows on MockBackend {
       app.seeker.id,
       NotificationType.interview,
       'Wawancara dikonfirmasi',
-      '${app.assistant.name} memilih jadwal.',
+      '${app.assistant.name} sudah memilih jadwal wawancara.',
       id,
     );
     return done;
@@ -75,7 +79,7 @@ extension MockFlows on MockBackend {
         notify(
           app.assistant.id,
           NotificationType.application,
-          'Lamaran masuk daftar pendek',
+          'Lamaran Anda masuk daftar pendek',
           app.listingTitle,
           id,
         );
@@ -101,7 +105,7 @@ extension MockFlows on MockBackend {
             app.assistant.id,
             NotificationType.interview,
             'Jadwal wawancara diajukan',
-            app.seeker.name,
+            '${app.seeker.name} mengajukan jadwal. Pilih yang cocok.',
             i.id,
           );
         }
@@ -116,7 +120,7 @@ extension MockFlows on MockBackend {
         notify(
           app.assistant.id,
           NotificationType.application,
-          'Lamaran diterima',
+          'Lamaran Anda diterima',
           app.listingTitle,
           id,
         );
@@ -140,7 +144,7 @@ extension MockFlows on MockBackend {
           notify(
             app.assistant.id,
             NotificationType.agreement,
-            'Usulan kesepakatan',
+            'Ada usulan kesepakatan',
             app.listingTitle,
             a.id,
           );
@@ -161,7 +165,7 @@ extension MockFlows on MockBackend {
     }
   }
 
-  /// Asisten bot langsung mengonfirmasi slot pertama.
+  /// Pelamar bot langsung mengonfirmasi slot pertama.
   void reactInterview(String id) {
     final i = interviews[id];
     if (i == null || i.status != InterviewStatus.proposed) return;

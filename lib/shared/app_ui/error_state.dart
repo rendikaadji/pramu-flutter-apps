@@ -10,7 +10,7 @@ import 'app_card.dart';
 class ErrorState extends StatelessWidget {
   const ErrorState({
     super.key,
-    this.message = 'Tidak dapat terhubung. Periksa sinyal lalu coba lagi.',
+    this.message = 'Tidak dapat terhubung. Periksa sinyal Anda lalu coba lagi.',
     this.code,
     this.onRetry,
   });

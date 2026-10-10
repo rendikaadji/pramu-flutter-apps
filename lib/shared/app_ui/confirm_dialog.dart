@@ -10,7 +10,7 @@ abstract final class ConfirmDialog {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmLabel = 'Ya',
+    String confirmLabel = 'Lanjutkan',
     String cancelLabel = 'Batal',
     bool destructive = false,
   }) async {
