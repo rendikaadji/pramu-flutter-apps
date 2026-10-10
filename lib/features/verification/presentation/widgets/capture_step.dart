@@ -44,23 +44,30 @@ class PhotoPreview extends StatelessWidget {
                 gaplessPlayback: true,
               ),
               Positioned(
+                left: AppSpace.s8,
                 right: AppSpace.s8,
                 bottom: AppSpace.s8,
                 child: ExcludeSemantics(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: t.scrim.withValues(alpha: .5),
-                      borderRadius: AppRadius.brXs,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpace.s8,
-                        vertical: AppSpace.s4,
-                      ),
-                      child: Text(
-                        'Hanya untuk verifikasi',
-                        style: context.text.caption.copyWith(
-                          color: t.onPrimary,
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: t.scrim.withValues(alpha: .5),
+                          borderRadius: AppRadius.brXs,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpace.s8,
+                            vertical: AppSpace.s4,
+                          ),
+                          child: Text(
+                            'Hanya untuk verifikasi',
+                            style: context.text.caption.copyWith(
+                              color: t.onPrimary,
+                            ),
+                          ),
                         ),
                       ),
                     ),

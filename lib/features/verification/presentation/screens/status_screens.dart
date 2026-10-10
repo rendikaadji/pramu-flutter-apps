@@ -34,14 +34,12 @@ class _StatusBody extends StatelessWidget {
     required this.v,
     required this.pendingText,
     required this.verifiedText,
-    this.onReupload,
     this.extra = const [],
   });
 
   final Verification v;
   final String pendingText;
   final String verifiedText;
-  final VoidCallback? onReupload;
   final List<Widget> extra;
 
   @override
@@ -64,9 +62,17 @@ class _StatusBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpace.s16),
         if (s == VerificationStatus.pending)
-          Text(pendingText, style: context.text.body)
+          Text(
+            pendingText,
+            style: context.text.body.copyWith(color: t.textMuted),
+            textAlign: TextAlign.center,
+          )
         else if (s.isVerified)
-          Text(verifiedText, style: context.text.body)
+          Text(
+            verifiedText,
+            style: context.text.body.copyWith(color: t.textMuted),
+            textAlign: TextAlign.center,
+          )
         else if (s == VerificationStatus.rejected)
           AppCard(
             color: t.dangerContainer,
@@ -74,13 +80,26 @@ class _StatusBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Verifikasi belum berhasil', style: context.text.h3),
-                const SizedBox(height: AppSpace.s4),
+                Row(
+                  children: [
+                    ExcludeSemantics(
+                      child: Icon(LucideIcons.circleAlert, color: t.danger),
+                    ),
+                    const SizedBox(width: AppSpace.s8),
+                    Expanded(
+                      child: Text(
+                        'Verifikasi belum berhasil',
+                        style: context.text.h3,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpace.s8),
                 Text(
                   v.rejectReason ?? 'Berkas belum memenuhi syarat.',
                   style: context.text.body,
                 ),
-                const SizedBox(height: AppSpace.s8),
+                const SizedBox(height: AppSpace.s12),
                 Text(
                   'Tips: foto di tempat terang, seluruh kartu terlihat, tanpa '
                   'pantulan. Bila terus gagal, hubungi bantuan.',
@@ -93,16 +112,6 @@ class _StatusBody extends StatelessWidget {
           Text('Belum ada berkas yang dikirim.', style: context.text.body),
         const SizedBox(height: AppSpace.s16),
         ...extra,
-        if (s.canUpload && onReupload != null) ...[
-          const SizedBox(height: AppSpace.s8),
-          AppButton(
-            label: s == VerificationStatus.rejected
-                ? 'Unggah ulang'
-                : 'Unggah sekarang',
-            large: true,
-            onPressed: onReupload,
-          ),
-        ],
       ],
     );
   }
@@ -190,27 +199,37 @@ class _VerificationStatusScreenState
                   'Berkas Anda sedang diperiksa. Biasanya selesai dalam 1x24 '
                   'jam. Kami kabari lewat notifikasi.',
               verifiedText: 'Akun Anda sudah terverifikasi. Selamat!',
-              onReupload: () => context.push(Routes.verificationGuide),
               extra: [
-                const PrivacyNote(
-                  'Hanya petugas verifikasi yang dapat membuka berkas ini, '
-                  'dan setiap akses tercatat.',
-                ),
-                const SizedBox(height: AppSpace.s16),
-                if (v.status == VerificationStatus.pending)
+                if (v.status.canUpload) ...[
+                  AppButton(
+                    label: v.status == VerificationStatus.rejected
+                        ? 'Unggah ulang'
+                        : 'Unggah sekarang',
+                    large: true,
+                    onPressed: () => context.push(Routes.verificationGuide),
+                  ),
+                  const SizedBox(height: AppSpace.s12),
+                ],
+                if (v.status == VerificationStatus.pending) ...[
                   AppButton(
                     label: 'Periksa status',
                     icon: LucideIcons.refreshCw,
                     variant: AppButtonVariant.secondary,
                     onPressed: () => ref.invalidate(verificationProvider),
                   ),
-                const SizedBox(height: AppSpace.s12),
+                  const SizedBox(height: AppSpace.s8),
+                ],
                 AppButton(
                   label: 'Ke beranda',
                   variant: v.status.isVerified
                       ? AppButtonVariant.primary
                       : AppButtonVariant.text,
                   onPressed: () => _toHome(context, ref),
+                ),
+                const SizedBox(height: AppSpace.s16),
+                const PrivacyNote(
+                  'Hanya petugas verifikasi yang dapat membuka berkas ini, '
+                  'dan setiap akses tercatat.',
                 ),
               ],
             ),

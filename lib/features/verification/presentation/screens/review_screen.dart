@@ -41,7 +41,26 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
     context: context,
     builder: (ctx) => Dialog(
       insetPadding: const EdgeInsets.all(AppSpace.s16),
-      child: InteractiveViewer(child: Image.memory(p.bytes)),
+      child: Stack(
+        children: [
+          InteractiveViewer(child: Image.memory(p.bytes)),
+          Positioned(
+            top: AppSpace.s4,
+            right: AppSpace.s4,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: ctx.tokens.surface.withValues(alpha: .85),
+                shape: BoxShape.circle,
+              ),
+              child: AppIconButton(
+                icon: LucideIcons.x,
+                label: 'Tutup',
+                onPressed: () => Navigator.of(ctx).pop(),
+              ),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 
@@ -91,25 +110,27 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
     }
     final t = context.tokens;
     final err = actionError;
-    Widget thumb(String label, CapturedPhoto p, String route) => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: context.text.h3),
-        const SizedBox(height: AppSpace.s8),
-        GestureDetector(
-          onTap: () => _zoom(p),
-          child: PhotoPreview(
-            photo: p,
-            label: 'Pratinjau $label, ketuk untuk memperbesar',
+    Widget thumb(String label, CapturedPhoto p, String route) => Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: context.text.label),
+          const SizedBox(height: AppSpace.s8),
+          GestureDetector(
+            onTap: () => _zoom(p),
+            child: PhotoPreview(
+              photo: p,
+              label: 'Pratinjau $label, ketuk untuk memperbesar',
+            ),
           ),
-        ),
-        AppButton(
-          label: 'Ulangi foto',
-          variant: AppButtonVariant.text,
-          expand: false,
-          onPressed: busy ? null : () => context.push('$route?retake=1'),
-        ),
-      ],
+          AppButton(
+            label: 'Ulangi foto',
+            variant: AppButtonVariant.text,
+            expand: false,
+            onPressed: busy ? null : () => context.push('$route?retake=1'),
+          ),
+        ],
+      ),
     );
     return SecureScreenGuard(
       child: AppScaffold(
@@ -122,9 +143,15 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
             const StepProgress(current: 3, total: 3, title: 'Tinjau & kirim'),
             const SizedBox(height: AppSpace.s16),
             if (err != null) ActionErrorBox(error: err),
-            thumb('Foto KTP', ktp, Routes.verificationKtp),
-            thumb('Selfie dengan KTP', selfie, Routes.verificationSelfie),
-            const SizedBox(height: AppSpace.s8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                thumb('Foto KTP', ktp, Routes.verificationKtp),
+                const SizedBox(width: AppSpace.s12),
+                thumb('Selfie + KTP', selfie, Routes.verificationSelfie),
+              ],
+            ),
+            const SizedBox(height: AppSpace.s16),
             AppTextField(
               key: K.nikInput,
               label: 'Nomor KTP (NIK)',
