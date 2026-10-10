@@ -19,6 +19,14 @@ const _visibility = <(String, String)>[
   ('Catatan wawancara', 'Hanya Anda.'),
 ];
 
+const _visibilityIcons = [
+  LucideIcons.user,
+  LucideIcons.phone,
+  LucideIcons.messageCircle,
+  LucideIcons.idCard,
+  LucideIcons.fileText,
+];
+
 /// M-25 Pusat privasi: siapa melihat apa + riwayat laporan & persetujuan berbagi chat.
 class PrivacyScreen extends ConsumerWidget {
   const PrivacyScreen({super.key});
@@ -30,25 +38,25 @@ class PrivacyScreen extends ConsumerWidget {
     final now = DateTime.now().toUtc();
     return AppScaffold(
       title: 'Pusat privasi',
+      glow: true,
       scrollable: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SectionHeader('Siapa dapat melihat apa'),
-          for (final (what, who) in _visibility)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpace.s8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(what, style: context.text.label),
-                  Text(
-                    who,
-                    style: context.text.body.copyWith(color: t.textMuted),
+          ListTileCard(
+            children: [
+              for (final (i, (what, who)) in _visibility.indexed)
+                MergeSemantics(
+                  child: SettingsRow(
+                    icon: _visibilityIcons[i % _visibilityIcons.length],
+                    title: what,
+                    subtitle: who,
                   ),
-                ],
-              ),
-            ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpace.s24),
           const SectionHeader('Laporan dan persetujuan berbagi chat'),
           reports.when(
             loading: () =>
@@ -58,9 +66,10 @@ class PrivacyScreen extends ConsumerWidget {
               onRetry: () => ref.invalidate(reportListProvider),
             ),
             data: (list) => list.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpace.s16),
-                    child: Text('Belum ada riwayat.'),
+                ? const EmptyState(
+                    compact: true,
+                    title: 'Belum ada riwayat',
+                    message: 'Laporan dan persetujuan Anda muncul di sini.',
                   )
                 : Column(
                     children: [

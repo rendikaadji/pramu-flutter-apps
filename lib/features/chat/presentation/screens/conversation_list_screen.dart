@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/features/chat/presentation/state/chat_state.dart';
 import 'package:pramu_apps/features/chat/presentation/widgets/conversation_tile.dart';
@@ -18,6 +17,7 @@ class ConversationListScreen extends ConsumerWidget {
     final n = ref.read(conversationsProvider.notifier);
     return AppScaffold(
       title: 'Pesan',
+      glow: true,
       body: AsyncBody(
         value: value,
         onRetry: () => ref.invalidate(conversationsProvider),
@@ -28,23 +28,38 @@ class ConversationListScreen extends ConsumerWidget {
                   children: const [
                     SizedBox(height: AppSpace.s48),
                     EmptyState(
-                      icon: LucideIcons.messageCircle,
+                      illustration: ChatIllustration(),
                       title: 'Belum ada percakapan',
                       message: 'Percakapan dimulai setelah ada lamaran.',
                     ),
                   ],
                 )
-              : ListView.separated(
-                  itemCount: list.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, indent: 60),
-                  itemBuilder: (context, i) => ConversationTile(
-                    c: list[i],
-                    onTap: () async {
-                      await context.push(Routes.chatRoom(list[i].id));
-                      n.refresh();
-                    },
-                  ),
+              : ListView(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpace.s8),
+                  children: [
+                    AppCard(
+                      padding: EdgeInsets.zero,
+                      child: Column(
+                        children: [
+                          for (final (i, c) in list.indexed) ...[
+                            if (i > 0)
+                              Divider(
+                                height: 1,
+                                indent: AppSpace.s16 + 48 + AppSpace.s12,
+                                color: context.tokens.borderSubtle,
+                              ),
+                            ConversationTile(
+                              c: c,
+                              onTap: () async {
+                                await context.push(Routes.chatRoom(c.id));
+                                n.refresh();
+                              },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
         ),
       ),

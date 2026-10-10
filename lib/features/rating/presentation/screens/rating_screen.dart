@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
@@ -81,6 +82,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     final view = ref.watch(ratingProvider(widget.bookingId));
     return AppScaffold(
       title: 'Beri penilaian',
+      glow: true,
       scrollable: true,
       body: view.when(
         loading: () => Semantics(
@@ -121,15 +123,35 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
               ),
               const SizedBox(height: AppSpace.s16),
               if (r.mine != null) ...[
+                const Center(child: SuccessIllustration(size: 160)),
+                const SizedBox(height: AppSpace.s8),
+                Center(
+                  child: Semantics(
+                    header: true,
+                    liveRegion: true,
+                    child: Text(
+                      'Terima kasih atas penilaian Anda',
+                      style: context.text.h2,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpace.s16),
                 ReviewTile(r.mine!, heading: 'Penilaian Anda'),
                 const SizedBox(height: AppSpace.s12),
                 theirs ??
                     const PrivacyNote(
                       'Penilaian dari pihak lain terlihat setelah ia mengirim, atau setelah 7 hari.',
                     ),
+                const SizedBox(height: AppSpace.s24),
+                AppButton(
+                  label: 'Selesai',
+                  large: true,
+                  onPressed: () => context.pop(),
+                ),
               ] else if (!v.booking.status.canRate)
                 const EmptyState(
-                  icon: LucideIcons.clock,
+                  compact: true,
                   title: 'Kontrak belum selesai',
                   message: 'Penilaian dibuka setelah kontrak selesai.',
                 )
@@ -162,17 +184,19 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                           style: context.text.h3,
                         ),
                       ),
-                      const SizedBox(height: AppSpace.s8),
-                      RatingStars(
-                        key: K.ratingStars,
-                        value: _stars.toDouble(),
-                        size: 44,
-                        onChanged: _busy
-                            ? null
-                            : (n) => setState(() {
-                                _stars = n;
-                                _starsError = null;
-                              }),
+                      const SizedBox(height: AppSpace.s16),
+                      Center(
+                        child: RatingStars(
+                          key: K.ratingStars,
+                          value: _stars.toDouble(),
+                          size: 44,
+                          onChanged: _busy
+                              ? null
+                              : (n) => setState(() {
+                                  _stars = n;
+                                  _starsError = null;
+                                }),
+                        ),
                       ),
                     ],
                   ),

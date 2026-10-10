@@ -16,6 +16,7 @@ import 'package:pramu_apps/features/payment/data/payment_providers.dart';
 import 'package:pramu_apps/features/payment/presentation/state/payment_state.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/money_hero_card.dart';
 import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 
@@ -74,6 +75,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
     final payable = period != null && period.status.canPay;
     return AppScaffold(
       title: 'Bayar periode',
+      glow: true,
       bottomNavigationBar: payable
           ? PinnedActionsBar(
               children: [
@@ -99,16 +101,14 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Periode ${p.index}', style: context.text.h1),
-              Text(
-                '${formatDate(p.start)} - ${formatDate(p.end)}',
-                style: context.text.body.copyWith(
-                  color: context.tokens.textMuted,
-                ),
-              ),
-              const SizedBox(height: AppSpace.s16),
-              _ContractSummary(bookingId: p.bookingId),
+              _ContractSummary(bookingId: p.bookingId, period: p),
               _Breakdown(p: p),
+              const SizedBox(height: AppSpace.s16),
+              MoneyHeroCard(
+                label: 'Total pembayaran',
+                amount: formatRupiah(p.total),
+                semanticsLabel: 'Total: ${formatRupiah(p.total)}',
+              ),
               const SizedBox(height: AppSpace.s16),
               const _HeldSeal(),
               const SizedBox(height: AppSpace.s16),
@@ -123,7 +123,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
                 ),
               if (!p.status.canPay)
                 EmptyState(
-                  icon: LucideIcons.info,
+                  compact: true,
                   title: p.status.labelFor(
                     ref.read(sessionProvider).activeRole ?? Role.seeker,
                   ),
@@ -139,39 +139,59 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
   }
 }
 
-/// Ringkasan kontrak (judul + lawan kontrak). Diam bila data kontrak belum ada.
+/// Ringkasan kontrak (judul + lawan kontrak + periode). Tanpa data kontrak,
+/// hanya periode dan rentang tanggal.
 class _ContractSummary extends ConsumerWidget {
-  const _ContractSummary({required this.bookingId});
+  const _ContractSummary({required this.bookingId, required this.period});
   final String bookingId;
+  final BookingPeriod period;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final b = ref.watch(bookingProvider(bookingId)).value;
-    if (b == null) return const SizedBox.shrink();
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpace.s16),
       child: AppCard(
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AvatarImage(
-              name: b.assistant.name,
-              url: b.assistant.photoUrl,
-              size: 48,
-            ),
-            const SizedBox(width: AppSpace.s12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            if (b != null) ...[
+              Row(
                 children: [
-                  Text(b.listingTitle, style: context.text.h3),
-                  const SizedBox(height: AppSpace.s2),
-                  Text(
-                    'Dengan ${b.assistant.name}',
-                    style: context.text.bodySm.copyWith(color: t.textMuted),
+                  AvatarImage(
+                    name: b.assistant.name,
+                    url: b.assistant.photoUrl,
+                    size: 48,
+                  ),
+                  const SizedBox(width: AppSpace.s12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(b.listingTitle, style: context.text.h3),
+                        const SizedBox(height: AppSpace.s2),
+                        Text(
+                          'Dengan ${b.assistant.name}',
+                          style: context.text.bodySm.copyWith(
+                            color: t.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
+                child: Divider(height: 1, color: t.borderSubtle),
+              ),
+            ],
+            Text('Periode ${period.index}', style: context.text.h2),
+            const SizedBox(height: AppSpace.s2),
+            Text(
+              '${formatDate(period.start)} - ${formatDate(period.end)}',
+              style: context.text.body.copyWith(color: t.textMuted),
             ),
           ],
         ),
@@ -180,14 +200,13 @@ class _ContractSummary extends ConsumerWidget {
   }
 }
 
-/// Rincian nominal + biaya layanan + total yang tegas (angka mono).
+/// Rincian nominal + biaya layanan (total ada di kartu hero di bawahnya).
 class _Breakdown extends StatelessWidget {
   const _Breakdown({required this.p});
   final BookingPeriod p;
 
   @override
   Widget build(BuildContext context) {
-    final t = context.tokens;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,20 +218,6 @@ class _Breakdown extends StatelessWidget {
               FeeRow('Gaji periode ${p.index}', formatRupiah(p.amount)),
               FeeRow('Biaya layanan', formatRupiah(p.serviceFee)),
             ],
-          ),
-          Divider(color: t.borderStrong),
-          const SizedBox(height: AppSpace.s4),
-          Semantics(
-            container: true,
-            excludeSemantics: true,
-            label: 'Total: ${formatRupiah(p.total)}',
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(child: Text('Total', style: context.text.h3)),
-                MoneyText(formatRupiah(p.total), size: MoneySize.hero),
-              ],
-            ),
           ),
         ],
       ),
@@ -232,17 +237,15 @@ class _HeldSeal extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: t.successContainer,
-          borderRadius: AppRadius.brMd,
+          borderRadius: AppRadius.brCard,
           border: Border.all(color: t.success.withValues(alpha: .4)),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppSpace.s16),
+          padding: const EdgeInsets.all(AppSpace.s12),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ExcludeSemantics(
-                child: Icon(LucideIcons.shieldCheck, color: t.success),
-              ),
+              const ExcludeSemantics(child: MoneySafeIllustration(size: 72)),
               const SizedBox(width: AppSpace.s12),
               Expanded(
                 child: Column(

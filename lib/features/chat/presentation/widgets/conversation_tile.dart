@@ -41,9 +41,12 @@ class ConversationTile extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSpace.tap),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.s16,
+              vertical: AppSpace.s12,
+            ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 AvatarImage(name: name, url: c.counterpart.photoUrl, size: 48),
                 const SizedBox(width: AppSpace.s12),

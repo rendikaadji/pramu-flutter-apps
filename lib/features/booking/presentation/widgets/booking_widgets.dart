@@ -155,3 +155,58 @@ class StatusBanner extends StatelessWidget {
     );
   }
 }
+
+/// Header ringkas detail kontrak: gradien biru tua, judul, lawan kontrak,
+/// status, dan tarif. Teks putih (kontras terjaga di dua ujung gradien).
+class ContractHeader extends StatelessWidget {
+  const ContractHeader({
+    super.key,
+    required this.title,
+    required this.counterpart,
+    required this.status,
+    required this.summary,
+  });
+
+  final String title;
+  final String counterpart;
+  final Widget status;
+  final String summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    const white = Colors.white;
+    final radius = BorderRadius.circular(AppRadius.lg);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [t.featuredFrom, t.featuredTo],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpace.s20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Semantics(
+              header: true,
+              child: Text(title, style: context.text.h2.copyWith(color: white)),
+            ),
+            const SizedBox(height: AppSpace.s4),
+            Text(
+              'Dengan $counterpart',
+              style: context.text.body.copyWith(color: white),
+            ),
+            const SizedBox(height: AppSpace.s12),
+            Align(alignment: Alignment.centerLeft, child: status),
+            const SizedBox(height: AppSpace.s12),
+            Text(summary, style: context.text.bodySm.copyWith(color: white)),
+          ],
+        ),
+      ),
+    );
+  }
+}

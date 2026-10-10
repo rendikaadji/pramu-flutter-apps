@@ -260,19 +260,46 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       keyboardType: TextInputType.multiline,
                       style: context.text.body,
                       onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Tulis pesan',
                         counterText: '',
+                        filled: true,
+                        fillColor: t.sunken,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppSpace.s20,
+                          vertical: AppSpace.s12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg + 8),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg + 8),
+                          borderSide: BorderSide(color: t.borderSubtle),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg + 8),
+                          borderSide: BorderSide(color: t.primary, width: 2),
+                        ),
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: AppSpace.s8),
-                AppIconButton(
-                  key: K.chatSend,
-                  icon: LucideIcons.send,
-                  label: 'Kirim pesan',
-                  onPressed: _input.text.trim().isEmpty ? null : _send,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: _input.text.trim().isEmpty ? t.sunken : t.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: AppIconButton(
+                    key: K.chatSend,
+                    icon: LucideIcons.send,
+                    label: 'Kirim pesan',
+                    color: _input.text.trim().isEmpty
+                        ? t.textSubtle
+                        : t.onPrimary,
+                    onPressed: _input.text.trim().isEmpty ? null : _send,
+                  ),
                 ),
               ],
             ),

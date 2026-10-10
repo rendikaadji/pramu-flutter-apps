@@ -22,7 +22,10 @@ class WalletTxTile extends StatelessWidget {
     final s = tx.payoutStatus;
     final failed = s == PayoutStatus.failed;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpace.s16,
+        vertical: AppSpace.s12,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,8 +41,8 @@ class WalletTxTile extends StatelessWidget {
                 ExcludeSemantics(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: incoming ? t.successContainer : t.sunken,
-                      shape: BoxShape.circle,
+                      color: incoming ? t.successContainer : t.primaryContainer,
+                      borderRadius: AppRadius.brMd,
                     ),
                     child: SizedBox.square(
                       dimension: 40,
@@ -48,7 +51,7 @@ class WalletTxTile extends StatelessWidget {
                             ? LucideIcons.arrowDownLeft
                             : LucideIcons.arrowUpRight,
                         size: 20,
-                        color: incoming ? t.success : t.textMuted,
+                        color: incoming ? t.success : t.primary,
                       ),
                     ),
                   ),

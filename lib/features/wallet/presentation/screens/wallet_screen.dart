@@ -11,6 +11,7 @@ import 'package:pramu_apps/features/wallet/presentation/state/wallet_state.dart'
 import 'package:pramu_apps/features/wallet/presentation/widgets/wallet_tx_tile.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/money_hero_card.dart';
 
 /// M-80 Dompet (tab root Asisten).
 class WalletScreen extends ConsumerWidget {
@@ -26,6 +27,7 @@ class WalletScreen extends ConsumerWidget {
     return SecureScreenGuard(
       child: AppScaffold(
         title: 'Dompet',
+        glow: true,
         body: AsyncBody<Wallet>(
           value: ref.watch(walletProvider),
           onRetry: reload,
@@ -50,7 +52,7 @@ class WalletScreen extends ConsumerWidget {
                     reload();
                   },
                 ),
-                const SizedBox(height: AppSpace.s16),
+                const SizedBox(height: AppSpace.s24),
                 SectionHeader(
                   'Riwayat',
                   actionLabel: 'Lihat semua',
@@ -72,22 +74,15 @@ class EmptyBank extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => AppCard(
-    key: K.walletBankOpen,
-    onTap: onTap,
-    child: Row(
-      children: [
-        const Icon(LucideIcons.landmark),
-        const SizedBox(width: AppSpace.s12),
-        Expanded(
-          child: Text(
-            'Isi rekening bank dulu untuk menarik dana.',
-            style: context.text.body,
-          ),
-        ),
-        const Icon(LucideIcons.chevronRight),
-      ],
-    ),
+  Widget build(BuildContext context) => ListTileCard(
+    children: [
+      SettingsRow(
+        key: K.walletBankOpen,
+        icon: LucideIcons.landmark,
+        title: 'Isi rekening bank dulu untuk menarik dana.',
+        onTap: onTap,
+      ),
+    ],
   );
 }
 
@@ -96,44 +91,13 @@ class _Balance extends StatelessWidget {
   final Wallet w;
 
   @override
-  Widget build(BuildContext context) {
-    final t = context.tokens;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Saldo bisa ditarik', style: context.text.label),
-          const SizedBox(height: AppSpace.s4),
-          KeyedSubtree(
-            key: K.walletBalance,
-            child: MoneyText(formatRupiah(w.balance), size: MoneySize.hero),
-          ),
-          const SizedBox(height: AppSpace.s12),
-          Divider(height: 1, color: t.borderSubtle),
-          const SizedBox(height: AppSpace.s12),
-          Row(
-            children: [
-              ExcludeSemantics(
-                child: Icon(
-                  LucideIcons.shieldCheck,
-                  size: 20,
-                  color: t.success,
-                ),
-              ),
-              const SizedBox(width: AppSpace.s8),
-              Expanded(
-                child: Text(
-                  'Dana ditahan (menunggu selesai)',
-                  style: context.text.bodySm,
-                ),
-              ),
-              MoneyText(formatRupiah(w.held), size: MoneySize.small),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MoneyHeroCard(
+    label: 'Saldo bisa ditarik',
+    amount: formatRupiah(w.balance),
+    amountKey: K.walletBalance,
+    footerLabel: 'Dana ditahan (menunggu selesai)',
+    footerAmount: formatRupiah(w.held),
+  );
 }
 
 class _Recent extends ConsumerWidget {
@@ -149,23 +113,13 @@ class _Recent extends ConsumerWidget {
         onRetry: () => ref.invalidate(walletTxProvider),
       ),
       data: (s) => s.items.isEmpty
-          ? const AppCard(
-              child: EmptyState(
-                icon: LucideIcons.wallet,
-                title: 'Belum ada saldo',
-                message: 'Dana masuk setelah periode kerja selesai.',
-              ),
+          ? const EmptyState(
+              compact: true,
+              title: 'Belum ada saldo',
+              message: 'Dana masuk setelah periode kerja selesai.',
             )
-          : AppCard(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
-              child: Column(
-                children: [
-                  for (final (i, t) in s.items.take(5).indexed) ...[
-                    if (i > 0) const Divider(height: 1),
-                    WalletTxTile(tx: t),
-                  ],
-                ],
-              ),
+          : ListTileCard(
+              children: [for (final t in s.items.take(5)) WalletTxTile(tx: t)],
             ),
     );
   }

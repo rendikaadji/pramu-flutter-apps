@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/features/wallet/presentation/state/wallet_state.dart';
 import 'package:pramu_apps/features/wallet/presentation/widgets/wallet_tx_tile.dart';
@@ -27,36 +26,37 @@ class WalletHistoryScreen extends ConsumerWidget {
                   children: const [
                     SizedBox(height: AppSpace.s48),
                     EmptyState(
-                      icon: LucideIcons.wallet,
                       title: 'Belum ada riwayat',
                       message: 'Pemasukan dan penarikan Anda muncul di sini.',
                     ),
                   ],
                 )
-              : ListView.separated(
-                  itemCount: s.items.length + (s.nextCursor == null ? 0 : 1),
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, indent: 52),
-                  itemBuilder: (context, i) {
-                    if (i == s.items.length) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpace.s12,
-                        ),
+              : ListView(
+                  padding: const EdgeInsets.only(
+                    top: AppSpace.s8,
+                    bottom: AppSpace.s24,
+                  ),
+                  children: [
+                    ListTileCard(
+                      children: [
+                        for (final tx in s.items)
+                          WalletTxTile(
+                            tx: tx,
+                            onRetry: () => context.push(Routes.payout),
+                          ),
+                      ],
+                    ),
+                    if (s.nextCursor != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppSpace.s16),
                         child: AppButton(
                           label: 'Muat lebih banyak',
                           variant: AppButtonVariant.secondary,
                           loading: s.loadingMore,
                           onPressed: n.loadMore,
                         ),
-                      );
-                    }
-                    final tx = s.items[i];
-                    return WalletTxTile(
-                      tx: tx,
-                      onRetry: () => context.push(Routes.payout),
-                    );
-                  },
+                      ),
+                  ],
                 ),
         ),
       ),

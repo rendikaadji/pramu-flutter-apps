@@ -58,6 +58,7 @@ class _State extends ConsumerState<BookingDetailScreen>
         ref.watch(sessionProvider.select((s) => s.activeRole)) ?? Role.seeker;
     return AppScaffold(
       title: 'Detail kontrak',
+      glow: true,
       actions: [
         AppIconButton(
           icon: LucideIcons.refreshCw,
@@ -94,28 +95,17 @@ class _State extends ConsumerState<BookingDetailScreen>
         : next.status.actionsFor(role);
     final dueBanner = b.pausedUntil;
     return [
-      Text(b.listingTitle, style: context.text.h1),
-      const SizedBox(height: AppSpace.s8),
-      Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Dengan ${other.name}',
-              style: context.text.body.copyWith(color: t.textMuted),
-            ),
-          ),
-          StatusChip.of(
-            StatusDomain.booking,
-            wire(b.status),
-            role: appRoleOf(role),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpace.s4),
-      Text(
-        '${formatRupiah(b.rate)} per periode (${b.unit.label}), '
-        '${b.periodCount} periode, mulai ${formatDate(b.startDate)}',
-        style: context.text.bodySm,
+      ContractHeader(
+        title: b.listingTitle,
+        counterpart: other.name,
+        status: StatusChip.of(
+          StatusDomain.booking,
+          wire(b.status),
+          role: appRoleOf(role),
+        ),
+        summary:
+            '${formatRupiah(b.rate)} per periode (${b.unit.label}), '
+            '${b.periodCount} periode, mulai ${formatDate(b.startDate)}',
       ),
       const SizedBox(height: AppSpace.s16),
       if (b.status == BookingStatus.paused)
