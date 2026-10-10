@@ -18,7 +18,11 @@ void main() {
     expect(find.byKey(K.homeNextStep), findsOneWidget);
     expect(find.textContaining('Tagihan periode'), findsOneWidget);
     expect(find.text('Lowongan aktif'), findsOneWidget);
-    await t.scrollUntilVisible(find.text('Kontrak berjalan'), 200);
+    await t.scrollUntilVisible(
+      find.text('Kontrak berjalan'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Kontrak berjalan'), findsOneWidget);
     expect(find.byKey(K.homeVerifyBanner), findsNothing);
   });
