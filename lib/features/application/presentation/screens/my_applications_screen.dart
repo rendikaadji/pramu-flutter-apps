@@ -11,6 +11,7 @@ import 'package:pramu_apps/features/application/domain/application.dart';
 import 'package:pramu_apps/features/application/presentation/state/application_state.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
 
 /// M-44 Pekerjaan > Lamaran (tab Asisten) + undangan masuk.
 class MyApplicationsScreen extends ConsumerWidget {
@@ -79,8 +80,10 @@ class MyApplicationsScreen extends ConsumerWidget {
                     ),
                   const SizedBox(height: AppSpace.s8),
                 ],
-                const SectionHeader('Lamaran'),
-                const SizedBox(height: AppSpace.s8),
+                if (invites.isNotEmpty) ...[
+                  const SectionHeader('Lamaran'),
+                  const SizedBox(height: AppSpace.s8),
+                ],
                 if (list.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(AppSpace.s16),
@@ -102,15 +105,24 @@ class MyApplicationsScreen extends ConsumerWidget {
                         children: [
                           Text(a.listingTitle, style: ctx.text.h3),
                           const SizedBox(height: AppSpace.s4),
-                          Text(
-                            '${a.seeker.name} - usulan ${formatRupiah(a.proposedRate)}',
-                            style: ctx.text.bodySm,
+                          IconInfoRow(
+                            icon: LucideIcons.user,
+                            text: a.seeker.name,
+                            small: true,
                           ),
-                          Text(
-                            'Dilamar ${formatDate(a.createdAt)}',
-                            style: ctx.text.bodySm,
+                          const SizedBox(height: AppSpace.s4),
+                          IconInfoRow(
+                            icon: LucideIcons.banknote,
+                            text: 'Usulan ${formatRupiah(a.proposedRate)}',
+                            small: true,
                           ),
-                          const SizedBox(height: AppSpace.s8),
+                          const SizedBox(height: AppSpace.s4),
+                          IconInfoRow(
+                            icon: LucideIcons.calendar,
+                            text: 'Dilamar ${formatDate(a.createdAt)}',
+                            small: true,
+                          ),
+                          const SizedBox(height: AppSpace.s12),
                           StatusChip.of(
                             StatusDomain.application,
                             wire(a.status),

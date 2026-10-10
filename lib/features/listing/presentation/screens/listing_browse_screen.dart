@@ -83,7 +83,8 @@ class _State extends ConsumerState<ListingBrowseScreen> {
       body: Column(
         children: [
           SearchHeader(
-            label: 'Cari lowongan',
+            label: 'Judul atau kata kunci',
+            hint: 'Mis. juru masak, pengasuh anak',
             category: _f.category,
             activeFilters: _f.activeCount - (_f.category == null ? 0 : 1),
             onQuery: (q) {

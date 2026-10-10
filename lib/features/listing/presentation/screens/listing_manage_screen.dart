@@ -15,6 +15,9 @@ import 'package:pramu_apps/features/listing/presentation/widgets/chip_select.dar
 import 'package:pramu_apps/features/listing/presentation/widgets/listing_card.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/compact_rating.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
+import 'package:pramu_apps/shared/app_ui/rate_text.dart';
 
 /// M-36 Detail lowongan (pencari): ringkasan, pelamar, tutup lowongan.
 class ListingManageScreen extends ConsumerStatefulWidget {
@@ -132,20 +135,32 @@ class _Summary extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               StatusChip.of(StatusDomain.listing, wire(l.status)),
-              if (days != null) Text('Sisa $days hari'),
+              if (days != null)
+                Text(
+                  'Sisa $days hari',
+                  style: context.text.bodySm.copyWith(color: t.textMuted),
+                ),
             ],
           ),
+          const SizedBox(height: AppSpace.s16),
+          RateText(
+            '${formatRupiah(l.budgetMin)} - ${formatRupiah(l.budgetMax)}',
+            unit: l.unit.label.toLowerCase(),
+          ),
           const SizedBox(height: AppSpace.s12),
-          Text(
-            '${l.category} - ${l.city}',
-            style: context.text.body.copyWith(color: t.textMuted),
+          IconInfoRow(
+            icon: LucideIcons.briefcase,
+            text: '${l.category} - ${l.city}',
           ),
-          Text(budgetText(l), style: context.text.body),
-          Text(
-            '${l.periodCount} periode, mulai ${formatDate(l.startDate)}',
-            style: context.text.body,
+          const SizedBox(height: AppSpace.s8),
+          IconInfoRow(
+            icon: LucideIcons.calendar,
+            text: '${l.periodCount} periode, mulai ${formatDate(l.startDate)}',
           ),
-          if (l.requireSkck) Text('Wajib SKCK', style: context.text.bodySm),
+          if (l.requireSkck) ...[
+            const SizedBox(height: AppSpace.s8),
+            const IconInfoRow(icon: LucideIcons.fileCheck, text: 'Wajib SKCK'),
+          ],
           if (l.description.isNotEmpty) ...[
             const SizedBox(height: AppSpace.s12),
             Text(l.description, style: context.text.body),
@@ -175,18 +190,21 @@ class _Applicants extends ConsumerWidget {
         const SectionHeader('Pelamar'),
         const SizedBox(height: AppSpace.s8),
         if (async.hasValue) ...[
-          ChipSelect<ApplicationStatus>(
-            options: const [
-              ApplicationStatus.pending,
-              ApplicationStatus.shortlisted,
-              ApplicationStatus.interviewScheduled,
-              ApplicationStatus.interviewed,
-              ApplicationStatus.accepted,
-              ApplicationStatus.rejected,
-            ],
-            labelOf: (s) => s.label,
-            selected: status,
-            onChanged: onStatus,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ChipSelect<ApplicationStatus>(
+              options: const [
+                ApplicationStatus.pending,
+                ApplicationStatus.shortlisted,
+                ApplicationStatus.interviewScheduled,
+                ApplicationStatus.interviewed,
+                ApplicationStatus.accepted,
+                ApplicationStatus.rejected,
+              ],
+              labelOf: (s) => s.label,
+              selected: status,
+              onChanged: onStatus,
+            ),
           ),
           const SizedBox(height: AppSpace.s12),
           Builder(
@@ -258,13 +276,29 @@ class _ApplicantTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(a.name, style: context.text.h3),
+                Text(
+                  a.name,
+                  style: context.text.h3,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: AppSpace.s4),
-                if (a.verified) const VerificationSeal(size: SealSize.sm),
-                if (a.ratingCount > 0)
-                  RatingStars(value: a.ratingAvg, count: a.ratingCount),
-                const SizedBox(height: AppSpace.s4),
-                Text('Usulan tarif ${formatRupiah(app.proposedRate)}'),
+                Wrap(
+                  spacing: AppSpace.s12,
+                  runSpacing: AppSpace.s4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (a.verified) const VerificationSeal(size: SealSize.sm),
+                    if (a.ratingCount > 0)
+                      CompactRating(value: a.ratingAvg, count: a.ratingCount),
+                  ],
+                ),
+                const SizedBox(height: AppSpace.s8),
+                RateText(
+                  formatRupiah(app.proposedRate),
+                  unit: 'usulan',
+                  size: MoneySize.small,
+                ),
                 const SizedBox(height: AppSpace.s8),
                 StatusChip.of(StatusDomain.application, wire(app.status)),
               ],

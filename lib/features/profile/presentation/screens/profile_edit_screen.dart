@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/models/shared.dart';
 import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
+import 'package:pramu_apps/features/listing/presentation/widgets/assistant_card.dart';
 import 'package:pramu_apps/features/profile/data/my_profile_provider.dart';
 import 'package:pramu_apps/features/profile/data/profile_providers.dart';
 import 'package:pramu_apps/features/profile/domain/profile.dart';
@@ -157,22 +158,42 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
           key: K.profileMeter,
           label: 'Kelengkapan profil $meter persen',
           excludeSemantics: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Kelengkapan profil $meter%', style: context.text.h3),
-              const SizedBox(height: AppSpace.s8),
-              LinearProgressIndicator(
-                value: meter / 100,
-                minHeight: 8,
-                borderRadius: AppRadius.brXs,
-                color: t.accent,
-                backgroundColor: t.borderSubtle,
-              ),
-            ],
+          child: AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Kelengkapan profil $meter%',
+                        style: context.text.h3,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpace.s12),
+                LinearProgressIndicator(
+                  value: meter / 100,
+                  minHeight: 8,
+                  borderRadius: AppRadius.brXs,
+                  color: meter >= 100 ? t.success : t.primary,
+                  backgroundColor: t.borderSubtle,
+                ),
+                const SizedBox(height: AppSpace.s8),
+                Text(
+                  meter >= 100
+                      ? 'Profil lengkap, siap dilihat pencari.'
+                      : 'Lengkapi data agar lebih mudah ditemukan pencari.',
+                  style: context.text.bodySm.copyWith(color: t.textMuted),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: AppSpace.s24),
+        const SectionHeader('Data diri'),
+        const SizedBox(height: AppSpace.s8),
         Text('Kategori', style: context.text.label),
         const SizedBox(height: AppSpace.s8),
         Wrap(
@@ -249,7 +270,9 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
               ],
             ),
           ),
-        const SizedBox(height: AppSpace.s16),
+        const SizedBox(height: AppSpace.s24),
+        const SectionHeader('Tarif & ketersediaan'),
+        const SizedBox(height: AppSpace.s8),
         AppTextField(
           key: K.profileRate,
           label: 'Tarif per periode',
@@ -277,16 +300,24 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
           ],
         ),
         const SizedBox(height: AppSpace.s16),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text('Tersedia untuk bekerja', style: context.text.body),
-          value: _available,
-          onChanged: (v) => setState(() => _available = v),
+        AppCard(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
+          child: Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text('Tersedia untuk bekerja', style: context.text.body),
+              value: _available,
+              onChanged: (v) => setState(() => _available = v),
+            ),
+          ),
         ),
+        const SizedBox(height: AppSpace.s24),
+        const SectionHeader('Tentang saya'),
         const SizedBox(height: AppSpace.s8),
         AppTextField(
           key: K.profileBio,
-          label: 'Tentang saya',
+          label: 'Ceritakan pengalaman Anda',
           controller: _bio,
           maxLines: 4,
           maxLength: 300,
@@ -294,34 +325,11 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
           onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: AppSpace.s24),
-        Text('Begini pencari melihat Anda', style: context.text.h3),
+        const SectionHeader('Begini pencari melihat Anda'),
         const SizedBox(height: AppSpace.s8),
-        AppCard(
-          child: Row(
-            children: [
-              AvatarImage(name: d.name, url: d.photoUrl, size: 48),
-              const SizedBox(width: AppSpace.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(d.name, style: context.text.h3),
-                    if (verified) const VerificationSeal(size: SealSize.sm),
-                    Text(
-                      [
-                        if (d.categories.isNotEmpty) d.categories.join(', '),
-                        if (d.city.isNotEmpty) d.city,
-                      ].join(' - '),
-                      style: context.text.bodySm,
-                    ),
-                    if (d.rate > 0)
-                      MoneyText(
-                        '${formatRupiah(d.rate)} / ${d.unit.label.toLowerCase()}',
-                      ),
-                  ],
-                ),
-              ),
-            ],
+        ExcludeSemantics(
+          child: IgnorePointer(
+            child: AssistantCard(profile: d, onTap: () {}),
           ),
         ),
         const SizedBox(height: AppSpace.s24),

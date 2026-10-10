@@ -12,6 +12,7 @@ class SearchHeader extends StatefulWidget {
   const SearchHeader({
     super.key,
     required this.label,
+    this.hint = 'Ketik kata kunci',
     required this.category,
     required this.activeFilters,
     required this.onQuery,
@@ -20,6 +21,7 @@ class SearchHeader extends StatefulWidget {
   });
 
   final String label;
+  final String hint;
   final String? category;
   final int activeFilters;
   final ValueChanged<String> onQuery;
@@ -54,33 +56,36 @@ class _SearchHeaderState extends State<SearchHeader> {
       AppTextField(
         key: K.searchField,
         label: widget.label,
-        hint: 'Ketik kata kunci',
+        hint: widget.hint,
         textInputAction: TextInputAction.search,
         onChanged: _changed,
         onSubmitted: widget.onQuery,
       ),
-      const SizedBox(height: AppSpace.s8),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: AppButton(
-          key: K.filterButton,
-          label: widget.activeFilters == 0
-              ? 'Filter'
-              : 'Filter (${widget.activeFilters})',
-          icon: LucideIcons.slidersHorizontal,
-          variant: AppButtonVariant.secondary,
-          expand: false,
-          onPressed: widget.onFilter,
-        ),
-      ),
-      const SizedBox(height: AppSpace.s8),
+      const SizedBox(height: AppSpace.s12),
       SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: ChipSelect<String>(
-          options: kCategories,
-          labelOf: (s) => s,
-          selected: widget.category,
-          onChanged: widget.onCategory,
+        child: Row(
+          children: [
+            AppButton(
+              key: K.filterButton,
+              label: widget.activeFilters == 0
+                  ? 'Filter'
+                  : 'Filter (${widget.activeFilters})',
+              icon: LucideIcons.slidersHorizontal,
+              variant: widget.activeFilters == 0
+                  ? AppButtonVariant.secondary
+                  : AppButtonVariant.tonal,
+              expand: false,
+              onPressed: widget.onFilter,
+            ),
+            const SizedBox(width: AppSpace.s8),
+            ChipSelect<String>(
+              options: kCategories,
+              labelOf: (s) => s,
+              selected: widget.category,
+              onChanged: widget.onCategory,
+            ),
+          ],
         ),
       ),
       const SizedBox(height: AppSpace.s8),

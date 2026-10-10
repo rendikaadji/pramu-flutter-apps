@@ -71,7 +71,8 @@ class _State extends ConsumerState<AssistantSearchScreen> {
       body: Column(
         children: [
           SearchHeader(
-            label: 'Cari asisten',
+            label: 'Nama atau keahlian',
+            hint: 'Mis. memasak, pengasuh anak',
             category: _f.category,
             activeFilters: _f.activeCount - (_f.category == null ? 0 : 1),
             onQuery: (q) {
