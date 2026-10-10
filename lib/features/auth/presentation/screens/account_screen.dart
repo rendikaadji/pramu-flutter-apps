@@ -106,7 +106,7 @@ class AccountScreen extends ConsumerWidget {
     };
     final stats = _stats(ref, isAssistant);
     return AppScaffold(
-      title: 'Akun',
+      title: isAssistant ? 'Profil' : 'Akun',
       glow: true,
       scrollable: true,
       body: Column(
@@ -170,14 +170,27 @@ class AccountScreen extends ConsumerWidget {
                   title: 'Ubah profil saya',
                   onTap: () => context.push(Routes.profileEdit),
                 ),
+              ],
+            ],
+          ),
+          if (isAssistant) ...[
+            _caption(context, 'Keuangan'),
+            ListTileCard(
+              children: [
+                SettingsRow(
+                  icon: LucideIcons.wallet,
+                  title: 'Dompet',
+                  subtitle: 'Saldo, riwayat, dan penarikan dana',
+                  onTap: () => context.push(Routes.assistantWallet),
+                ),
                 SettingsRow(
                   icon: LucideIcons.landmark,
                   title: 'Rekening bank',
                   onTap: () => context.push(Routes.bank),
                 ),
               ],
-            ],
-          ),
+            ),
+          ],
           _caption(context, 'Pengaturan'),
           ListTileCard(
             children: [
