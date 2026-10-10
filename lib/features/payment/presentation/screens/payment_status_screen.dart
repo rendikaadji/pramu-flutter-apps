@@ -225,6 +225,19 @@ class _Result extends StatelessWidget {
         'Dana ditahan aman sampai periode selesai.',
       ),
     };
+    if (tone == StatusTone.success) {
+      // Lunas hanya dari status server (state paid), bukan dari parameter return.
+      return Semantics(
+        key: K.periodStatus,
+        container: true,
+        child: SuccessView(
+          title: title,
+          message: '$message\nPeriode ${p.index}: ${formatRupiah(p.total)}',
+          actionLabel: 'Lihat kontrak',
+          onAction: () => onContract(p.bookingId),
+        ),
+      );
+    }
     return _StatusLayout(
       semanticsKey: pending ? K.paymentPending : K.periodStatus,
       hero: StatusHeroPanel(

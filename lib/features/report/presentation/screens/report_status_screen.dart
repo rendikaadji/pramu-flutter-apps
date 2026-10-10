@@ -152,6 +152,18 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (r.status == ReportStatus.received) ...[
+                const Center(child: SuccessIllustration(size: 160)),
+                const SizedBox(height: AppSpace.s8),
+                Center(
+                  child: Text(
+                    'Laporan Anda sudah kami terima',
+                    style: context.text.h2,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: AppSpace.s16),
+              ],
               Row(
                 children: [
                   Expanded(child: Text(r.type.label, style: context.text.h2)),

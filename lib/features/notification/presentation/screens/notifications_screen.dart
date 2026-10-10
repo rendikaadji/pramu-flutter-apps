@@ -90,6 +90,7 @@ class NotificationsScreen extends ConsumerWidget {
 
     return AppScaffold(
       title: 'Notifikasi',
+      glow: true,
       body: s.when(
         loading: () => Semantics(
           label: 'Memuat',
@@ -120,15 +121,18 @@ class NotificationsScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SectionHeader(title),
-                    for (final x in l) ...[
-                      NotificationTile(
-                        x,
-                        key: K.notificationTile(x.id),
-                        today: isToday,
-                        onTap: () => _open(context, ref, x),
-                      ),
-                      const Divider(height: 1, indent: 52),
-                    ],
+                    ListTileCard(
+                      children: [
+                        for (final x in l)
+                          NotificationTile(
+                            x,
+                            key: K.notificationTile(x.id),
+                            today: isToday,
+                            onTap: () => _open(context, ref, x),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpace.s8),
                   ],
                 );
           return RefreshIndicator(
@@ -147,7 +151,6 @@ class NotificationsScreen extends ConsumerWidget {
                   const SizedBox(
                     height: 360,
                     child: EmptyState(
-                      icon: LucideIcons.bell,
                       title: 'Belum ada notifikasi',
                       message: 'Kabar penting akan muncul di sini.',
                     ),

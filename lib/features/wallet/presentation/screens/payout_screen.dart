@@ -16,6 +16,7 @@ import 'package:pramu_apps/features/wallet/presentation/screens/wallet_screen.da
 import 'package:pramu_apps/features/wallet/presentation/state/wallet_state.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/money_hero_card.dart';
 
 /// M-81 Tarik dana. Idempotency-Key per niat: sama saat retry, baru bila nominal diubah.
 class PayoutScreen extends ConsumerStatefulWidget {
@@ -106,8 +107,10 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Saldo bisa ditarik', style: context.text.label),
-          MoneyText(formatRupiah(w.balance), size: MoneySize.hero),
+          MoneyHeroCard(
+            label: 'Saldo bisa ditarik',
+            amount: formatRupiah(w.balance),
+          ),
           const SizedBox(height: AppSpace.s16),
           if (b == null || actionError?.code == 'BANK_ACCOUNT_REQUIRED')
             EmptyBank(
@@ -117,26 +120,16 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
               },
             )
           else ...[
-            AppCard(
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.landmark),
-                  const SizedBox(width: AppSpace.s12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Rekening tujuan', style: context.text.bodySm),
-                        Text(
-                          '${b.bank} ${b.maskedNumber}',
-                          style: context.text.body,
-                        ),
-                        Text(b.holderName, style: context.text.bodySm),
-                      ],
-                    ),
+            ListTileCard(
+              children: [
+                MergeSemantics(
+                  child: SettingsRow(
+                    icon: LucideIcons.landmark,
+                    title: '${b.bank} ${b.maskedNumber}',
+                    subtitle: 'Rekening tujuan - ${b.holderName}',
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpace.s16),
             if (actionError != null) ActionErrorBox(error: actionError!),
@@ -208,7 +201,7 @@ class _Result extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(LucideIcons.circleCheck, size: 48),
+              const SuccessIllustration(size: 160),
               const SizedBox(height: AppSpace.s16),
               Text('Penarikan diajukan', style: context.text.h2),
               const SizedBox(height: AppSpace.s8),

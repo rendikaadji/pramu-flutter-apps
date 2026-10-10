@@ -90,9 +90,18 @@ class MessageBubble extends StatelessWidget {
     final who = mine ? 'Anda' : senderName;
     final bubble = DecoratedBox(
       decoration: BoxDecoration(
-        color: mine ? t.primaryContainer : t.sunken,
-        borderRadius: AppRadius.brMd,
-        border: Border.all(color: failed ? t.danger : t.borderSubtle),
+        color: mine ? t.primary : t.sunken,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(AppRadius.lg),
+          topRight: const Radius.circular(AppRadius.lg),
+          bottomLeft: Radius.circular(mine ? AppRadius.lg : AppRadius.xs),
+          bottomRight: Radius.circular(mine ? AppRadius.xs : AppRadius.lg),
+        ),
+        border: failed
+            ? Border.all(color: t.danger, width: 1.5)
+            : mine
+            ? null
+            : Border.all(color: t.borderSubtle),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -102,18 +111,29 @@ class MessageBubble extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(m.text, style: context.text.body),
+            Text(
+              m.text,
+              style: context.text.body.copyWith(
+                color: mine ? t.onPrimary : t.textPrimary,
+              ),
+            ),
             if (m.masked) ...[
               const SizedBox(height: AppSpace.s4),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(LucideIcons.lock, size: 16, color: t.textMuted),
+                  Icon(
+                    LucideIcons.lock,
+                    size: 16,
+                    color: mine ? t.onPrimary : t.textMuted,
+                  ),
                   const SizedBox(width: AppSpace.s4),
                   Flexible(
                     child: Text(
                       'Kontak disamarkan',
-                      style: context.text.caption.copyWith(color: t.textMuted),
+                      style: context.text.caption.copyWith(
+                        color: mine ? t.onPrimary : t.textMuted,
+                      ),
                     ),
                   ),
                 ],
@@ -148,7 +168,7 @@ class MessageBubble extends StatelessWidget {
                       : InkWell(
                           key: K.messageBubble(m.id),
                           onTap: onTap,
-                          borderRadius: AppRadius.brMd,
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(
                               minHeight: AppSpace.tap,

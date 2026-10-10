@@ -17,6 +17,15 @@ IconData _icon(NotificationType t) => switch (t) {
   NotificationType.unknown => LucideIcons.bell,
 };
 
+/// Tinta ikon per jenis: (latar, ikon). Sudah dibaca = netral.
+(Color, Color) _tint(AppTokens t, NotificationType type) => switch (type) {
+  NotificationType.payment => (t.successContainer, t.success),
+  NotificationType.chat => (t.assistantContainer, t.assistant),
+  NotificationType.rating => (t.accentContainer, t.accent),
+  NotificationType.report => (t.dangerContainer, t.danger),
+  _ => (t.primaryContainer, t.primary),
+};
+
 /// Baris notifikasi: ikon jenis, judul, isi, waktu, titik belum dibaca (plus teks untuk pembaca layar).
 class NotificationTile extends StatelessWidget {
   const NotificationTile(this.n, {super.key, required this.onTap, this.today});
@@ -28,6 +37,7 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
+    final (tintBg, tintFg) = _tint(t, n.type);
     final time = today == true
         ? formatTime(n.createdAt)
         : formatDate(n.createdAt);
@@ -41,21 +51,24 @@ class NotificationTile extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSpace.tap),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.s16,
+              vertical: AppSpace.s12,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: n.unread ? t.primaryContainer : t.sunken,
-                    shape: BoxShape.circle,
+                    color: n.unread ? tintBg : t.sunken,
+                    borderRadius: AppRadius.brMd,
                   ),
                   child: SizedBox.square(
                     dimension: 40,
                     child: Icon(
                       _icon(n.type),
                       size: 20,
-                      color: n.unread ? t.primary : t.textMuted,
+                      color: n.unread ? tintFg : t.textMuted,
                     ),
                   ),
                 ),
