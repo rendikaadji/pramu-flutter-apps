@@ -68,7 +68,7 @@ class RoleChip extends StatelessWidget {
   }
 }
 
-/// Isi sheet "Gunakan sebagai". UI saja: tidak mengubah state apa pun.
+/// Isi sheet "Gunakan Pramu sebagai". UI saja: tidak mengubah state apa pun.
 class RoleSwitchSheet extends StatelessWidget {
   const RoleSwitchSheet({
     super.key,
@@ -82,12 +82,12 @@ class RoleSwitchSheet extends StatelessWidget {
   final Set<AppRole> available;
   final ValueChanged<AppRole> onSelect;
 
-  /// Dipanggil dengan peran yang belum dimiliki ("Tambah peran Asisten").
+  /// Dipanggil dengan peran yang belum dimiliki ("Tambah peran Pelamar").
   final ValueChanged<AppRole>? onAddRole;
 
   static String _desc(AppRole r) => r == AppRole.seeker
       ? 'Cari dan pekerjakan asisten'
-      : 'Cari lowongan dan melamar kerja';
+      : 'Cari pekerjaan sebagai asisten';
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +106,12 @@ class RoleSwitchSheet extends StatelessWidget {
           children: [
             Semantics(
               header: true,
-              child: Text('Gunakan sebagai', style: context.text.h2),
+              child: Text('Gunakan Pramu sebagai', style: context.text.h2),
+            ),
+            const SizedBox(height: AppSpace.s4),
+            Text(
+              'Anda sedang masuk sebagai ${current.label}',
+              style: context.text.bodySm.copyWith(color: t.textMuted),
             ),
             const SizedBox(height: AppSpace.s12),
             for (final r in AppRole.values) ...[

@@ -21,7 +21,7 @@ const Map<StatusDomain, Map<String, _P>> _presets = {
   StatusDomain.period: {
     'awaiting_payment': (
       'Menunggu pembayaran Anda',
-      'Menunggu pembayaran pencari',
+      'Menunggu pembayaran Pencari',
       StatusTone.warning,
       null,
     ),

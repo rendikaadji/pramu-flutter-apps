@@ -21,12 +21,14 @@ String? validateRequired(String? v, [String label = 'Kolom ini']) =>
 
 String? validatePhone(String? v) {
   if (v == null || v.trim().isEmpty) return 'Nomor HP wajib diisi';
-  return isValidPhone(v) ? null : 'Gunakan format 08xx atau +62xx';
+  return isValidPhone(v) ? null : 'Nomor HP diawali 08 atau +62';
 }
 
 String? validateEmail(String? v) {
   if (v == null || v.trim().isEmpty) return 'Email wajib diisi';
-  return _emailRe.hasMatch(v.trim()) ? null : 'Format email tidak valid';
+  return _emailRe.hasMatch(v.trim())
+      ? null
+      : 'Alamat email belum benar. Contoh: nama@email.com';
 }
 
 String? validatePassword(String? v) {

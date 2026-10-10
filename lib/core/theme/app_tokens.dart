@@ -5,7 +5,7 @@ enum AppRole {
   seeker,
   assistant;
 
-  String get label => this == seeker ? 'Pencari' : 'Asisten';
+  String get label => this == seeker ? 'Pencari' : 'Pelamar';
 }
 
 /// Spacing basis 4.

@@ -193,7 +193,7 @@ class ApiClient {
     return ApiException(
       status: ApiException.network,
       code: 'NETWORK',
-      message: 'Tidak ada koneksi atau server tidak merespons. Coba lagi.',
+      message: ApiException.defaultMessage(ApiException.network),
     );
   }
 }

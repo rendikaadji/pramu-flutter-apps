@@ -12,7 +12,7 @@ import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 AppRole appRoleOf(Role r) =>
     r == Role.seeker ? AppRole.seeker : AppRole.assistant;
 
-/// M-22: sheet "Gunakan sebagai". Dipakai app bar shell dan layar Akun.
+/// M-22: sheet "Gunakan Pramu sebagai". Dipakai app bar shell dan layar Akun.
 Future<void> showRoleSwitch(BuildContext context, WidgetRef ref) async {
   final user = ref.read(sessionProvider).user;
   final active = user?.activeRole;
