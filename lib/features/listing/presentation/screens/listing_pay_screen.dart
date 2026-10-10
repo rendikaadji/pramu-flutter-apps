@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/ids.dart';
 import 'package:pramu_apps/core/models/shared.dart';
@@ -136,57 +135,31 @@ class _State extends ConsumerState<ListingPayScreen>
     final async = ref.watch(listingDetailProvider(widget.id));
     return AppScaffold(
       title: 'Bayar fee lowongan',
+      glow: true,
       body: AsyncBody<Listing>(
         value: async,
         onRetry: () => ref.invalidate(listingDetailProvider(widget.id)),
-        data: (ctx, l) => SingleChildScrollView(child: _content(ctx, l)),
+        data: (ctx, l) => l.status == ListingStatus.open
+            ? _success(ctx, l)
+            : SingleChildScrollView(child: _content(ctx, l)),
       ),
+    );
+  }
+
+  Widget _success(BuildContext context, Listing l) {
+    final until = l.expiresAt;
+    return SuccessView(
+      title: 'Lowongan sudah tayang',
+      message: until == null
+          ? 'Lowongan Anda sudah bisa dilihat dan dilamar asisten.'
+          : 'Tayang sampai ${formatDate(until)}. Asisten sudah bisa melamar.',
+      actionLabel: 'Lihat lowongan',
+      onAction: () => context.pushReplacement(Routes.listingManage(l.id)),
     );
   }
 
   Widget _content(BuildContext context, Listing l) {
     final t = context.tokens;
-    if (l.status == ListingStatus.open) {
-      final until = l.expiresAt;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Semantics(
-            liveRegion: true,
-            child: AppCard(
-              color: t.successContainer,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(LucideIcons.circleCheck, color: t.success),
-                      const SizedBox(width: AppSpace.s8),
-                      Expanded(
-                        child: Text(
-                          'Lowongan sudah tayang',
-                          style: context.text.h3,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (until != null) ...[
-                    const SizedBox(height: AppSpace.s8),
-                    Text('Tayang sampai ${formatDate(until)}.'),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpace.s16),
-          AppButton(
-            label: 'Lihat lowongan',
-            onPressed: () =>
-                context.pushReplacement(Routes.listingManage(l.id)),
-          ),
-        ],
-      );
-    }
     if (!l.status.canPay) {
       return EmptyBlock(
         message:

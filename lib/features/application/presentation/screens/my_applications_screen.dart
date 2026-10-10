@@ -31,6 +31,7 @@ class MyApplicationsScreen extends ConsumerWidget {
 
     return AppScaffold(
       title: 'Lamaran saya',
+      glow: true,
       body: AsyncBody<List<Application>>(
         value: apps,
         onRetry: () => ref.invalidate(myApplicationsProvider),
@@ -45,94 +46,129 @@ class MyApplicationsScreen extends ConsumerWidget {
               onAction: () => ctx.go(Routes.assistantListings),
             );
           }
-          return RefreshIndicator(
-            onRefresh: refresh,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(
-                top: AppSpace.s8,
-                bottom: AppSpace.s24,
-              ),
-              children: [
-                if (invites.isNotEmpty) ...[
-                  const SectionHeader('Undangan'),
-                  const SizedBox(height: AppSpace.s8),
-                  for (final i in invites)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpace.s12),
-                      child: AppCard(
-                        key: K.invitationCard(i.id),
-                        onTap: () =>
-                            ctx.push(Routes.listingDetail(i.listingId)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(i.listingTitle, style: ctx.text.h3),
-                            Text(
-                              'Diajak oleh ${i.seeker.name}',
-                              style: ctx.text.bodySm,
+          var tab = 0;
+          return StatefulBuilder(
+            builder: (ctx, setS) {
+              final shown = [
+                for (final a in list)
+                  if (switch (tab) {
+                    1 => const {
+                      ApplicationStatus.pending,
+                      ApplicationStatus.shortlisted,
+                      ApplicationStatus.interviewScheduled,
+                      ApplicationStatus.interviewed,
+                    }.contains(a.status),
+                    2 => a.status == ApplicationStatus.accepted,
+                    3 =>
+                      a.status == ApplicationStatus.rejected ||
+                          a.status == ApplicationStatus.withdrawn,
+                    _ => true,
+                  })
+                    a,
+              ];
+              return RefreshIndicator(
+                onRefresh: refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(
+                    top: AppSpace.s8,
+                    bottom: AppSpace.s24,
+                  ),
+                  children: [
+                    SegmentedTabs(
+                      labels: const [
+                        'Semua',
+                        'Diproses',
+                        'Diterima',
+                        'Ditutup',
+                      ],
+                      index: tab,
+                      onChanged: (i) => setS(() => tab = i),
+                    ),
+                    const SizedBox(height: AppSpace.s16),
+                    if (invites.isNotEmpty) ...[
+                      const SectionHeader('Undangan'),
+                      const SizedBox(height: AppSpace.s8),
+                      for (final i in invites)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpace.s12),
+                          child: AppCard(
+                            key: K.invitationCard(i.id),
+                            onTap: () =>
+                                ctx.push(Routes.listingDetail(i.listingId)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(i.listingTitle, style: ctx.text.h3),
+                                Text(
+                                  'Diajak oleh ${i.seeker.name}',
+                                  style: ctx.text.bodySm,
+                                ),
+                                if (i.message != null && i.message!.isNotEmpty)
+                                  Text(i.message!, style: ctx.text.body),
+                              ],
                             ),
-                            if (i.message != null && i.message!.isNotEmpty)
-                              Text(i.message!, style: ctx.text.body),
-                          ],
+                          ),
+                        ),
+                      const SizedBox(height: AppSpace.s8),
+                    ],
+                    if (invites.isNotEmpty) ...[
+                      const SectionHeader('Lamaran'),
+                      const SizedBox(height: AppSpace.s8),
+                    ],
+                    if (list.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpace.s16),
+                        child: Text(
+                          'Belum ada lamaran. Cari lowongan.',
+                          style: ctx.text.body,
                         ),
                       ),
-                    ),
-                  const SizedBox(height: AppSpace.s8),
-                ],
-                if (invites.isNotEmpty) ...[
-                  const SectionHeader('Lamaran'),
-                  const SizedBox(height: AppSpace.s8),
-                ],
-                if (list.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpace.s16),
-                    child: Text(
-                      'Belum ada lamaran. Cari lowongan.',
-                      style: ctx.text.body,
-                    ),
-                  ),
-                for (final a in list)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpace.s12),
-                    child: AppCard(
-                      key: K.applicationCard(a.id),
-                      onTap: () => ctx
-                          .push(Routes.applicationDetail(a.id))
-                          .then((_) => ref.invalidate(myApplicationsProvider)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(a.listingTitle, style: ctx.text.h3),
-                          const SizedBox(height: AppSpace.s4),
-                          IconInfoRow(
-                            icon: LucideIcons.user,
-                            text: a.seeker.name,
-                            small: true,
+                    for (final a in shown)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpace.s12),
+                        child: AppCard(
+                          key: K.applicationCard(a.id),
+                          onTap: () => ctx
+                              .push(Routes.applicationDetail(a.id))
+                              .then(
+                                (_) => ref.invalidate(myApplicationsProvider),
+                              ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(a.listingTitle, style: ctx.text.h3),
+                              const SizedBox(height: AppSpace.s4),
+                              IconInfoRow(
+                                icon: LucideIcons.user,
+                                text: a.seeker.name,
+                                small: true,
+                              ),
+                              const SizedBox(height: AppSpace.s4),
+                              IconInfoRow(
+                                icon: LucideIcons.banknote,
+                                text: 'Usulan ${formatRupiah(a.proposedRate)}',
+                                small: true,
+                              ),
+                              const SizedBox(height: AppSpace.s4),
+                              IconInfoRow(
+                                icon: LucideIcons.calendar,
+                                text: 'Dilamar ${formatDate(a.createdAt)}',
+                                small: true,
+                              ),
+                              const SizedBox(height: AppSpace.s12),
+                              StatusChip.of(
+                                StatusDomain.application,
+                                wire(a.status),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: AppSpace.s4),
-                          IconInfoRow(
-                            icon: LucideIcons.banknote,
-                            text: 'Usulan ${formatRupiah(a.proposedRate)}',
-                            small: true,
-                          ),
-                          const SizedBox(height: AppSpace.s4),
-                          IconInfoRow(
-                            icon: LucideIcons.calendar,
-                            text: 'Dilamar ${formatDate(a.createdAt)}',
-                            small: true,
-                          ),
-                          const SizedBox(height: AppSpace.s12),
-                          StatusChip.of(
-                            StatusDomain.application,
-                            wire(a.status),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),

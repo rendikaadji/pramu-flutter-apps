@@ -33,6 +33,7 @@ class MyListingsScreen extends ConsumerWidget {
 
     return AppScaffold(
       title: 'Lowongan saya',
+      glow: true,
       floatingActionButton: FloatingActionButton.extended(
         key: K.listingCreate,
         onPressed: () => context.push(Routes.listingNew),
@@ -50,26 +51,85 @@ class MyListingsScreen extends ConsumerWidget {
                 actionLabel: 'Buat lowongan',
                 onAction: () => ctx.push(Routes.listingNew),
               )
-            : RefreshIndicator(
-                onRefresh: refresh,
-                child: ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(
-                    top: AppSpace.s8,
-                    bottom: AppSpace.s64 + AppSpace.s32,
-                  ),
-                  itemCount: list.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(height: AppSpace.s12),
-                  itemBuilder: (_, i) => ListingCard(
-                    key: K.listingCard(list[i].id),
-                    listing: list[i],
-                    ownerView: true,
-                    onTap: () => _open(ctx, list[i]),
+            : _Tabbed(list: list, refresh: refresh, open: (l) => _open(ctx, l)),
+      ),
+    );
+  }
+}
+
+class _Tabbed extends StatefulWidget {
+  const _Tabbed({
+    required this.list,
+    required this.refresh,
+    required this.open,
+  });
+  final List<Listing> list;
+  final Future<void> Function() refresh;
+  final void Function(Listing) open;
+
+  @override
+  State<_Tabbed> createState() => _TabbedState();
+}
+
+class _TabbedState extends State<_Tabbed> {
+  int _tab = 0;
+
+  bool _match(Listing l) => switch (_tab) {
+    1 => l.status == ListingStatus.open,
+    2 =>
+      l.status == ListingStatus.draft ||
+          l.status == ListingStatus.awaitingPayment,
+    3 =>
+      l.status == ListingStatus.filled ||
+          l.status == ListingStatus.closed ||
+          l.status == ListingStatus.expired,
+    _ => true,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = [
+      for (final l in widget.list)
+        if (_match(l)) l,
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: AppSpace.s8),
+        SegmentedTabs(
+          labels: const ['Semua', 'Tayang', 'Draf', 'Selesai'],
+          index: _tab,
+          onChanged: (i) => setState(() => _tab = i),
+        ),
+        const SizedBox(height: AppSpace.s12),
+        Expanded(
+          child: shown.isEmpty
+              ? const EmptyState(
+                  icon: LucideIcons.clipboardList,
+                  title: 'Belum ada lowongan',
+                  message: 'Tidak ada lowongan pada kategori ini.',
+                  compact: true,
+                )
+              : RefreshIndicator(
+                  onRefresh: widget.refresh,
+                  child: ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(
+                      bottom: AppSpace.s64 + AppSpace.s32,
+                    ),
+                    itemCount: shown.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(height: AppSpace.s12),
+                    itemBuilder: (_, i) => ListingCard(
+                      key: K.listingCard(shown[i].id),
+                      listing: shown[i],
+                      ownerView: true,
+                      onTap: () => widget.open(shown[i]),
+                    ),
                   ),
                 ),
-              ),
-      ),
+        ),
+      ],
     );
   }
 }

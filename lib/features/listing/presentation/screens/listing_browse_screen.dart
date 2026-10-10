@@ -80,6 +80,7 @@ class _State extends ConsumerState<ListingBrowseScreen> {
     final n = ref.read(listingBrowseProvider.notifier);
     return AppScaffold(
       title: 'Cari lowongan',
+      glow: true,
       body: Column(
         children: [
           SearchHeader(
@@ -111,6 +112,7 @@ class _State extends ConsumerState<ListingBrowseScreen> {
                 onAction: _reset,
               ),
               itemBuilder: (ctx, l) => ListingCard(
+                featured: s.items.isNotEmpty && identical(l, s.items.first),
                 key: K.listingCard(l.id),
                 listing: l,
                 onTap: () => ctx.push(Routes.listingDetail(l.id)),

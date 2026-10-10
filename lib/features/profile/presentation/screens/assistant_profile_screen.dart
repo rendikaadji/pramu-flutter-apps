@@ -54,6 +54,7 @@ class AssistantProfileScreen extends ConsumerWidget {
     final me = ref.watch(sessionProvider.select((s) => s.user));
     return AppScaffold(
       title: 'Profil asisten',
+      glow: true,
       padded: false,
       body: AsyncBody<AssistantProfile>(
         value: value,
@@ -108,14 +109,26 @@ class AssistantProfileScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpace.s16),
-        TrustCard(
-          seal: p.verified ? SealState.verified : SealState.pending,
-          rating: p.ratingCount > 0 ? p.ratingAvg : null,
-          reviewCount: p.ratingCount,
-          completedJobs: p.completedJobs,
-          onSealTap: p.verified ? () => _explainSeal(context) : null,
+        Align(
+          alignment: Alignment.centerLeft,
+          child: VerificationSeal(
+            state: p.verified ? SealState.verified : SealState.pending,
+            onTap: p.verified ? () => _explainSeal(context) : null,
+          ),
         ),
-        const SizedBox(height: AppSpace.s16),
+        const SizedBox(height: AppSpace.s12),
+        StatsRow(
+          items: [
+            StatItem('${p.completedJobs}', 'Pekerjaan selesai'),
+            StatItem(
+              p.ratingCount > 0
+                  ? p.ratingAvg.toStringAsFixed(1).replaceAll('.', ',')
+                  : '-',
+              'Rating',
+            ),
+            StatItem('${p.ratingCount}', 'Ulasan'),
+          ],
+        ),
         const SizedBox(height: AppSpace.s8),
         const SectionHeader('Tentang asisten'),
         const SizedBox(height: AppSpace.s8),

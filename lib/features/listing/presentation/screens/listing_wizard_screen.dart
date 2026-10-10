@@ -325,6 +325,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
         (e) => AppTextField(
           key: K.listingTitle,
           label: 'Judul lowongan',
+          prefixIcon: LucideIcons.fileText,
           hint: 'Contoh: Pengasuh anak usia 3 tahun',
           controller: _title,
           maxLength: 80,
@@ -340,6 +341,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
         (e) => AppTextField(
           key: K.listingDescription,
           label: 'Deskripsi pekerjaan',
+          prefixIcon: LucideIcons.alignLeft,
           helper: 'Jelaskan tugas, jam kerja, dan kebutuhan khusus.',
           controller: _desc,
           maxLines: 5,
@@ -383,6 +385,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
         (e) => AppTextField(
           key: K.listingPeriodCount,
           label: 'Jumlah periode',
+          prefixIcon: LucideIcons.hash,
           controller: _count,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -578,6 +581,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
           ),
         ),
         scrollable: true,
+        glow: true,
         body: _loadingDraft
             ? const ListSkeleton(count: 2)
             : _loadError != null
