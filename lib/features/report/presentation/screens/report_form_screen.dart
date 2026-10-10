@@ -14,6 +14,7 @@ import 'package:pramu_apps/features/report/presentation/widgets/evidence_list.da
 import 'package:pramu_apps/features/report/presentation/widgets/evidence_picker.dart';
 import 'package:pramu_apps/features/report/presentation/widgets/share_consent.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 
 const _types = [
   ReportType.behavior,
@@ -65,14 +66,17 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
       if (p != null && mounted) setState(() => _paths.add(p));
     } on Object {
       if (mounted) {
-        AppSnack.show(context, 'Foto tidak dapat diambil. Coba lagi.');
+        AppSnack.show(context, 'Foto belum bisa diambil. Silakan coba lagi.');
       }
     }
   }
 
   Future<void> _submit() async {
     if (_desc.text.trim().length < 10) {
-      setState(() => _descError = 'Jelaskan minimal 10 karakter.');
+      setState(
+        () =>
+            _descError = 'Ceritakan sedikit lebih rinci, minimal 10 karakter.',
+      );
       return;
     }
     setState(() {
@@ -125,9 +129,9 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
       } else if (e.isConflict) {
         await ConfirmDialog.show(
           context,
-          title: 'Data sudah berubah',
+          title: 'Data baru saja berubah',
           message: e.message,
-          confirmLabel: 'Mengerti',
+          confirmLabel: 'Saya mengerti',
           cancelLabel: 'Tutup',
         );
       } else if (e.status == 403 && e.code == 'VERIFICATION_REQUIRED') {
@@ -149,20 +153,39 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
     return AppScaffold(
       title: 'Laporkan masalah',
       scrollable: true,
+      bottomNavigationBar: PinnedActionsBar(
+        children: [
+          AppButton(
+            key: K.reportSubmit,
+            label: 'Kirim laporan',
+            icon: LucideIcons.send,
+            large: true,
+            loading: _busy,
+            onPressed: _busy ? null : _submit,
+          ),
+        ],
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (booking != null)
+          Text(
+            'Ceritakan apa yang terjadi. Tim kami akan membacanya dengan teliti.',
+            style: context.text.body.copyWith(color: t.textMuted),
+          ),
+          const SizedBox(height: AppSpace.s16),
+          if (booking != null) ...[
             AppCard(
               child: Row(
                 children: [
-                  const ExcludeSemantics(child: Icon(LucideIcons.briefcase)),
+                  ExcludeSemantics(
+                    child: Icon(LucideIcons.briefcase, color: t.primary),
+                  ),
                   const SizedBox(width: AppSpace.s12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Transaksi terkait', style: context.text.caption),
+                        Text('Kontrak terkait', style: context.text.caption),
                         Text(booking, style: context.text.label),
                       ],
                     ),
@@ -170,12 +193,9 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                 ],
               ),
             ),
-          const SizedBox(height: AppSpace.s16),
-          Semantics(
-            header: true,
-            child: Text('Jenis masalah', style: context.text.h3),
-          ),
-          const SizedBox(height: AppSpace.s8),
+            const SizedBox(height: AppSpace.s16),
+          ],
+          const SectionHeader('Jenis masalah'),
           Wrap(
             spacing: AppSpace.s8,
             runSpacing: AppSpace.s8,
@@ -189,7 +209,8 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: AppSpace.s16),
+          const SizedBox(height: AppSpace.s24),
+          const SectionHeader('Apa yang terjadi'),
           AppTextField(
             key: K.reportDescription,
             label: 'Uraian kejadian',
@@ -199,11 +220,11 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
             enabled: !_busy,
             errorText: _descError,
             keyboardType: TextInputType.multiline,
-            helper: 'Ceritakan apa yang terjadi, kapan, dan dengan siapa.',
+            helper:
+                'Tulis kejadiannya, kapan terjadi, dan siapa yang terlibat.',
           ),
-          const SizedBox(height: AppSpace.s8),
-          Text('Bukti foto (opsional)', style: context.text.h3),
-          const SizedBox(height: AppSpace.s8),
+          const SizedBox(height: AppSpace.s16),
+          const SectionHeader('Foto bukti (boleh dikosongkan)'),
           EvidenceList(
             paths: _paths,
             busy: _busy,
@@ -213,7 +234,7 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
               deleteTemp(p);
             },
           ),
-          const SizedBox(height: AppSpace.s16),
+          const SizedBox(height: AppSpace.s24),
           if (_period != null)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpace.s12),
@@ -229,7 +250,7 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
                     const SizedBox(width: AppSpace.s12),
                     Expanded(
                       child: Text(
-                        'Kontrak dan periode ini dapat dibekukan sampai ada putusan. Dana tetap ditahan aman.',
+                        'Periode ini bisa dibekukan sementara sampai ada putusan. Dana Anda tetap ditahan aman.',
                         style: context.text.body,
                       ),
                     ),
@@ -238,17 +259,9 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
               ),
             ),
           const PrivacyNote(
-            'Setelah dikirim, tim kami meninjau laporan dan memberi kabar lewat notifikasi. Anda bisa menambah bukti dan memantau status di sini.',
+            'Setelah terkirim, kami memberi kabar lewat notifikasi. Anda bisa menambah bukti dan memantau statusnya kapan saja.',
           ),
           if (_typeNote != null) FieldErrorText(_typeNote!),
-          const SizedBox(height: AppSpace.s16),
-          AppButton(
-            key: K.reportSubmit,
-            label: 'Laporkan masalah',
-            large: true,
-            loading: _busy,
-            onPressed: _busy ? null : _submit,
-          ),
         ],
       ),
     );

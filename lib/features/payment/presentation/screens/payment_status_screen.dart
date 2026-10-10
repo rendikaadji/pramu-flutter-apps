@@ -88,7 +88,7 @@ class _Checking extends StatelessWidget {
       icon: LucideIcons.hourglass,
       tone: StatusTone.info,
       title: 'Memeriksa pembayaran',
-      message: 'Mohon tunggu. Jangan tutup halaman ini.',
+      message: 'Kami sedang memastikan pembayaran Anda. Halaman ini bisa tetap dibuka.',
       footer: period == null ? null : _PeriodSummary(period!),
     ),
     actions: [
@@ -191,14 +191,14 @@ class _Result extends StatelessWidget {
         LucideIcons.hourglass,
         StatusTone.warning,
         'Pembayaran sedang diproses',
-        'Jangan bayar lagi; kami kabari begitu selesai. '
-            'Belum membayar? Buka kontrak untuk membayar.',
+        'Anda tidak perlu membayar lagi. Kami kabari begitu selesai. '
+            'Belum membayar? Buka kontrak untuk melanjutkan.',
       ),
       PeriodStatus.expired => (
         LucideIcons.circleX,
         StatusTone.danger,
         'Tagihan kedaluwarsa',
-        'Batas waktu pembayaran sudah lewat. Buka kontrak untuk langkah berikutnya.',
+        'Batas waktu pembayaran sudah lewat. Buka kontrak untuk melihat langkah berikutnya.',
       ),
       PeriodStatus.cancelled || PeriodStatus.refunded => (
         LucideIcons.ban,
@@ -215,8 +215,8 @@ class _Result extends StatelessWidget {
       PeriodStatus.unknown => (
         LucideIcons.info,
         StatusTone.neutral,
-        'Status belum dikenal',
-        'Buka kontrak untuk melihat rincian terbaru.',
+        'Status belum bisa dibaca',
+        'Buka kontrak untuk melihat kabar terbaru.',
       ),
       _ => (
         LucideIcons.circleCheck,

@@ -31,8 +31,8 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
       context,
       title: 'Konfirmasi selesai?',
       message:
-          'Dana ${formatRupiah(p.amount)} akan dicairkan ke Asisten. '
-          'Tindakan ini tidak dapat dibatalkan.',
+          'Dana ${formatRupiah(p.amount)} akan dicairkan ke Pelamar. '
+          'Setelah dikonfirmasi, dana tidak bisa ditarik kembali.',
       confirmLabel: 'Konfirmasi selesai',
     );
     if (!ok || !mounted) return;
@@ -43,7 +43,7 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
     if (!mounted || !done) return;
     AppSnack.show(
       context,
-      'Terima kasih. Dana dicairkan ke Asisten.',
+      'Terima kasih. Dana sudah dicairkan ke Pelamar.',
       success: true,
     );
     context.canPop()
@@ -78,7 +78,7 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
               const SizedBox(height: AppSpace.s16),
               if (actionError != null) ActionErrorBox(error: actionError!),
               if (p.status.canConfirmComplete) ...[
-                Text('Pekerjaan sudah sesuai?', style: context.text.h2),
+                Text('Apakah pekerjaan sudah sesuai?', style: context.text.h2),
                 const SizedBox(height: AppSpace.s8),
                 if (p.autoReleaseAt != null) _AutoRelease(at: p.autoReleaseAt!),
                 const SizedBox(height: AppSpace.s16),
@@ -104,7 +104,7 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
               ] else
                 EmptyState(
                   icon: LucideIcons.info,
-                  title: 'Belum bisa dikonfirmasi',
+                  title: 'Belum waktunya dikonfirmasi',
                   message:
                       'Status periode: ${p.status.labelFor(Role.seeker)}. '
                       'Konfirmasi tersedia setelah periode selesai dijalankan.',
@@ -150,12 +150,12 @@ class _AutoReleaseState extends State<_AutoRelease> {
   Widget build(BuildContext context) {
     final left = widget.at.difference(DateTime.now().toUtc());
     final remain = left.isNegative
-        ? 'Segera dicairkan.'
+        ? 'Dana segera dicairkan.'
         : left.inHours >= 1
         ? 'Sisa ${left.inHours} jam ${left.inMinutes % 60} menit.'
         : 'Sisa ${left.inMinutes} menit.';
     return PrivacyNote(
-      'Jika tidak dikonfirmasi, dana otomatis dicairkan pada '
+      'Jika tidak Anda konfirmasi, dana otomatis dicairkan pada '
       '${formatDateTime(widget.at)}. $remain',
     );
   }

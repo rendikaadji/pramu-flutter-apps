@@ -162,12 +162,12 @@ enum PeriodStatus {
     final seeker = role == Role.seeker;
     return switch (this) {
       awaitingPayment =>
-        seeker ? 'Menunggu pembayaran Anda' : 'Menunggu pembayaran pencari',
-      paid => seeker ? 'Dana ditahan aman' : 'Dana sudah diamankan',
+        seeker ? 'Menunggu pembayaran Anda' : 'Menunggu pembayaran Pencari',
+      paid => seeker ? 'Dana ditahan aman' : 'Dana Pencari sudah diamankan',
       inProgress => 'Sedang berjalan',
       awaitingConfirmation =>
-        seeker ? 'Konfirmasi pekerjaan selesai' : 'Menunggu konfirmasi pencari',
-      completed || settled => seeker ? 'Selesai' : 'Dicairkan ke dompet',
+        seeker ? 'Konfirmasi pekerjaan selesai' : 'Menunggu konfirmasi Pencari',
+      completed || settled => seeker ? 'Selesai' : 'Dana masuk dompet',
       expired => 'Tagihan kedaluwarsa',
       cancelled || refunded => 'Dibatalkan',
       disputed => 'Sedang ditinjau',

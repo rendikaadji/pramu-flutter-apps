@@ -38,7 +38,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
       context,
       title: 'Bayar ${formatRupiah(p.total)}?',
       message:
-          'Uang ditahan aman dan baru dicairkan ke Asisten setelah pekerjaan '
+          'Dana ditahan aman dan baru dicairkan ke Pelamar setelah pekerjaan '
           'selesai. Anda akan diarahkan ke halaman pembayaran.',
       confirmLabel: 'Bayar',
     );
@@ -52,7 +52,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
             .startPayment(widget.periodId, idempotencyKey: _key);
         opened = await openInvoiceUrl(ref.read(urlLauncherProvider), inv.url);
         if (!opened) {
-          _localError = 'Halaman pembayaran tidak dapat dibuka. Coba lagi; Anda tidak akan ditagih dua kali.';
+          _localError = 'Halaman pembayaran belum bisa dibuka. Silakan coba lagi, Anda tidak akan ditagih dua kali.';
         }
       } on ApiException catch (e) {
         // Hasil pasti ditolak server -> niat baru; jaringan/5xx -> kunci sama.
@@ -127,7 +127,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
                   title: p.status.labelFor(
                     ref.read(sessionProvider).activeRole ?? Role.seeker,
                   ),
-                  message: 'Periode ini tidak dapat dibayar saat ini.',
+                  message: 'Periode ini belum bisa dibayar saat ini.',
                   actionLabel: 'Kembali',
                   onAction: () => context.pop(),
                 ),
@@ -254,7 +254,7 @@ class _HeldSeal extends StatelessWidget {
                     Text('Dana ditahan aman', style: context.text.h3),
                     const SizedBox(height: AppSpace.s2),
                     Text(
-                      'Uang Anda ditahan aman dan baru dicairkan ke asisten '
+                      'Dana Anda ditahan aman dan baru dicairkan ke asisten '
                       'setelah pekerjaan selesai.',
                       style: context.text.bodySm.copyWith(color: t.textPrimary),
                     ),

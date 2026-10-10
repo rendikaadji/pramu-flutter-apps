@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/validators.dart';
 import 'package:pramu_apps/features/report/presentation/state/report_state.dart';
@@ -45,10 +44,8 @@ class ReportShareScreen extends ConsumerWidget {
         ),
         data: (c) => c == null
             ? const EmptyState(
-                icon: LucideIcons.messageCircleOff,
                 title: 'Tidak ada percakapan',
-                message:
-                    'Laporan ini tidak terkait percakapan yang bisa dibagikan.',
+                message: 'Laporan ini tidak terhubung ke percakapan yang bisa dibagikan.',
               )
             : ShareConsentBody(
                 reportId: reportId,

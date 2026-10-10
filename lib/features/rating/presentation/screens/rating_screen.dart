@@ -12,7 +12,7 @@ import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
 const _info =
-    'Penilaian Anda terlihat setelah kedua pihak mengirim, atau setelah 7 hari.';
+    'Ulasan Anda terlihat setelah kedua pihak mengirim, atau setelah 7 hari.';
 
 /// M-90 Beri rating.
 class RatingScreen extends ConsumerStatefulWidget {
@@ -37,14 +37,14 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
 
   Future<void> _submit() async {
     if (_stars == 0) {
-      setState(() => _starsError = 'Pilih 1 sampai 5 bintang.');
+      setState(() => _starsError = 'Pilih jumlah bintang, 1 sampai 5.');
       return;
     }
     final ok = await ConfirmDialog.show(
       context,
-      title: 'Kirim penilaian?',
-      message: 'Penilaian tidak dapat diubah setelah dikirim.',
-      confirmLabel: 'Kirim penilaian',
+      title: 'Kirim ulasan?',
+      message: 'Ulasan tidak bisa diubah setelah dikirim.',
+      confirmLabel: 'Kirim ulasan',
     );
     if (!ok || !mounted) return;
     setState(() {
@@ -54,14 +54,14 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     final n = ref.read(ratingProvider(widget.bookingId).notifier);
     try {
       await n.submit(_stars, _comment.text.trim());
-      if (mounted) AppSnack.show(context, 'Penilaian terkirim.', success: true);
+      if (mounted) AppSnack.show(context, 'Ulasan terkirim.', success: true);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
       if (e.isConflict) {
         await ConfirmDialog.show(
           context,
-          title: 'Data sudah berubah',
+          title: 'Data baru saja berubah',
           message: e.message,
           confirmLabel: 'Muat ulang',
           cancelLabel: 'Tutup',
@@ -81,7 +81,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
   Widget build(BuildContext context) {
     final view = ref.watch(ratingProvider(widget.bookingId));
     return AppScaffold(
-      title: 'Beri penilaian',
+      title: 'Beri ulasan',
       glow: true,
       scrollable: true,
       body: view.when(
@@ -110,7 +110,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
           final days = (left.inHours / 24).ceil();
           final theirs = r.theirs == null
               ? null
-              : ReviewTile(r.theirs!, heading: 'Penilaian dari ${other.name}');
+              : ReviewTile(r.theirs!, heading: 'Ulasan dari ${other.name}');
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -130,18 +130,18 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                     header: true,
                     liveRegion: true,
                     child: Text(
-                      'Terima kasih atas penilaian Anda',
+                      'Terima kasih atas ulasan Anda',
                       style: context.text.h2,
                       textAlign: TextAlign.center,
                     ),
                   ),
                 ),
                 const SizedBox(height: AppSpace.s16),
-                ReviewTile(r.mine!, heading: 'Penilaian Anda'),
+                ReviewTile(r.mine!, heading: 'Ulasan Anda'),
                 const SizedBox(height: AppSpace.s12),
                 theirs ??
                     const PrivacyNote(
-                      'Penilaian dari pihak lain terlihat setelah ia mengirim, atau setelah 7 hari.',
+                      'Ulasan dari pihak lain baru terlihat setelah ia mengirim, atau setelah 7 hari.',
                     ),
                 const SizedBox(height: AppSpace.s24),
                 AppButton(
@@ -153,7 +153,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 const EmptyState(
                   compact: true,
                   title: 'Kontrak belum selesai',
-                  message: 'Penilaian dibuka setelah kontrak selesai.',
+                  message: 'Ulasan dibuka setelah kontrak selesai.',
                 )
               else if (left.isNegative) ...[
                 const StatusChip(
@@ -161,7 +161,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   tone: StatusTone.neutral,
                 ),
                 const SizedBox(height: AppSpace.s12),
-                const Text('Penilaian otomatis bintang 5 diberikan.'),
+                const Text('Ulasan bintang 5 diberikan otomatis.'),
                 if (theirs != null) ...[
                   const SizedBox(height: AppSpace.s12),
                   theirs,
@@ -216,14 +216,14 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                 const SizedBox(height: AppSpace.s16),
                 AppButton(
                   key: K.ratingSubmit,
-                  label: 'Kirim penilaian',
+                  label: 'Kirim ulasan',
                   large: true,
                   loading: _busy,
                   onPressed: _busy ? null : _submit,
                 ),
                 const SizedBox(height: AppSpace.s8),
                 Text(
-                  'Batas penilaian ${formatDate(r.deadline)}.',
+                  'Batas ulasan ${formatDate(r.deadline)}.',
                   style: context.text.caption.copyWith(
                     color: context.tokens.textMuted,
                   ),

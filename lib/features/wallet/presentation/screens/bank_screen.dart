@@ -38,10 +38,10 @@ class _State extends ConsumerState<BankScreen> with ApiActionMixin {
     final number = _number.text.trim();
     final holder = _holder.text.trim();
     final errs = {
-      if (_bank == null) 'bank': 'Pilih bank',
+      if (_bank == null) 'bank': 'Pilih bank Anda.',
       if (!RegExp(r'^\d{8,16}$').hasMatch(number))
-        'number': 'Nomor rekening 8 sampai 16 digit',
-      if (holder.isEmpty) 'holder_name': 'Nama pemilik wajib diisi',
+        'number': 'Nomor rekening harus 8 sampai 16 digit.',
+      if (holder.isEmpty) 'holder_name': 'Isi nama pemilik rekening.',
     };
     setState(() => _local = errs);
     if (errs.isNotEmpty) return;
@@ -49,9 +49,9 @@ class _State extends ConsumerState<BankScreen> with ApiActionMixin {
       context,
       title: replacing ? 'Ganti rekening?' : 'Simpan rekening?',
       message: replacing
-          ? 'Rekening tujuan penarikan diganti ke $_bank. Penarikan dapat '
-                'tertunda sementara demi keamanan.'
-          : 'Penarikan akan dikirim ke $_bank a.n. $holder. Pastikan nomor benar.',
+          ? 'Penarikan berikutnya akan dikirim ke $_bank. Penarikan bisa '
+                'tertunda sebentar demi keamanan Anda.'
+          : 'Dana akan dikirim ke $_bank a.n. $holder. Pastikan nomornya sudah benar.',
       confirmLabel: 'Simpan',
     );
     if (!ok || !mounted) return;
@@ -66,7 +66,7 @@ class _State extends ConsumerState<BankScreen> with ApiActionMixin {
     ref.invalidate(bankAccountProvider);
     ref.invalidate(walletProvider);
     setState(() => _editing = false);
-    AppSnack.show(context, 'Rekening disimpan.', success: true);
+    AppSnack.show(context, 'Rekening sudah disimpan.', success: true);
   }
 
   String? _err(String key) => _local[key] ?? fieldError(key);
@@ -86,7 +86,7 @@ class _State extends ConsumerState<BankScreen> with ApiActionMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const PrivacyNote(
-                  'Nomor rekening disimpan terenkripsi dan hanya tampil tersamar.',
+                  'Nomor rekening Anda disimpan terenkripsi dan hanya tampil sebagian.',
                 ),
                 const SizedBox(height: AppSpace.s16),
                 if (b != null && !_editing) ...[
@@ -164,7 +164,7 @@ class _State extends ConsumerState<BankScreen> with ApiActionMixin {
                   if (b != null) ...[
                     const SizedBox(height: AppSpace.s8),
                     AppButton(
-                      label: 'Batal',
+                      label: 'Batalkan perubahan',
                       variant: AppButtonVariant.text,
                       onPressed: () => setState(() => _editing = false),
                     ),

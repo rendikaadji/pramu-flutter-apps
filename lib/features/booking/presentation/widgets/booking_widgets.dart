@@ -24,7 +24,11 @@ List<FeeRow> contractFeeRows(Fees f, Role role) => role == Role.seeker
     : [
         FeeRow('Total gaji kontrak', formatRupiah(f.amount)),
         FeeRow('Biaya layanan', '-${formatRupiah(f.assistantFee)}'),
-        FeeRow('Anda terima', formatRupiah(f.assistantReceives), total: true),
+        FeeRow(
+          'Dana yang Anda terima',
+          formatRupiah(f.assistantReceives),
+          total: true,
+        ),
       ];
 
 StatusTone periodTone(PeriodStatus s, Role role) =>
@@ -37,7 +41,7 @@ String periodShortLabel(PeriodStatus s, Role role) {
   return switch (s) {
     PeriodStatus.awaitingPayment => seeker ? 'Perlu dibayar' : 'Belum dibayar',
     PeriodStatus.awaitingConfirmation =>
-      seeker ? 'Perlu konfirmasi' : 'Menunggu pencari',
+      seeker ? 'Perlu konfirmasi' : 'Menunggu Pencari',
     _ => s.labelFor(role),
   };
 }

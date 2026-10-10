@@ -41,11 +41,11 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
   Future<void> _submit(Wallet w, BankAccount bank) async {
     final v = parseRupiah(_amount.text);
     if (v == null || v <= 0) {
-      setState(() => _localError = 'Masukkan nominal penarikan.');
+      setState(() => _localError = 'Isi nominal yang ingin ditarik.');
       return;
     }
     if (v > w.balance) {
-      setState(() => _localError = 'Nominal melebihi saldo Anda.');
+      setState(() => _localError = 'Nominal melebihi saldo yang bisa ditarik.');
       return;
     }
     setState(() => _localError = null);
@@ -54,7 +54,7 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
       title: 'Tarik ${formatRupiah(v)}?',
       message:
           'Dana dikirim ke ${bank.bank} ${bank.maskedNumber} '
-          'a.n. ${bank.holderName}. Pastikan rekening benar.',
+          'a.n. ${bank.holderName}. Pastikan rekeningnya sudah benar.',
       confirmLabel: 'Tarik dana',
     );
     if (!ok || !mounted) return;
@@ -126,7 +126,7 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
                   child: SettingsRow(
                     icon: LucideIcons.landmark,
                     title: '${b.bank} ${b.maskedNumber}',
-                    subtitle: 'Rekening tujuan - ${b.holderName}',
+                    subtitle: 'Rekening tujuan · ${b.holderName}',
                   ),
                 ),
               ],
@@ -167,7 +167,7 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
               ),
             ),
             Text(
-              'Penarikan diproses bertahap: antre, diproses, lalu berhasil.',
+              'Penarikan melewati tiga tahap: antre, diproses, lalu berhasil.',
               style: context.text.caption.copyWith(color: t.textMuted),
             ),
             const SizedBox(height: AppSpace.s16),
@@ -203,14 +203,14 @@ class _Result extends StatelessWidget {
             children: [
               const SuccessIllustration(size: 160),
               const SizedBox(height: AppSpace.s16),
-              Text('Penarikan diajukan', style: context.text.h2),
+              Text('Penarikan sudah diajukan', style: context.text.h2),
               const SizedBox(height: AppSpace.s8),
               MoneyText(formatRupiah(tx.amount), size: MoneySize.hero),
               const SizedBox(height: AppSpace.s8),
               StatusChip.of(StatusDomain.payout, wire(s)),
               const SizedBox(height: AppSpace.s24),
               AppButton(
-                label: 'Lihat riwayat',
+                label: 'Lihat riwayat dana',
                 onPressed: () => context.pushReplacement(Routes.walletHistory),
               ),
               const SizedBox(height: AppSpace.s8),

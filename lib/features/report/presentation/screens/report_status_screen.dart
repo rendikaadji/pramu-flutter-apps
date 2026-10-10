@@ -13,19 +13,20 @@ import 'package:pramu_apps/features/report/presentation/state/report_state.dart'
 import 'package:pramu_apps/features/report/presentation/widgets/evidence_picker.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/status_hero_panel.dart';
 
 const _steps = [
   (ReportStatus.received, 'Diterima'),
-  (ReportStatus.reviewing, 'Ditinjau'),
-  (ReportStatus.needsInfo, 'Butuh info'),
-  (ReportStatus.decided, 'Diputuskan'),
+  (ReportStatus.reviewing, 'Sedang ditinjau'),
+  (ReportStatus.needsInfo, 'Perlu info tambahan'),
+  (ReportStatus.decided, 'Sudah diputuskan'),
 ];
 
 /// Teks status persetujuan berbagi chat.
 String shareLabel(ChatShareConsent s, DateTime now) {
-  if (s.revoked) return 'Persetujuan dicabut';
-  if (!s.expiresAt.isAfter(now)) return 'Persetujuan kedaluwarsa';
-  return 'Dibagikan sampai ${formatDate(s.expiresAt)}';
+  if (s.revoked) return 'Persetujuan sudah dicabut';
+  if (!s.expiresAt.isAfter(now)) return 'Persetujuan sudah berakhir';
+  return 'Dibagikan hingga ${formatDate(s.expiresAt)}';
 }
 
 /// M-97 Status laporan.
@@ -50,7 +51,7 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
       if (e.isConflict) {
         await ConfirmDialog.show(
           context,
-          title: 'Data sudah berubah',
+          title: 'Data baru saja berubah',
           message: e.message,
           confirmLabel: 'Muat ulang',
           cancelLabel: 'Tutup',
@@ -69,7 +70,9 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
     if (p == null) return;
     try {
       await ref.read(reportProvider(widget.reportId).notifier).addEvidence([p]);
-      if (mounted) AppSnack.show(context, 'Bukti ditambahkan.', success: true);
+      if (mounted) {
+        AppSnack.show(context, 'Bukti sudah ditambahkan.', success: true);
+      }
     } finally {
       unawaited(deleteTemp(p));
     }
@@ -78,8 +81,9 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
   Future<void> _revoke() async {
     final ok = await ConfirmDialog.show(
       context,
-      title: 'Cabut persetujuan?',
-      message: 'Tim kami tidak bisa lagi melihat percakapan ini.',
+      title: 'Cabut persetujuan berbagi?',
+      message:
+          'Setelah dicabut, tim kami tidak bisa lagi melihat percakapan ini.',
       confirmLabel: 'Cabut persetujuan',
       destructive: true,
     );
@@ -149,76 +153,84 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
           final canShare =
               share == null && r.status.canAddEvidence && r.bookingId != null;
           final current = _steps.indexWhere((s) => s.$1 == r.status);
+          final (heroIcon, heroTone, heroTitle, heroText) = _hero(r.status);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (r.status == ReportStatus.received) ...[
-                const Center(child: SuccessIllustration(size: 160)),
-                const SizedBox(height: AppSpace.s8),
-                Center(
-                  child: Text(
-                    'Laporan Anda sudah kami terima',
-                    style: context.text.h2,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: AppSpace.s16),
-              ],
-              Row(
-                children: [
-                  Expanded(child: Text(r.type.label, style: context.text.h2)),
-                  StatusChip(
-                    label: r.status.label,
-                    tone: r.status == ReportStatus.decided
-                        ? StatusTone.success
-                        : StatusTone.info,
-                  ),
-                ],
+              StatusHeroPanel(
+                icon: heroIcon,
+                tone: heroTone,
+                title: heroTitle,
+                message: heroText,
               ),
-              Text(
-                'Dikirim ${formatDateTime(r.createdAt)}',
-                style: context.text.caption.copyWith(color: t.textMuted),
-              ),
-              const SizedBox(height: AppSpace.s12),
-              Text(r.description, style: context.text.body),
-              const SizedBox(height: AppSpace.s16),
-              Semantics(
-                container: true,
-                label: 'Status saat ini: ${r.status.label}',
+              const SizedBox(height: AppSpace.s24),
+              AppCard(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (var i = 0; i < _steps.length; i++)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpace.s8,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(r.type.label, style: context.text.h3),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              i < current || r.status == ReportStatus.decided
-                                  ? LucideIcons.circleCheck
-                                  : i == current
-                                  ? LucideIcons.circleDot
-                                  : LucideIcons.circle,
-                              color: i <= current ? t.primary : t.textSubtle,
-                            ),
-                            const SizedBox(width: AppSpace.s12),
-                            Text(
-                              _steps[i].$2,
-                              style: context.text.body.copyWith(
-                                fontWeight: i == current
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                          ],
+                        StatusChip(
+                          label: r.status.label,
+                          tone: r.status == ReportStatus.decided
+                              ? StatusTone.success
+                              : StatusTone.info,
                         ),
-                      ),
+                      ],
+                    ),
+                    Text(
+                      'Dikirim ${formatDateTime(r.createdAt)}',
+                      style: context.text.caption.copyWith(color: t.textMuted),
+                    ),
+                    const SizedBox(height: AppSpace.s12),
+                    Text(r.description, style: context.text.body),
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpace.s16),
+              const SectionHeader('Perkembangan laporan'),
+              AppCard(
+                child: Semantics(
+                  container: true,
+                  label: 'Status saat ini: ${r.status.label}',
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < _steps.length; i++)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppSpace.s8,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                i < current || r.status == ReportStatus.decided
+                                    ? LucideIcons.circleCheck
+                                    : i == current
+                                    ? LucideIcons.circleDot
+                                    : LucideIcons.circle,
+                                color: i <= current ? t.primary : t.textSubtle,
+                              ),
+                              const SizedBox(width: AppSpace.s12),
+                              Text(
+                                _steps[i].$2,
+                                style: context.text.body.copyWith(
+                                  fontWeight: i == current
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
               if (r.decision != null) ...[
-                const SizedBox(height: AppSpace.s12),
+                const SizedBox(height: AppSpace.s16),
                 AppCard(
                   color: t.successContainer,
                   child: Column(
@@ -232,13 +244,24 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
                 ),
               ],
               const SizedBox(height: AppSpace.s16),
-              Text('Persetujuan berbagi percakapan', style: context.text.h3),
-              const SizedBox(height: AppSpace.s8),
-              Text(
-                share == null
-                    ? 'Belum ada percakapan yang dibagikan.'
-                    : shareLabel(share, now),
-                style: context.text.body,
+              const SectionHeader('Berbagi percakapan'),
+              AppCard(
+                child: Row(
+                  children: [
+                    ExcludeSemantics(
+                      child: Icon(LucideIcons.messageCircle, color: t.primary),
+                    ),
+                    const SizedBox(width: AppSpace.s12),
+                    Expanded(
+                      child: Text(
+                        share == null
+                            ? 'Belum ada percakapan yang Anda bagikan.'
+                            : shareLabel(share, now),
+                        style: context.text.body,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpace.s16),
               if (r.status.canAddEvidence)
@@ -278,3 +301,30 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
     );
   }
 }
+
+(IconData, StatusTone, String, String) _hero(ReportStatus s) => switch (s) {
+  ReportStatus.reviewing => (
+    LucideIcons.search,
+    StatusTone.info,
+    'Laporan sedang ditinjau',
+    'Tim kami sedang mempelajari laporan dan bukti Anda.',
+  ),
+  ReportStatus.needsInfo => (
+    LucideIcons.messageCircleQuestionMark,
+    StatusTone.warning,
+    'Kami butuh info tambahan',
+    'Tambahkan bukti agar laporan Anda bisa dilanjutkan.',
+  ),
+  ReportStatus.decided => (
+    LucideIcons.circleCheck,
+    StatusTone.success,
+    'Laporan sudah diputuskan',
+    'Putusan kami ada di bawah ini.',
+  ),
+  _ => (
+    LucideIcons.circleCheck,
+    StatusTone.success,
+    'Laporan Anda sudah kami terima',
+    'Tim kami akan segera meninjaunya dan memberi kabar lewat notifikasi.',
+  ),
+};

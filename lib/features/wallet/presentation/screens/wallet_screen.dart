@@ -79,7 +79,7 @@ class EmptyBank extends StatelessWidget {
       SettingsRow(
         key: K.walletBankOpen,
         icon: LucideIcons.landmark,
-        title: 'Isi rekening bank dulu untuk menarik dana.',
+        title: 'Tambahkan rekening bank untuk menarik dana.',
         onTap: onTap,
       ),
     ],
@@ -95,7 +95,7 @@ class _Balance extends StatelessWidget {
     label: 'Saldo bisa ditarik',
     amount: formatRupiah(w.balance),
     amountKey: K.walletBalance,
-    footerLabel: 'Dana ditahan (menunggu selesai)',
+    footerLabel: 'Dana ditahan, menunggu pekerjaan selesai',
     footerAmount: formatRupiah(w.held),
   );
 }
