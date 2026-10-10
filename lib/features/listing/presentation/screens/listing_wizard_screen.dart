@@ -19,10 +19,10 @@ import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
 import 'package:pramu_apps/shared/app_ui/wib_picker.dart';
 
 const _steps = [
-  'Kategori & judul',
-  'Deskripsi & kota',
-  'Periode & budget',
-  'Pertanyaan',
+  'Kategori dan judul',
+  'Deskripsi dan kota',
+  'Periode dan budget',
+  'Pertanyaan untuk pelamar',
 ];
 
 const _stepFields = <List<String>>[
@@ -133,16 +133,16 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
   Map<String, String> _validate() {
     final e = <String, String>{};
     if (_category == null) e['category'] = 'Pilih kategori';
-    if (_title.text.trim().isEmpty) e['title'] = 'Judul wajib diisi';
-    if (_city == null) e['city'] = 'Kota wajib dipilih';
+    if (_title.text.trim().isEmpty) e['title'] = 'Tulis judul lowongan';
+    if (_city == null) e['city'] = 'Pilih kota tempat bekerja';
     final n = int.tryParse(_count.text.trim());
-    if (n == null || n < 1) e['period_count'] = 'Minimal 1 periode';
-    if (_start == null) e['start_date'] = 'Tanggal mulai wajib dipilih';
+    if (n == null || n < 1) e['period_count'] = 'Isi minimal 1 periode';
+    if (_start == null) e['start_date'] = 'Pilih tanggal mulai';
     final min = parseRupiah(_min.text);
     final max = parseRupiah(_max.text);
-    if (min == null || min <= 0) e['budget_min'] = 'Budget harus lebih dari 0';
+    if (min == null || min <= 0) e['budget_min'] = 'Isi budget lebih dari Rp0';
     if (max == null || max <= 0) {
-      e['budget_max'] = 'Budget harus lebih dari 0';
+      e['budget_max'] = 'Isi budget lebih dari Rp0';
     } else if (min != null && max < min) {
       e['budget_max'] = 'Budget maksimum harus lebih besar dari minimum';
     }
@@ -189,7 +189,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
 
   Future<void> _saveTapped() async {
     if (await _save() && mounted) {
-      AppSnack.show(context, 'Draf tersimpan', success: true);
+      AppSnack.show(context, 'Draf sudah tersimpan.', success: true);
     }
   }
 
@@ -245,7 +245,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Lowongan ini belum dibayar. Simpan sebagai draf agar bisa dilanjutkan nanti.',
+                'Lowongan ini belum dibayar. Simpan sebagai draf untuk dilanjutkan nanti.',
               ),
               const SizedBox(height: AppSpace.s16),
               AppButton(
@@ -259,7 +259,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
                 onPressed: () => Navigator.pop(ctx, _Exit.keep),
               ),
               AppButton(
-                label: 'Buang',
+                label: 'Buang draf',
                 variant: AppButtonVariant.text,
                 onPressed: () => Navigator.pop(ctx, _Exit.discard),
               ),
@@ -276,8 +276,8 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
     }
     final leave = await ConfirmDialog.show(
       context,
-      title: 'Keluar dari lowongan?',
-      message: 'Isian belum lengkap sehingga draf tidak dapat disimpan.',
+      title: 'Keluar tanpa menyimpan?',
+      message: 'Isian belum lengkap, jadi draf belum bisa disimpan.',
       confirmLabel: 'Keluar',
       cancelLabel: 'Lanjut mengisi',
       destructive: true,
@@ -441,7 +441,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Wajib SKCK'),
                 subtitle: const Text(
-                  'Hanya asisten ber-SKCK terverifikasi yang bisa melamar.',
+                  'Hanya pelamar dengan SKCK terverifikasi yang bisa melamar.',
                 ),
                 value: _skck,
                 onChanged: (v) {
@@ -455,7 +455,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Lewati wawancara'),
                 subtitle: const Text(
-                  'Pelamar bisa langsung diterima tanpa wawancara.',
+                  'Anda bisa langsung menerima pelamar tanpa wawancara.',
                 ),
                 value: _skip,
                 onChanged: (v) {
@@ -470,7 +470,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
     ],
     _ => [
       Text(
-        'Pertanyaan screening (opsional, maksimal 5)',
+        'Pertanyaan untuk pelamar (opsional, maksimal 5)',
         style: context.text.label,
       ),
       const SizedBox(height: AppSpace.s8),
@@ -537,7 +537,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
             const SizedBox(height: AppSpace.s12),
             IconInfoRow(
               icon: LucideIcons.briefcase,
-              text: '${_category ?? '-'} - ${_city ?? '-'}',
+              text: '${_category ?? '-'} · ${_city ?? '-'}',
             ),
             const SizedBox(height: AppSpace.s8),
             IconInfoRow(

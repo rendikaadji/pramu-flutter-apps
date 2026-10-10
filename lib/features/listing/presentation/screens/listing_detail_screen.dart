@@ -38,9 +38,20 @@ class ListingDetailScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Detail lowongan',
       glow: true,
-      bottomNavigationBar: l != null && assistant
+      bottomNavigationBar: l == null
+          ? null
+          : assistant
           ? PinnedActionsBar(children: [_Cta(listing: l)])
-          : null,
+          : PinnedActionsBar(
+              children: [
+                Text(
+                  'Ini lowongan milik pencari lain. Beralih ke peran Pelamar untuk melamar.',
+                  style: context.text.bodySm.copyWith(
+                    color: context.tokens.textMuted,
+                  ),
+                ),
+              ],
+            ),
       body: AsyncBody<Listing>(
         value: async,
         onRetry: () => ref.invalidate(listingDetailProvider(id)),
@@ -151,7 +162,7 @@ class _BodyState extends State<_Body> {
         ],
         const SizedBox(height: AppSpace.s20),
         SegmentedTabs(
-          labels: const ['Deskripsi', 'Persyaratan', 'Pemberi kerja'],
+          labels: const ['Deskripsi', 'Persyaratan', 'Pencari'],
           index: _tab,
           onChanged: (i) => setState(() => _tab = i),
         ),
@@ -179,7 +190,7 @@ class _Description extends StatelessWidget {
         const SectionHeader('Tentang pekerjaan'),
         Text(
           l.description.isEmpty
-              ? 'Pemberi kerja belum menambahkan deskripsi.'
+              ? 'Pencari belum menulis deskripsi.'
               : l.description,
           style: context.text.body,
         ),
@@ -267,15 +278,15 @@ class _SkckPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.tokens;
     var ok = false;
-    var message = 'Hanya asisten ber-SKCK terverifikasi yang bisa melamar.';
+    var message = 'Hanya pelamar dengan SKCK terverifikasi yang bisa melamar.';
     if (assistantView) {
       final status =
           ref.watch(mySkckStatusProvider).value ?? VerificationStatus.none;
       ok = status.isVerified;
       message = ok
-          ? 'SKCK Anda sudah terverifikasi, Anda bisa melamar.'
+          ? 'SKCK Anda sudah terverifikasi. Anda bisa melamar.'
           : status == VerificationStatus.pending
-          ? 'SKCK Anda sedang ditinjau. Anda bisa melamar setelah terverifikasi.'
+          ? 'SKCK Anda sedang diperiksa. Anda bisa melamar setelah verifikasi selesai.'
           : 'Lowongan ini mewajibkan SKCK. Unggah SKCK Anda sekali, bisa dipakai untuk lamaran lain.';
     }
     final tone = ok ? StatusTone.success : StatusTone.warning;
@@ -339,7 +350,7 @@ class _Cta extends ConsumerWidget {
       return _Locked(
         message: l.status == ListingStatus.filled
             ? 'Lowongan ini sudah terisi.'
-            : 'Lowongan ini sudah ditutup atau berakhir.',
+            : 'Lowongan ini sudah ditutup.',
       );
     }
     final status = skck.value ?? VerificationStatus.none;

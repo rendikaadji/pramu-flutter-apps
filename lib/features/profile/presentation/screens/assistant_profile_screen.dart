@@ -32,9 +32,9 @@ void _explainSeal(BuildContext context) => showModalBottomSheet<void>(
           Text('Apa arti terverifikasi?', style: context.text.h2),
           const SizedBox(height: AppSpace.s8),
           Text(
-            'KTP dan selfie pengguna ini sudah ditinjau petugas Pramu. '
-            'Ini bukan jaminan perilaku, jadi tetap periksa ulasan dan '
-            'lakukan wawancara.',
+            'KTP dan selfie pengguna ini sudah diperiksa petugas Pramu. '
+            'Verifikasi bukan jaminan perilaku, jadi tetap baca ulasan dan '
+            'adakan wawancara.',
             style: context.text.body,
           ),
         ],
@@ -52,8 +52,9 @@ class AssistantProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(assistantProfileProvider(userId));
     final me = ref.watch(sessionProvider.select((s) => s.user));
+    final own = me?.id == userId;
     return AppScaffold(
-      title: 'Profil asisten',
+      title: own ? 'Profil Anda' : 'Profil asisten',
       glow: true,
       padded: false,
       body: AsyncBody<AssistantProfile>(
@@ -130,7 +131,7 @@ class AssistantProfileScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpace.s8),
-        const SectionHeader('Tentang asisten'),
+        SectionHeader(own ? 'Tentang Anda' : 'Tentang asisten'),
         const SizedBox(height: AppSpace.s8),
         AppCard(
           child: Column(
@@ -184,8 +185,10 @@ class AssistantProfileScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppSpace.s16),
-        const PrivacyNote(
-          'Nomor HP disembunyikan sampai pembayaran dilakukan, demi keamanan Anda.',
+        PrivacyNote(
+          own
+              ? 'Pencari tidak melihat nomor HP Anda sampai pembayaran dilakukan.'
+              : 'Nomor HP disembunyikan sampai pembayaran dilakukan, demi keamanan Anda.',
         ),
         const SizedBox(height: AppSpace.s16),
         if (own)

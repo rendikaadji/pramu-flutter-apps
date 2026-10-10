@@ -33,7 +33,11 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
     );
     if (!ok || !mounted) return;
     _reload();
-    AppSnack.show(context, 'Wawancara dikonfirmasi', success: true);
+    AppSnack.show(
+      context,
+      'Jadwal wawancara sudah dikonfirmasi.',
+      success: true,
+    );
     context.pushReplacement(Routes.interviewDetail(widget.id));
   }
 
@@ -45,7 +49,7 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
     );
     if (!ok || !mounted) return;
     _reload();
-    AppSnack.show(context, 'Usulan waktu terkirim', success: true);
+    AppSnack.show(context, 'Usulan waktu sudah terkirim.', success: true);
     context.pushReplacement(Routes.interviewDetail(widget.id));
   }
 
@@ -54,7 +58,7 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
     final async = ref.watch(interviewContextProvider(widget.id));
     final meetFailed = actionError?.code == 'MEET_CREATE_FAILED';
     return AppScaffold(
-      title: 'Konfirmasi wawancara',
+      title: 'Pilih waktu wawancara',
       body: AsyncBody<InterviewContext>(
         value: async,
         onRetry: _reload,
@@ -64,7 +68,7 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
             return EmptyState(
               icon: LucideIcons.calendarCheck,
               title: iv.status.label,
-              message: 'Jadwal ini tidak perlu dikonfirmasi lagi.',
+              message: 'Jadwal ini sudah tidak perlu dikonfirmasi.',
               actionLabel: 'Lihat wawancara',
               onAction: () =>
                   ctx.pushReplacement(Routes.interviewDetail(widget.id)),
@@ -103,15 +107,26 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
               else if (actionError != null)
                 ActionErrorBox(error: actionError!),
               if (actionError != null) const SizedBox(height: AppSpace.s16),
-              Text(
-                'Pilih waktu yang cocok dengan ${c.otherName}',
-                style: ctx.text.h3,
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Wawancara dengan ${c.otherName}', style: ctx.text.h3),
+                    Text(
+                      c.application.listingTitle,
+                      style: ctx.text.bodySm.copyWith(
+                        color: ctx.tokens.textMuted,
+                      ),
+                    ),
+                    if (iv.note != null && iv.note!.isNotEmpty) ...[
+                      const SizedBox(height: AppSpace.s12),
+                      Text('Pesan: ${iv.note}', style: ctx.text.body),
+                    ],
+                  ],
+                ),
               ),
-              Text(c.application.listingTitle, style: ctx.text.bodySm),
-              if (iv.note != null && iv.note!.isNotEmpty) ...[
-                const SizedBox(height: AppSpace.s8),
-                Text('Catatan: ${iv.note}', style: ctx.text.body),
-              ],
+              const SizedBox(height: AppSpace.s16),
+              const SectionHeader('Pilih satu waktu yang cocok'),
               const SizedBox(height: AppSpace.s12),
               RadioGroup<DateTime>(
                 groupValue: _slot,
@@ -140,7 +155,7 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
               const SizedBox(height: AppSpace.s16),
               AppButton(
                 key: K.interviewConfirm,
-                label: 'Konfirmasi jadwal',
+                label: 'Konfirmasi waktu ini',
                 large: true,
                 loading: busy && !meetFailed,
                 onPressed: canAct && _slot != null ? _confirm : null,
@@ -148,7 +163,7 @@ class _State extends ConsumerState<ConfirmScreen> with ApiActionMixin {
               const SizedBox(height: AppSpace.s8),
               AppButton(
                 key: K.interviewReschedule,
-                label: 'Usulkan waktu lain',
+                label: 'Tidak cocok? Usulkan waktu lain',
                 variant: AppButtonVariant.secondary,
                 onPressed: canAct ? _reschedule : null,
               ),

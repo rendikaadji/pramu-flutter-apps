@@ -15,6 +15,7 @@ import 'package:pramu_apps/features/listing/domain/listing.dart';
 import 'package:pramu_apps/features/listing/presentation/state/listing_state.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 
 /// M-34 Bayar fee lowongan. Sumber kebenaran = status server (dicek ulang),
@@ -133,9 +134,25 @@ class _State extends ConsumerState<ListingPayScreen>
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(listingDetailProvider(widget.id));
+    final l = async.value;
+    final showPay =
+        l != null && l.status != ListingStatus.open && l.status.canPay;
     return AppScaffold(
-      title: 'Bayar fee lowongan',
+      title: 'Bayar biaya pasang',
       glow: true,
+      bottomNavigationBar: showPay && !_waiting
+          ? PinnedActionsBar(
+              children: [
+                AppButton(
+                  key: K.listingPay,
+                  label: 'Bayar ${formatRupiah(l.postingFee)}',
+                  large: true,
+                  loading: busy,
+                  onPressed: canAct ? _pay : null,
+                ),
+              ],
+            )
+          : null,
       body: AsyncBody<Listing>(
         value: async,
         onRetry: () => ref.invalidate(listingDetailProvider(widget.id)),
@@ -151,8 +168,8 @@ class _State extends ConsumerState<ListingPayScreen>
     return SuccessView(
       title: 'Lowongan sudah tayang',
       message: until == null
-          ? 'Lowongan Anda sudah bisa dilihat dan dilamar asisten.'
-          : 'Tayang sampai ${formatDate(until)}. Asisten sudah bisa melamar.',
+          ? 'Lowongan Anda sudah bisa dilihat dan dilamar.'
+          : 'Tayang sampai ${formatDate(until)}. Lamaran sudah bisa masuk.',
       actionLabel: 'Lihat lowongan',
       onAction: () => context.pushReplacement(Routes.listingManage(l.id)),
     );
@@ -163,7 +180,7 @@ class _State extends ConsumerState<ListingPayScreen>
     if (!l.status.canPay) {
       return EmptyBlock(
         message:
-            'Lowongan ini berstatus "${l.status.label}" dan tidak dapat dibayar.',
+            'Lowongan ini berstatus "${l.status.label}", jadi tidak perlu dibayar.',
       );
     }
     final fee = formatRupiah(l.postingFee);
@@ -181,7 +198,7 @@ class _State extends ConsumerState<ListingPayScreen>
         ),
         const SizedBox(height: AppSpace.s12),
         Text(
-          'Biaya pasang tidak dikembalikan jika tidak ada kecocokan.',
+          'Biaya pasang tidak dikembalikan, termasuk bila belum ada pelamar yang cocok.',
           style: context.text.bodySm.copyWith(color: t.textMuted),
         ),
         const SizedBox(height: AppSpace.s24),
@@ -193,7 +210,7 @@ class _State extends ConsumerState<ListingPayScreen>
               color: t.warningContainer,
               child: Text(
                 _timedOut
-                    ? 'Pembayaran belum kami terima. Jika sudah membayar, ketuk Cek status pembayaran.'
+                    ? 'Pembayaran belum kami terima. Jika sudah membayar, ketuk "Cek status pembayaran".'
                     : 'Pembayaran sedang diproses. Jangan bayar lagi; kami kabari begitu selesai.',
               ),
             ),
@@ -211,14 +228,7 @@ class _State extends ConsumerState<ListingPayScreen>
             loading: busy,
             onPressed: canAct ? _pay : null,
           ),
-        ] else
-          AppButton(
-            key: K.listingPay,
-            label: 'Bayar $fee',
-            large: true,
-            loading: busy,
-            onPressed: canAct ? _pay : null,
-          ),
+        ],
       ],
     );
   }

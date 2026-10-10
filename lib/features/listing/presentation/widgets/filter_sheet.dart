@@ -163,7 +163,7 @@ class _FilterSheetState extends State<_FilterSheet> {
           ),
           if (widget.showRating)
             _group(
-              'Rating minimum',
+              'Rating minimal',
               ChipSelect<double>(
                 options: _ratings,
                 labelOf: (r) => '${r.toString().replaceAll('.', ',')}+',

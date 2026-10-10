@@ -13,9 +13,10 @@ import 'package:pramu_apps/features/application/presentation/state/application_s
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 import 'package:pramu_apps/shared/app_ui/rate_text.dart';
 
-/// M-37 Detail pelamar (pencari): kartu kepercayaan + keputusan.
+/// M-37 Detail pelamar (pencari): rekam jejak + keputusan.
 class ApplicantScreen extends ConsumerStatefulWidget {
   const ApplicantScreen({super.key, required this.id});
   final String id;
@@ -57,8 +58,12 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(applicantDetailProvider(widget.id));
+    final pinned = async.hasValue ? _pinned(context, async.requireValue) : null;
     return AppScaffold(
       title: 'Detail pelamar',
+      bottomNavigationBar: pinned == null || pinned.isEmpty
+          ? null
+          : PinnedActionsBar(children: pinned),
       body: AsyncBody<ApplicantDetail>(
         value: async,
         onRetry: _reload,
@@ -77,36 +82,102 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
     );
   }
 
+  /// Keputusan utama menempel di bawah: satu primer, sisanya sekunder.
+  List<Widget> _pinned(BuildContext context, ApplicantDetail d) {
+    final app = d.application;
+    final actions = app.status.allowedActions(Role.seeker);
+    final shortlisted = app.status == ApplicationStatus.shortlisted;
+    final acceptable =
+        actions.contains(ApplicationAction.accept) &&
+        (!shortlisted || d.listing.skipInterview);
+    final canShortlist = actions.contains(ApplicationAction.shortlist);
+    final list = <Widget>[
+      if (canShortlist)
+        AppButton(
+          key: K.applicationShortlist,
+          label: 'Masukkan ke daftar pendek',
+          icon: LucideIcons.bookmarkPlus,
+          loading: busy,
+          onPressed: canAct ? () => _do(ApplicationAction.shortlist) : null,
+        ),
+      if (actions.contains(ApplicationAction.proposeInterview))
+        AppButton(
+          key: K.interviewPropose,
+          label: 'Ajukan wawancara',
+          icon: LucideIcons.video,
+          variant: canShortlist
+              ? AppButtonVariant.secondary
+              : AppButtonVariant.primary,
+          onPressed: () => context
+              .push(Routes.interviewPropose(app.id))
+              .then((_) => _reload()),
+        ),
+      if (acceptable)
+        AppButton(
+          key: K.applicationAccept,
+          label: shortlisted ? 'Terima tanpa wawancara' : 'Terima pelamar',
+          icon: LucideIcons.userCheck,
+          variant: shortlisted
+              ? AppButtonVariant.secondary
+              : AppButtonVariant.primary,
+          loading: busy,
+          onPressed: canAct
+              ? () => _do(
+                  ApplicationAction.accept,
+                  title: 'Terima pelamar ini?',
+                  message:
+                      'Anda lanjut menyusun kontrak dengan ${app.assistant.name}.',
+                  confirmLabel: 'Terima pelamar',
+                )
+              : null,
+        ),
+      if (actions.contains(ApplicationAction.proposeAgreement))
+        AppButton(
+          key: K.applicationAgreement,
+          label: app.agreementId == null ? 'Susun kontrak' : 'Lihat kontrak',
+          onPressed: () => context.push(
+            app.agreementId == null
+                ? Routes.agreementNew(app.id)
+                : Routes.agreementReview(app.agreementId!),
+          ),
+        ),
+    ];
+    return [
+      for (var i = 0; i < list.length; i++) ...[
+        if (i > 0) const SizedBox(height: AppSpace.s8),
+        list[i],
+      ],
+    ];
+  }
+
   List<Widget> _children(BuildContext context, ApplicantDetail d) {
     final app = d.application;
     final a = app.assistant;
     final t = context.tokens;
     final actions = app.status.allowedActions(Role.seeker);
-    final skip = d.listing.skipInterview;
-    final acceptable =
-        actions.contains(ApplicationAction.accept) &&
-        (app.status != ApplicationStatus.shortlisted || skip);
+    final questions = d.listing.screeningQuestions;
     return [
       if (actionError != null) ActionErrorBox(error: actionError!),
-      Row(
-        children: [
-          AvatarImage(name: a.name, url: a.photoUrl, size: 64),
-          const SizedBox(width: AppSpace.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(a.name, style: context.text.h2),
-                const SizedBox(height: AppSpace.s8),
-                StatusChip.of(StatusDomain.application, wire(app.status)),
-              ],
+      AppCard(
+        child: Row(
+          children: [
+            AvatarImage(name: a.name, url: a.photoUrl, size: 64),
+            const SizedBox(width: AppSpace.s16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(a.name, style: context.text.h2),
+                  const SizedBox(height: AppSpace.s8),
+                  StatusChip.of(StatusDomain.application, wire(app.status)),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-      const SizedBox(height: AppSpace.s8),
-      const SectionHeader('Kepercayaan'),
-      const SizedBox(height: AppSpace.s8),
+      const SizedBox(height: AppSpace.s16),
+      const SectionHeader('Rekam jejak'),
       TrustCard(
         seal: a.verified ? SealState.verified : SealState.pending,
         skckVerified: app.skckVerified,
@@ -115,162 +186,92 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
         completedJobs: d.profile?.completedJobs ?? 0,
       ),
       const SizedBox(height: AppSpace.s16),
-      const SectionHeader('Lamaran'),
-      const SizedBox(height: AppSpace.s8),
+      const SectionHeader('Lamarannya'),
       AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Lamaran untuk', style: context.text.caption),
+            Text('Melamar untuk', style: context.text.caption),
             Text(app.listingTitle, style: context.text.h3),
             const SizedBox(height: AppSpace.s12),
-            Text('Tarif usulan', style: context.text.caption),
+            Text('Tarif yang diusulkan', style: context.text.caption),
             RateText(
               formatRupiah(app.proposedRate),
               unit: d.listing.unit.label.toLowerCase(),
             ),
             const SizedBox(height: AppSpace.s12),
-            Text('Pesan', style: context.text.caption),
+            Text('Pesan dari pelamar', style: context.text.caption),
             Text(app.message, style: context.text.body),
+            const SizedBox(height: AppSpace.s8),
             Text(
-              'Dilamar ${formatDate(app.createdAt)}',
+              'Dikirim ${formatDate(app.createdAt)}',
               style: context.text.bodySm.copyWith(color: t.textMuted),
             ),
           ],
         ),
       ),
-      if (d.listing.screeningQuestions.isNotEmpty) ...[
+      if (questions.isNotEmpty) ...[
         const SizedBox(height: AppSpace.s16),
-        const SectionHeader('Jawaban screening'),
-        const SizedBox(height: AppSpace.s8),
+        const SectionHeader('Jawaban atas pertanyaan Anda'),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (var i = 0; i < d.listing.screeningQuestions.length; i++) ...[
-                Text(
-                  d.listing.screeningQuestions[i],
-                  style: context.text.label,
-                ),
+              for (var i = 0; i < questions.length; i++) ...[
+                Text(questions[i], style: context.text.label),
                 Text(
                   i < app.answers.length ? app.answers[i] : '-',
                   style: context.text.body,
                 ),
-                const SizedBox(height: AppSpace.s8),
+                if (i < questions.length - 1)
+                  const SizedBox(height: AppSpace.s12),
               ],
             ],
           ),
         ),
       ],
-      const SizedBox(height: AppSpace.s24),
-      const SectionHeader('Keputusan'),
-      const SizedBox(height: AppSpace.s8),
-      if (actions.contains(ApplicationAction.shortlist))
-        _gap(
-          AppButton(
-            key: K.applicationShortlist,
-            label: 'Masukkan daftar pendek',
-            icon: LucideIcons.bookmarkPlus,
-            loading: busy,
-            onPressed: canAct ? () => _do(ApplicationAction.shortlist) : null,
-          ),
+      if (app.interviewId != null || app.conversationId != null) ...[
+        const SizedBox(height: AppSpace.s16),
+        ListTileCard(
+          children: [
+            if (app.interviewId != null)
+              SettingsRow(
+                icon: LucideIcons.calendar,
+                title: 'Lihat wawancara',
+                subtitle: 'Jadwal dan tautan Google Meet',
+                onTap: () => context
+                    .push(Routes.interviewDetail(app.interviewId!))
+                    .then((_) => _reload()),
+              ),
+            if (app.conversationId != null)
+              SettingsRow(
+                key: K.applicationChat,
+                icon: LucideIcons.messageCircle,
+                title: 'Buka percakapan',
+                subtitle: 'Bertanya sebelum memutuskan',
+                onTap: () => context.push(Routes.chatRoom(app.conversationId!)),
+              ),
+          ],
         ),
-      if (actions.contains(ApplicationAction.proposeInterview))
-        _gap(
-          AppButton(
-            key: K.interviewPropose,
-            label: 'Ajukan wawancara',
-            icon: LucideIcons.video,
-            variant: actions.contains(ApplicationAction.shortlist)
-                ? AppButtonVariant.secondary
-                : AppButtonVariant.primary,
-            onPressed: () => context
-                .push(Routes.interviewPropose(app.id))
-                .then((_) => _reload()),
-          ),
+      ],
+      if (actions.contains(ApplicationAction.reject)) ...[
+        const SizedBox(height: AppSpace.s24),
+        _RejectButton(
+          key: K.applicationReject,
+          loading: busy,
+          onPressed: canAct
+              ? () => _do(
+                  ApplicationAction.reject,
+                  title: 'Tolak pelamar ini?',
+                  message: 'Pelamar akan menerima kabar bahwa lamarannya belum dipilih.',
+                  confirmLabel: 'Tolak pelamar',
+                  destructive: true,
+                )
+              : null,
         ),
-      if (acceptable)
-        _gap(
-          AppButton(
-            key: K.applicationAccept,
-            label: app.status == ApplicationStatus.shortlisted
-                ? 'Lewati wawancara & terima'
-                : 'Terima pelamar',
-            icon: LucideIcons.userCheck,
-            variant: app.status == ApplicationStatus.shortlisted
-                ? AppButtonVariant.secondary
-                : AppButtonVariant.primary,
-            loading: busy,
-            onPressed: canAct
-                ? () => _do(
-                    ApplicationAction.accept,
-                    title: 'Terima pelamar ini?',
-                    message:
-                        'Anda akan lanjut menyusun kesepakatan dengan ${a.name}.',
-                    confirmLabel: 'Terima pelamar',
-                  )
-                : null,
-          ),
-        ),
-      if (actions.contains(ApplicationAction.proposeAgreement))
-        _gap(
-          AppButton(
-            key: K.applicationAgreement,
-            label: app.agreementId == null
-                ? 'Susun kesepakatan'
-                : 'Lihat kesepakatan',
-            onPressed: () => context.push(
-              app.agreementId == null
-                  ? Routes.agreementNew(app.id)
-                  : Routes.agreementReview(app.agreementId!),
-            ),
-          ),
-        ),
-      if (app.interviewId != null)
-        _gap(
-          AppButton(
-            label: 'Lihat wawancara',
-            icon: LucideIcons.calendar,
-            variant: AppButtonVariant.secondary,
-            onPressed: () => context
-                .push(Routes.interviewDetail(app.interviewId!))
-                .then((_) => _reload()),
-          ),
-        ),
-      if (app.conversationId != null)
-        _gap(
-          AppButton(
-            key: K.applicationChat,
-            label: 'Buka chat',
-            icon: LucideIcons.messageCircle,
-            variant: AppButtonVariant.secondary,
-            onPressed: () => context.push(Routes.chatRoom(app.conversationId!)),
-          ),
-        ),
-      if (actions.contains(ApplicationAction.reject))
-        Padding(
-          padding: const EdgeInsets.only(top: AppSpace.s8),
-          child: _RejectButton(
-            key: K.applicationReject,
-            loading: busy,
-            onPressed: canAct
-                ? () => _do(
-                    ApplicationAction.reject,
-                    title: 'Tolak pelamar ini?',
-                    message: 'Pelamar akan diberi tahu bahwa tidak dipilih.',
-                    confirmLabel: 'Tolak',
-                    destructive: true,
-                  )
-                : null,
-          ),
-        ),
+      ],
     ];
   }
-
-  Widget _gap(Widget w) => Padding(
-    padding: const EdgeInsets.only(bottom: AppSpace.s12),
-    child: w,
-  );
 }
 
 /// Tolak = aksi sekunder: outline bahaya, tidak mendominasi tombol utama.
@@ -294,11 +295,11 @@ class _RejectButton extends StatelessWidget {
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
                 color: t.danger,
-                semanticsLabel: 'Tolak, sedang diproses',
+                semanticsLabel: 'Menolak pelamar, sedang diproses',
               ),
             )
           : const Icon(LucideIcons.circleX, size: 20),
-      label: const Text('Tolak'),
+      label: const Text('Tolak pelamar'),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(AppSpace.tap),
         foregroundColor: t.danger,

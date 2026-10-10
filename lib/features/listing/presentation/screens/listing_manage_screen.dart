@@ -40,7 +40,7 @@ class _State extends ConsumerState<ListingManageScreen> with ApiActionMixin {
     final ok = await ConfirmDialog.show(
       context,
       title: 'Tutup lowongan?',
-      message: 'Pelamar yang belum diproses akan diberi tahu. Lowongan tidak tayang lagi.',
+      message: 'Lowongan tidak tayang lagi. Pelamar yang belum diproses akan kami beri kabar.',
       confirmLabel: 'Tutup lowongan',
       destructive: true,
     );
@@ -60,7 +60,7 @@ class _State extends ConsumerState<ListingManageScreen> with ApiActionMixin {
     final listing = ref.watch(listingDetailProvider(widget.id));
     final l = listing.value;
     return AppScaffold(
-      title: 'Detail lowongan',
+      title: 'Kelola lowongan',
       actions: [
         if (l != null && l.status.canClose)
           AppIconButton(
@@ -87,8 +87,8 @@ class _State extends ConsumerState<ListingManageScreen> with ApiActionMixin {
               const SizedBox(height: AppSpace.s16),
               if (l.status == ListingStatus.filled) ...[
                 NextStepCard(
-                  title: 'Lowongan terisi',
-                  message: 'Lanjutkan ke kontrak Anda.',
+                  title: 'Lowongan sudah terisi',
+                  message: 'Lihat kontrak yang sedang berjalan.',
                   onTap: () => ctx.push(Routes.contracts),
                 ),
                 const SizedBox(height: AppSpace.s16),
@@ -96,7 +96,7 @@ class _State extends ConsumerState<ListingManageScreen> with ApiActionMixin {
               if (l.status.canPay) ...[
                 AppButton(
                   key: K.listingPay,
-                  label: 'Bayar & tayangkan',
+                  label: 'Bayar dan tayangkan',
                   onPressed: () => ctx.push(Routes.listingPay(l.id)),
                 ),
                 const SizedBox(height: AppSpace.s16),
@@ -150,7 +150,7 @@ class _Summary extends StatelessWidget {
           const SizedBox(height: AppSpace.s12),
           IconInfoRow(
             icon: LucideIcons.briefcase,
-            text: '${l.category} - ${l.city}',
+            text: '${l.category} · ${l.city}',
           ),
           const SizedBox(height: AppSpace.s8),
           IconInfoRow(
@@ -219,7 +219,7 @@ class _Applicants extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: AppSpace.s24),
                   child: Text(
                     status != null
-                        ? 'Tidak ada pelamar dengan status ini.'
+                        ? 'Belum ada pelamar dengan status ini.'
                         : 'Belum ada pelamar.${until == null ? '' : ' Lowongan Anda tayang sampai ${formatDate(until)}.'}',
                     style: context.text.body,
                     textAlign: TextAlign.center,

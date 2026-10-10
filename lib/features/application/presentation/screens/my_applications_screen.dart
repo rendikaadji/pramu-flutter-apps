@@ -120,7 +120,7 @@ class MyApplicationsScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.all(AppSpace.s16),
                         child: Text(
-                          'Belum ada lamaran. Cari lowongan.',
+                          'Belum ada lamaran. Cari lowongan yang cocok.',
                           style: ctx.text.body,
                         ),
                       ),
@@ -147,7 +147,8 @@ class MyApplicationsScreen extends ConsumerWidget {
                               const SizedBox(height: AppSpace.s4),
                               IconInfoRow(
                                 icon: LucideIcons.banknote,
-                                text: 'Usulan ${formatRupiah(a.proposedRate)}',
+                                text:
+                                    'Tarif usulan ${formatRupiah(a.proposedRate)}',
                                 small: true,
                               ),
                               const SizedBox(height: AppSpace.s4),

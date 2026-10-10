@@ -9,6 +9,7 @@ import 'package:pramu_apps/features/interview/presentation/state/interview_state
 import 'package:pramu_apps/features/interview/presentation/widgets/slot_editor.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 
 /// M-50 Ajukan slot wawancara (pencari).
 class ProposeScreen extends ConsumerStatefulWidget {
@@ -32,7 +33,7 @@ class _State extends ConsumerState<ProposeScreen> with ApiActionMixin {
 
   Future<void> _submit() async {
     if (_slots.isEmpty) {
-      setState(() => _localError = 'Pilih minimal 1 waktu');
+      setState(() => _localError = 'Pilih minimal satu waktu wawancara.');
       return;
     }
     String? id;
@@ -51,7 +52,7 @@ class _State extends ConsumerState<ProposeScreen> with ApiActionMixin {
           ref.invalidate(proposeTargetProvider(widget.applicationId)),
     );
     if (!ok || !mounted) return;
-    AppSnack.show(context, 'Jadwal wawancara terkirim', success: true);
+    AppSnack.show(context, 'Usulan jadwal sudah terkirim.', success: true);
     context.pushReplacement(Routes.interviewDetail(id!));
   }
 
@@ -60,6 +61,17 @@ class _State extends ConsumerState<ProposeScreen> with ApiActionMixin {
     final async = ref.watch(proposeTargetProvider(widget.applicationId));
     return AppScaffold(
       title: 'Ajukan wawancara',
+      bottomNavigationBar: PinnedActionsBar(
+        children: [
+          AppButton(
+            key: K.interviewSubmit,
+            label: 'Kirim usulan jadwal',
+            large: true,
+            loading: busy,
+            onPressed: canAct ? _submit : null,
+          ),
+        ],
+      ),
       body: AsyncBody<Application>(
         value: async,
         onRetry: () =>
@@ -71,9 +83,39 @@ class _State extends ConsumerState<ProposeScreen> with ApiActionMixin {
           ),
           children: [
             if (actionError != null) ActionErrorBox(error: actionError!),
-            Text('Wawancara dengan ${app.assistant.name}', style: ctx.text.h3),
-            Text(app.listingTitle, style: ctx.text.bodySm),
-            const SizedBox(height: AppSpace.s16),
+            AppCard(
+              child: Row(
+                children: [
+                  AvatarImage(
+                    name: app.assistant.name,
+                    url: app.assistant.photoUrl,
+                    size: 48,
+                  ),
+                  const SizedBox(width: AppSpace.s12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(app.assistant.name, style: ctx.text.h3),
+                        Text(
+                          app.listingTitle,
+                          style: ctx.text.bodySm.copyWith(
+                            color: ctx.tokens.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpace.s24),
+            const SectionHeader('Usulkan waktu'),
+            Text(
+              'Beri satu sampai tiga pilihan. Pelamar memilih yang cocok.',
+              style: ctx.text.body.copyWith(color: ctx.tokens.textMuted),
+            ),
+            const SizedBox(height: AppSpace.s12),
             SlotEditor(
               slots: _slots,
               error: _localError ?? fieldError('slots'),
@@ -85,18 +127,10 @@ class _State extends ConsumerState<ProposeScreen> with ApiActionMixin {
             const SizedBox(height: AppSpace.s16),
             AppTextField(
               key: K.interviewNote,
-              label: 'Catatan singkat (opsional)',
+              label: 'Pesan untuk pelamar (opsional)',
               controller: _note,
               maxLines: 3,
               maxLength: 200,
-            ),
-            const SizedBox(height: AppSpace.s24),
-            AppButton(
-              key: K.interviewSubmit,
-              label: 'Kirim jadwal',
-              large: true,
-              loading: busy,
-              onPressed: canAct ? _submit : null,
             ),
           ],
         ),

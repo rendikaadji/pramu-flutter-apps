@@ -51,7 +51,9 @@ class _State extends ConsumerState<EvaluationScreen> with ApiActionMixin {
 
   Future<void> _save() async {
     if (_score.values.any((v) => v < 1)) {
-      setState(() => _localError = 'Beri skor 1 sampai 5 untuk setiap aspek.');
+      setState(
+        () => _localError = 'Beri bintang 1 sampai 5 untuk setiap penilaian.',
+      );
       return;
     }
     final ok = await act(
@@ -71,7 +73,7 @@ class _State extends ConsumerState<EvaluationScreen> with ApiActionMixin {
     if (!ok || !mounted) return;
     ref.invalidate(interviewContextProvider(widget.id));
     ref.invalidate(evaluationProvider(widget.id));
-    AppSnack.show(context, 'Catatan tersimpan', success: true);
+    AppSnack.show(context, 'Catatan sudah tersimpan.', success: true);
     popOrGo(context, Routes.seekerHome);
   }
 
@@ -89,8 +91,8 @@ class _State extends ConsumerState<EvaluationScreen> with ApiActionMixin {
           if (!c.isSeeker) {
             return const EmptyState(
               icon: LucideIcons.lock,
-              title: 'Hanya untuk pencari',
-              message: 'Catatan wawancara bersifat privat bagi pencari.',
+              title: 'Catatan ini khusus pencari',
+              message: 'Hanya pencari yang dapat mengisi dan melihatnya.',
             );
           }
           return ListView(

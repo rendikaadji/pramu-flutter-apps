@@ -47,7 +47,7 @@ class MyListingsScreen extends ConsumerWidget {
             ? EmptyState(
                 icon: LucideIcons.clipboardList,
                 title: 'Belum ada lowongan',
-                message: 'Buat lowongan pertama Anda untuk menemukan asisten.',
+                message: 'Buat lowongan pertama Anda agar pelamar bisa melihat dan melamar.',
                 actionLabel: 'Buat lowongan',
                 onAction: () => ctx.push(Routes.listingNew),
               )
@@ -107,7 +107,7 @@ class _TabbedState extends State<_Tabbed> {
               ? const EmptyState(
                   icon: LucideIcons.clipboardList,
                   title: 'Belum ada lowongan',
-                  message: 'Tidak ada lowongan pada kategori ini.',
+                  message: 'Belum ada lowongan di tab ini.',
                   compact: true,
                 )
               : RefreshIndicator(

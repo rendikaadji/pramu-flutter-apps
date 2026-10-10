@@ -31,7 +31,7 @@ class ProfileEditScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(myProfileProvider);
     return AppScaffold(
-      title: 'Profil asisten',
+      title: 'Profil Anda',
       glow: true,
       padded: false,
       body: AsyncBody<AssistantProfile?>(
@@ -116,8 +116,9 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
     setState(() {
       actionError = null;
       _local = {
-        if (d.categories.isEmpty) 'categories': 'Pilih minimal satu kategori',
-        if (d.city.isEmpty) 'city': 'Kota wajib diisi',
+        if (d.categories.isEmpty)
+          'categories': 'Pilih minimal satu kategori pekerjaan',
+        if (d.city.isEmpty) 'city': 'Isi kota tempat Anda bekerja',
       };
     });
     if (_local.isNotEmpty) return;
@@ -128,7 +129,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
     if (!ok || !mounted) return;
     ref.invalidate(myProfileProvider);
     ref.invalidate(assistantProfileProvider(d.userId));
-    AppSnack.show(context, 'Profil disimpan', success: true);
+    AppSnack.show(context, 'Profil sudah tersimpan.', success: true);
     if (context.canPop()) context.pop();
   }
 
@@ -150,7 +151,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
             child: AppCard(
               color: t.warningContainer,
               child: Text(
-                'Profil tampil publik setelah akun Anda terverifikasi.',
+                'Pencari baru bisa melihat profil Anda setelah akun terverifikasi.',
                 style: context.text.body,
               ),
             ),
@@ -276,7 +277,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
             ),
           ),
         const SizedBox(height: AppSpace.s24),
-        const SectionHeader('Tarif & ketersediaan'),
+        const SectionHeader('Tarif dan ketersediaan'),
         const SizedBox(height: AppSpace.s8),
         AppTextField(
           key: K.profileRate,
