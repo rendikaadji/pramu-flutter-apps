@@ -162,6 +162,12 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('Pengasuh anak usia 3 tahun'),
       200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
     );
     expect(find.text('Pengasuh anak usia 3 tahun'), findsOneWidget);
   });
@@ -304,6 +310,9 @@ void main() {
       await tester.enterText(find.byType(TextField).at(2 + i), 'Bersedia');
     }
     await tapKey(tester, K.applySubmit);
+    expect(find.text('Lamaran terkirim'), findsOneWidget);
+    await tester.tap(find.text('Lihat lamaran'));
+    await tester.pumpAndSettle();
     expect(find.text('Detail lamaran'), findsOneWidget);
 
     await tapKey(tester, K.applyWithdraw);
