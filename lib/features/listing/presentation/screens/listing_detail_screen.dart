@@ -37,6 +37,7 @@ class ListingDetailScreen extends ConsumerWidget {
     }
     return AppScaffold(
       title: 'Detail lowongan',
+      glow: true,
       bottomNavigationBar: l != null && assistant
           ? PinnedActionsBar(children: [_Cta(listing: l)])
           : null,
@@ -59,21 +60,60 @@ class ListingDetailScreen extends ConsumerWidget {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends StatefulWidget {
   const _Body({required this.listing, required this.assistantView});
   final Listing listing;
   final bool assistantView;
 
   @override
+  State<_Body> createState() => _BodyState();
+}
+
+class _BodyState extends State<_Body> {
+  int _tab = 0;
+
+  @override
   Widget build(BuildContext context) {
-    final l = listing;
+    final l = widget.listing;
     final t = context.tokens;
     final days = daysLeft(l);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.title, style: context.text.h1),
-        const SizedBox(height: AppSpace.s8),
+        // Hero info: ikon kategori, judul, kota, budget mono.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExcludeSemantics(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: t.primaryContainer,
+                  borderRadius: AppRadius.brCard,
+                ),
+                child: SizedBox.square(
+                  dimension: 56,
+                  child: Icon(
+                    categoryIcon(l.category),
+                    color: t.primary,
+                    size: 28,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpace.s12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.title, style: context.text.h1),
+                  const SizedBox(height: AppSpace.s4),
+                  IconInfoRow(icon: LucideIcons.mapPin, text: l.city),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpace.s12),
         Wrap(
           spacing: AppSpace.s8,
           runSpacing: AppSpace.s8,
@@ -89,6 +129,8 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: AppSpace.s16),
         AppCard(
+          color: t.primaryContainer,
+          borderColor: t.primary.withValues(alpha: .18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -100,63 +142,118 @@ class _Body extends StatelessWidget {
               MoneyText(
                 '${formatRupiah(l.budgetMin)} - ${formatRupiah(l.budgetMax)}',
               ),
-              const SizedBox(height: AppSpace.s12),
-              Divider(height: 1, color: t.borderSubtle),
-              const SizedBox(height: AppSpace.s12),
-              IconInfoRow(icon: LucideIcons.briefcase, text: l.category),
-              const SizedBox(height: AppSpace.s8),
-              IconInfoRow(icon: LucideIcons.mapPin, text: l.city),
-              const SizedBox(height: AppSpace.s8),
-              IconInfoRow(
-                icon: LucideIcons.calendar,
-                text:
-                    '${l.periodCount} periode, mulai ${formatDate(l.startDate)}',
-              ),
             ],
           ),
         ),
         if (l.requireSkck) ...[
           const SizedBox(height: AppSpace.s12),
-          _SkckPanel(assistantView: assistantView),
+          _SkckPanel(assistantView: widget.assistantView),
         ],
-        if (l.description.isNotEmpty) ...[
-          const SizedBox(height: AppSpace.s16),
-          const SectionHeader('Tentang pekerjaan'),
-          Text(l.description, style: context.text.body),
-        ],
+        const SizedBox(height: AppSpace.s20),
+        SegmentedTabs(
+          labels: const ['Deskripsi', 'Persyaratan', 'Pemberi kerja'],
+          index: _tab,
+          onChanged: (i) => setState(() => _tab = i),
+        ),
         const SizedBox(height: AppSpace.s16),
-        const SectionHeader('Pemberi kerja'),
-        const SizedBox(height: AppSpace.s8),
-        AppCard(
-          child: Row(
-            children: [
-              AvatarImage(name: l.owner.name, url: l.owner.photoUrl, size: 48),
-              const SizedBox(width: AppSpace.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l.owner.name, style: context.text.h3),
-                    const SizedBox(height: AppSpace.s4),
-                    if (l.owner.verified)
-                      const VerificationSeal(size: SealSize.sm),
-                    if (l.owner.ratingCount > 0)
-                      CompactRating(
-                        value: l.owner.ratingAvg,
-                        count: l.owner.ratingCount,
-                      )
-                    else
-                      Text(
-                        'Belum ada ulasan',
-                        style: context.text.bodySm.copyWith(color: t.textMuted),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        switch (_tab) {
+          0 => _Description(listing: l),
+          1 => _Requirements(listing: l),
+          _ => _Owner(listing: l),
+        },
+      ],
+    );
+  }
+}
+
+class _Description extends StatelessWidget {
+  const _Description({required this.listing});
+  final Listing listing;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = listing;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader('Tentang pekerjaan'),
+        Text(
+          l.description.isEmpty
+              ? 'Pemberi kerja belum menambahkan deskripsi.'
+              : l.description,
+          style: context.text.body,
         ),
       ],
+    );
+  }
+}
+
+class _Requirements extends StatelessWidget {
+  const _Requirements({required this.listing});
+  final Listing listing;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = listing;
+    return ListTileCard(
+      children: [
+        SettingsRow(
+          icon: LucideIcons.briefcase,
+          title: 'Kategori',
+          subtitle: l.category,
+        ),
+        SettingsRow(icon: LucideIcons.mapPin, title: 'Kota', subtitle: l.city),
+        SettingsRow(
+          icon: LucideIcons.calendar,
+          title: 'Durasi',
+          subtitle:
+              '${l.periodCount} periode, mulai ${formatDate(l.startDate)}',
+        ),
+        SettingsRow(
+          icon: LucideIcons.fileCheck,
+          title: 'SKCK',
+          subtitle: l.requireSkck ? 'Wajib terverifikasi' : 'Tidak diwajibkan',
+        ),
+      ],
+    );
+  }
+}
+
+class _Owner extends StatelessWidget {
+  const _Owner({required this.listing});
+  final Listing listing;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = listing;
+    final t = context.tokens;
+    return AppCard(
+      child: Row(
+        children: [
+          AvatarImage(name: l.owner.name, url: l.owner.photoUrl, size: 56),
+          const SizedBox(width: AppSpace.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.owner.name, style: context.text.h3),
+                const SizedBox(height: AppSpace.s4),
+                if (l.owner.verified) const VerificationSeal(size: SealSize.sm),
+                if (l.owner.ratingCount > 0)
+                  CompactRating(
+                    value: l.owner.ratingAvg,
+                    count: l.owner.ratingCount,
+                  )
+                else
+                  Text(
+                    'Belum ada ulasan',
+                    style: context.text.bodySm.copyWith(color: t.textMuted),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

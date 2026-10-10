@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/router/routes.dart';
@@ -12,6 +13,9 @@ import 'package:pramu_apps/features/application/data/application_providers.dart'
 import 'package:pramu_apps/features/application/domain/application.dart';
 import 'package:pramu_apps/features/application/presentation/state/application_state.dart';
 import 'package:pramu_apps/features/listing/domain/listing.dart';
+import 'package:pramu_apps/features/listing/presentation/state/listing_state.dart';
+import 'package:pramu_apps/features/listing/presentation/widgets/listing_card.dart';
+import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
@@ -36,6 +40,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
   final _answers = <TextEditingController>[];
   final _local = <String, String>{};
   bool _ready = false;
+  String? _sentId;
 
   String get _draftKey => 'apply_draft_${widget.listingId}';
 
@@ -122,17 +127,33 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
     if (!ok || !mounted) return;
     ref.read(prefsProvider).remove(_draftKey);
     ref.invalidate(myApplicationsProvider);
-    AppSnack.show(context, 'Lamaran terkirim', success: true);
-    context.pushReplacement(Routes.applicationDetail(created!.id));
+    setState(() => _sentId = created!.id);
   }
 
   String? _err(String key) => _local[key] ?? fieldError(key);
 
   @override
   Widget build(BuildContext context) {
+    final sent = _sentId;
+    if (sent != null) {
+      return AppScaffold(
+        title: 'Lamar pekerjaan',
+        glow: true,
+        padded: false,
+        body: SuccessView(
+          title: 'Lamaran terkirim',
+          message: 'Pemberi kerja akan meninjau lamaran Anda. Kami kabari lewat notifikasi.',
+          actionLabel: 'Lihat lamaran',
+          onAction: () =>
+              context.pushReplacement(Routes.applicationDetail(sent)),
+        ),
+      );
+    }
     final async = ref.watch(applyContextProvider(widget.listingId));
+    final t = context.tokens;
     return AppScaffold(
       title: 'Lamar pekerjaan',
+      glow: true,
       body: AsyncBody<ApplyContext>(
         value: async,
         onRetry: () => ref.invalidate(applyContextProvider(widget.listingId)),
@@ -147,8 +168,43 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
             children: [
               if (actionError != null)
                 ActionErrorBox(error: actionError!, skckListingId: l.id),
-              Text(l.title, style: context.text.h2),
-              const SizedBox(height: AppSpace.s16),
+              AppCard(
+                child: Row(
+                  children: [
+                    ExcludeSemantics(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: t.primaryContainer,
+                          borderRadius: AppRadius.brMd,
+                        ),
+                        child: SizedBox.square(
+                          dimension: 48,
+                          child: Icon(
+                            categoryIcon(l.category),
+                            color: t.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpace.s12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l.title, style: context.text.h3),
+                          Text(
+                            '${l.city} - ${budgetRange(l)}',
+                            style: context.text.bodySm.copyWith(
+                              color: t.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpace.s20),
               Wrap(
                 spacing: AppSpace.s8,
                 children: [
@@ -166,6 +222,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
               AppTextField(
                 key: K.applyMessage,
                 label: 'Pesan untuk pencari',
+                prefixIcon: LucideIcons.messageSquare,
                 controller: _message,
                 maxLines: 4,
                 maxLength: 500,
@@ -188,6 +245,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
                 const SizedBox(height: AppSpace.s16),
                 AppTextField(
                   label: l.screeningQuestions[i],
+                  prefixIcon: LucideIcons.circleHelp,
                   controller: _answers[i],
                   maxLines: 2,
                   maxLength: 200,
@@ -195,10 +253,17 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
                   onChanged: (_) => _changed('answer_$i'),
                 ),
               ],
+              if (l.requireSkck) ...[
+                const SizedBox(height: AppSpace.s20),
+                Text('Dokumen', style: context.text.h3),
+                const SizedBox(height: AppSpace.s8),
+                _SkckUpload(listingId: l.id),
+              ],
               const SizedBox(height: AppSpace.s24),
               AppButton(
                 key: K.applySubmit,
                 label: 'Kirim lamaran',
+                icon: LucideIcons.send,
                 large: true,
                 loading: busy,
                 onPressed: canAct ? () => _submit(l) : null,
@@ -206,6 +271,72 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Area dokumen gaya unggah: status SKCK; ketuk untuk membuka alur verifikasi.
+class _SkckUpload extends ConsumerWidget {
+  const _SkckUpload({required this.listingId});
+  final String listingId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.tokens;
+    final status =
+        ref.watch(mySkckStatusProvider).value ?? VerificationStatus.none;
+    final ok = status.isVerified;
+    final pending = status == VerificationStatus.pending;
+    final (title, sub, tone) = ok
+        ? ('SKCK terverifikasi', 'Dokumen siap dilampirkan', StatusTone.success)
+        : pending
+        ? (
+            'SKCK sedang ditinjau',
+            'Ketuk untuk melihat status',
+            StatusTone.info,
+          )
+        : (
+            'Unggah SKCK',
+            'Foto SKCK Anda sekali, dipakai untuk lamaran lain',
+            StatusTone.warning,
+          );
+    return Material(
+      color: tone.bg(t),
+      borderRadius: AppRadius.brCard,
+      child: InkWell(
+        borderRadius: AppRadius.brCard,
+        onTap: ok
+            ? null
+            : () => context.push('${Routes.skck}?listing=$listingId'),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 72),
+          padding: const EdgeInsets.all(AppSpace.s16),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.brCard,
+            border: Border.all(color: tone.fg(t).withValues(alpha: .5)),
+          ),
+          child: Row(
+            children: [
+              ExcludeSemantics(
+                child: Icon(
+                  ok ? LucideIcons.fileCheck : LucideIcons.upload,
+                  color: tone.fg(t),
+                ),
+              ),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: context.text.label),
+                    Text(sub, style: context.text.bodySm),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

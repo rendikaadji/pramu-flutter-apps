@@ -16,24 +16,50 @@ int? daysLeft(Listing l, [DateTime? now]) {
 String budgetText(Listing l) =>
     '${formatRupiah(l.budgetMin)} - ${formatRupiah(l.budgetMax)} / ${l.unit.label.toLowerCase()}';
 
-/// Kartu lowongan: judul + tarif di atas, status/penanda di tengah, footer pemilik atau pencari.
+IconData categoryIcon(String category) => switch (category) {
+  'Pengasuh Anak' => LucideIcons.baby,
+  'Perawat Lansia' => LucideIcons.heartPulse,
+  'Juru Masak' => LucideIcons.chefHat,
+  'Sopir Pribadi' => LucideIcons.car,
+  _ => LucideIcons.house,
+};
+
+/// Kartu lowongan: kotak ikon kategori + judul/kota, tarif mono, penanda status,
+/// footer pemilik atau pencari. `featured` = gaya kartu gradien unggulan.
 class ListingCard extends StatelessWidget {
   const ListingCard({
     super.key,
     required this.listing,
     required this.onTap,
     this.ownerView = false,
+    this.featured = false,
   });
 
   final Listing listing;
   final VoidCallback onTap;
   final bool ownerView;
+  final bool featured;
 
   @override
   Widget build(BuildContext context) {
     final l = listing;
     final t = context.tokens;
     final days = daysLeft(l);
+    if (featured && !ownerView) {
+      return FeaturedCard(
+        title: l.title,
+        subtitle: '${l.category} - ${l.city}',
+        leadingIcon: categoryIcon(l.category),
+        tags: [
+          if (l.applied) 'Sudah dilamar',
+          if (l.requireSkck) 'Wajib SKCK',
+          if (days != null) 'Sisa $days hari',
+          l.owner.name,
+        ],
+        trailing: budgetText(l),
+        onTap: onTap,
+      );
+    }
     final chips = <Widget>[
       if (ownerView) StatusChip.of(StatusDomain.listing, wire(l.status)),
       if (!ownerView && l.applied)
@@ -67,11 +93,40 @@ class ListingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.title, style: context.text.h3),
-          const SizedBox(height: AppSpace.s4),
-          Text(
-            '${l.category} - ${l.city}',
-            style: context.text.bodySm.copyWith(color: t.textMuted),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExcludeSemantics(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: t.primaryContainer,
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child: SizedBox.square(
+                    dimension: 48,
+                    child: Icon(
+                      categoryIcon(l.category),
+                      color: t.primary,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.title, style: context.text.h3),
+                    const SizedBox(height: AppSpace.s2),
+                    Text(
+                      '${l.category} - ${l.city}',
+                      style: context.text.bodySm.copyWith(color: t.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpace.s12),
           MoneyText(

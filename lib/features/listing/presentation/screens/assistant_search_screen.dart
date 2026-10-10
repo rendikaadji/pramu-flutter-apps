@@ -68,6 +68,7 @@ class _State extends ConsumerState<AssistantSearchScreen> {
     final n = ref.read(assistantSearchProvider.notifier);
     return AppScaffold(
       title: 'Cari asisten',
+      glow: true,
       body: Column(
         children: [
           SearchHeader(

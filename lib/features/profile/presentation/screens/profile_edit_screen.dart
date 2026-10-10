@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/models/shared.dart';
 import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
@@ -31,6 +32,7 @@ class ProfileEditScreen extends ConsumerWidget {
     final value = ref.watch(myProfileProvider);
     return AppScaffold(
       title: 'Profil asisten',
+      glow: true,
       padded: false,
       body: AsyncBody<AssistantProfile?>(
         value: value,
@@ -216,6 +218,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
         AppTextField(
           key: K.profileCity,
           label: 'Kota',
+          prefixIcon: LucideIcons.mapPin,
           controller: _city,
           errorText: _err('city'),
           textInputAction: TextInputAction.next,
@@ -225,6 +228,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
         AppTextField(
           key: K.profileExperience,
           label: 'Pengalaman (tahun)',
+          prefixIcon: LucideIcons.award,
           controller: _years,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -240,6 +244,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
               child: AppTextField(
                 key: K.profileSkillInput,
                 label: 'Keahlian',
+                prefixIcon: LucideIcons.sparkles,
                 hint: 'Mis. Memasak',
                 controller: _skillInput,
                 textInputAction: TextInputAction.done,
@@ -318,6 +323,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm>
         AppTextField(
           key: K.profileBio,
           label: 'Ceritakan pengalaman Anda',
+          prefixIcon: LucideIcons.alignLeft,
           controller: _bio,
           maxLines: 4,
           maxLength: 300,

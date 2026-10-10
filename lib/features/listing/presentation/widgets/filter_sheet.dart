@@ -27,9 +27,10 @@ class FilterValues {
 }
 
 const _ratings = <double>[3, 4, 4.5];
+const _rateMax = 10000000;
 
-/// Bottom sheet filter (kota, tarif, periode, rating). Kembali `FilterValues`
-/// (kosong = reset) atau null bila ditutup.
+/// Bottom sheet filter (kota, periode, tarif, rating) di atas kerangka
+/// `FilterSheet`. Kembali `FilterValues` (kosong = reset) atau null bila ditutup.
 Future<FilterValues?> showFilterSheet(
   BuildContext context, {
   required FilterValues initial,
@@ -37,7 +38,7 @@ Future<FilterValues?> showFilterSheet(
 }) => showModalBottomSheet<FilterValues>(
   context: context,
   isScrollControlled: true,
-  showDragHandle: true,
+  useSafeArea: true,
   builder: (_) => _FilterSheet(initial: initial, showRating: showRating),
 );
 
@@ -65,12 +66,12 @@ class _FilterSheetState extends State<_FilterSheet> {
   }
 
   Widget _group(String title, Widget child) => Padding(
-    padding: const EdgeInsets.only(bottom: AppSpace.s16),
+    padding: const EdgeInsets.only(bottom: AppSpace.s20),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: context.text.label),
-        const SizedBox(height: AppSpace.s8),
+        Text(title, style: context.text.h3),
+        const SizedBox(height: AppSpace.s12),
         child,
       ],
     ),
@@ -78,93 +79,99 @@ class _FilterSheetState extends State<_FilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final inset = MediaQuery.viewInsetsOf(context).bottom;
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          AppSpace.s16,
-          0,
-          AppSpace.s16,
-          AppSpace.s16 + inset,
+    final t = context.tokens;
+    final rate = (parseRupiah(_rate.text) ?? _rateMax).clamp(0, _rateMax);
+    return FilterSheet(
+      title: 'Filter',
+      onReset: () => Navigator.pop(context, const FilterValues()),
+      onApply: () => Navigator.pop(
+        context,
+        FilterValues(
+          category: widget.initial.category,
+          city: _city,
+          unit: _unit,
+          minRating: _rating,
+          maxRate: parseRupiah(_rate.text),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Filter', style: context.text.h2),
-            const SizedBox(height: AppSpace.s16),
-            _group(
-              'Kota',
-              ChipSelect<String>(
-                options: kCities,
-                labelOf: (s) => s,
-                selected: _city,
-                onChanged: (v) => setState(() => _city = v),
-              ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _group(
+            'Kota',
+            ChipSelect<String>(
+              options: kCities,
+              labelOf: (s) => s,
+              selected: _city,
+              onChanged: (v) => setState(() => _city = v),
             ),
-            _group(
-              'Periode',
-              ChipSelect<PeriodUnit>(
-                options: const [
-                  PeriodUnit.daily,
-                  PeriodUnit.weekly,
-                  PeriodUnit.monthly,
-                ],
-                labelOf: (u) => u.label,
-                selected: _unit,
-                onChanged: (v) => setState(() => _unit = v),
-              ),
+          ),
+          _group(
+            'Periode',
+            ChipSelect<PeriodUnit>(
+              options: const [
+                PeriodUnit.daily,
+                PeriodUnit.weekly,
+                PeriodUnit.monthly,
+              ],
+              labelOf: (u) => u.label,
+              selected: _unit,
+              onChanged: (v) => setState(() => _unit = v),
             ),
-            AppTextField(
-              key: K.filterRate,
-              label: 'Tarif maksimum per periode',
-              prefixText: 'Rp',
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              controller: _rate,
-            ),
-            const SizedBox(height: AppSpace.s16),
-            if (widget.showRating)
-              _group(
-                'Rating minimum',
-                ChipSelect<double>(
-                  options: _ratings,
-                  labelOf: (r) => '${r.toString().replaceAll('.', ',')}+',
-                  selected: _rating,
-                  onChanged: (v) => setState(() => _rating = v),
-                ),
-              ),
-            Row(
+          ),
+          _group(
+            'Tarif maksimum per periode',
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: AppButton(
-                    key: K.filterReset,
-                    label: 'Reset',
-                    variant: AppButtonVariant.secondary,
-                    onPressed: () =>
-                        Navigator.pop(context, const FilterValues()),
+                Row(
+                  children: [
+                    Text(
+                      'Hingga',
+                      style: context.text.bodySm.copyWith(color: t.textMuted),
+                    ),
+                    const SizedBox(width: AppSpace.s8),
+                    MoneyText(
+                      _rate.text.isEmpty ? 'Tanpa batas' : formatRupiah(rate),
+                      size: MoneySize.body,
+                    ),
+                  ],
+                ),
+                Slider(
+                  value: rate.toDouble(),
+                  max: _rateMax.toDouble(),
+                  divisions: 100,
+                  label: formatRupiah(rate),
+                  semanticFormatterCallback: (v) => formatRupiah(v.round()),
+                  onChanged: (v) => setState(
+                    () =>
+                        _rate.text = v >= _rateMax ? '' : v.round().toString(),
                   ),
                 ),
-                const SizedBox(width: AppSpace.s12),
-                Expanded(
-                  child: AppButton(
-                    key: K.filterApply,
-                    label: 'Terapkan',
-                    onPressed: () => Navigator.pop(
-                      context,
-                      FilterValues(
-                        category: widget.initial.category,
-                        city: _city,
-                        unit: _unit,
-                        minRating: _rating,
-                        maxRate: parseRupiah(_rate.text),
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: AppSpace.s8),
+                AppTextField(
+                  key: K.filterRate,
+                  label: 'Atau ketik nominal',
+                  prefixText: 'Rp',
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  controller: _rate,
+                  onChanged: (_) => setState(() {}),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          if (widget.showRating)
+            _group(
+              'Rating minimum',
+              ChipSelect<double>(
+                options: _ratings,
+                labelOf: (r) => '${r.toString().replaceAll('.', ',')}+',
+                selected: _rating,
+                onChanged: (v) => setState(() => _rating = v),
+              ),
+            ),
+        ],
       ),
     );
   }

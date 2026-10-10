@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/features/listing/domain/listing.dart';
-import 'package:pramu_apps/features/listing/presentation/widgets/chip_select.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
-/// Bar cari (debounce 400 ms) + tombol Filter + chip kategori.
+/// Bar cari besar (debounce 400 ms) + tombol Filter + tab pil kategori.
 class SearchHeader extends StatefulWidget {
   const SearchHeader({
     super.key,
@@ -50,45 +49,77 @@ class _SearchHeaderState extends State<SearchHeader> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      AppTextField(
-        key: K.searchField,
-        label: widget.label,
-        hint: widget.hint,
-        textInputAction: TextInputAction.search,
-        onChanged: _changed,
-        onSubmitted: widget.onQuery,
-      ),
-      const SizedBox(height: AppSpace.s12),
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            AppButton(
-              key: K.filterButton,
-              label: widget.activeFilters == 0
-                  ? 'Filter'
-                  : 'Filter (${widget.activeFilters})',
-              icon: LucideIcons.slidersHorizontal,
-              variant: widget.activeFilters == 0
-                  ? AppButtonVariant.secondary
-                  : AppButtonVariant.tonal,
-              expand: false,
-              onPressed: widget.onFilter,
+  Widget build(BuildContext context) {
+    final cats = ['Semua', ...kCategories];
+    final idx = widget.category == null
+        ? 0
+        : kCategories.indexOf(widget.category!) + 1;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          label: widget.label,
+          container: true,
+          child: SearchField(
+            key: K.searchField,
+            hint: widget.hint,
+            onChanged: _changed,
+            onSubmitted: widget.onQuery,
+            trailing: _FilterButton(
+              count: widget.activeFilters,
+              onTap: widget.onFilter,
             ),
-            const SizedBox(width: AppSpace.s8),
-            ChipSelect<String>(
-              options: kCategories,
-              labelOf: (s) => s,
-              selected: widget.category,
-              onChanged: widget.onCategory,
+          ),
+        ),
+        const SizedBox(height: AppSpace.s12),
+        SegmentedTabs(
+          labels: cats,
+          index: idx < 0 ? 0 : idx,
+          onChanged: (i) =>
+              widget.onCategory(i == 0 ? null : kCategories[i - 1]),
+        ),
+        const SizedBox(height: AppSpace.s12),
+      ],
+    );
+  }
+}
+
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({required this.count, required this.onTap});
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Semantics(
+      button: true,
+      label: count == 0 ? 'Filter' : 'Filter, $count aktif',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: Badge(
+        isLabelVisible: count > 0,
+        label: Text('$count'),
+        backgroundColor: t.accent,
+        textColor: t.onAccent,
+        child: Material(
+          key: K.filterButton,
+          color: t.primary,
+          borderRadius: AppRadius.brButton,
+          child: InkWell(
+            borderRadius: AppRadius.brButton,
+            onTap: onTap,
+            child: SizedBox.square(
+              dimension: 56,
+              child: Icon(
+                LucideIcons.slidersHorizontal,
+                size: 22,
+                color: t.onPrimary,
+              ),
             ),
-          ],
+          ),
         ),
       ),
-      const SizedBox(height: AppSpace.s8),
-    ],
-  );
+    );
+  }
 }
