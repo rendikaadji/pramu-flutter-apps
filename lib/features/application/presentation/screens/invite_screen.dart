@@ -48,7 +48,7 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
       setState(() => _invited.add(id));
     }
     if (ok) {
-      AppSnack.show(context, 'Ajakan terkirim', success: true);
+      AppSnack.show(context, 'Ajakan sudah terkirim.', success: true);
       popOrGo(context, Routes.seekerHome);
     }
   }
@@ -60,7 +60,7 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
     final canSend =
         canAct && _selected != null && !_invited.contains(_selected);
     return AppScaffold(
-      title: 'Ajak asisten',
+      title: 'Ajak melamar',
       body: AsyncBody<List<Listing>>(
         value: async,
         onRetry: () => ref.invalidate(openOwnListingsProvider),
@@ -68,9 +68,9 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
           if (list.isEmpty) {
             return EmptyState(
               icon: LucideIcons.clipboardList,
-              title: 'Belum ada lowongan tayang',
+              title: 'Belum ada lowongan yang tayang',
               message:
-                  'Buat dan tayangkan lowongan dulu untuk mengajak asisten.',
+                  'Tayangkan satu lowongan dulu, lalu ajak pelamar yang cocok.',
               actionLabel: 'Buat lowongan',
               onAction: () => ctx.push(Routes.listingNew),
             );
@@ -85,7 +85,7 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
               Text(
                 name == null
                     ? 'Pilih lowongan untuk ajakan ini'
-                    : 'Ajak ${name.name} ke lowongan',
+                    : 'Ajak ${name.name} melamar ke lowongan',
                 style: context.text.h3,
               ),
               const SizedBox(height: AppSpace.s12),
@@ -109,8 +109,8 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
                             title: Text(l.title),
                             subtitle: Text(
                               _invited.contains(l.id)
-                                  ? 'Sudah diajak'
-                                  : '${l.city} - ${formatRupiah(l.budgetMin)} - ${formatRupiah(l.budgetMax)}',
+                                  ? 'Sudah diajak untuk lowongan ini'
+                                  : '${l.city} · ${formatRupiah(l.budgetMin)} - ${formatRupiah(l.budgetMax)}',
                             ),
                           ),
                         ),
@@ -121,7 +121,7 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
               const SizedBox(height: AppSpace.s16),
               AppTextField(
                 key: K.inviteMessage,
-                label: 'Pesan (opsional)',
+                label: 'Pesan singkat (opsional)',
                 controller: _message,
                 maxLines: 3,
                 maxLength: 200,

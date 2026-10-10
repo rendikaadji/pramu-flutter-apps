@@ -32,11 +32,13 @@ class _SlotEditorState extends State<SlotEditor> {
     final s = await pickWibDateTime(context);
     if (s == null) return;
     if (!s.isAfter(DateTime.now().toUtc())) {
-      setState(() => _local = 'Slot tidak boleh di masa lalu');
+      setState(
+        () => _local = 'Waktu ini sudah lewat. Pilih waktu yang akan datang.',
+      );
       return;
     }
     if (widget.slots.contains(s)) {
-      setState(() => _local = 'Waktu ini sudah dipilih');
+      setState(() => _local = 'Waktu ini sudah Anda pilih. Pilih waktu lain.');
       return;
     }
     setState(() => _local = null);
@@ -70,7 +72,7 @@ class _SlotEditorState extends State<SlotEditor> {
                   ),
                   AppIconButton(
                     icon: LucideIcons.trash2,
-                    label: 'Hapus slot ${i + 1}',
+                    label: 'Hapus pilihan waktu ${i + 1}',
                     onPressed: () => widget.onChanged([
                       for (var j = 0; j < widget.slots.length; j++)
                         if (j != i) widget.slots[j],
@@ -83,7 +85,9 @@ class _SlotEditorState extends State<SlotEditor> {
         if (widget.slots.length < maxInterviewSlots)
           AppButton(
             key: K.interviewSlotAdd,
-            label: widget.slots.isEmpty ? 'Pilih waktu' : 'Tambah waktu',
+            label: widget.slots.isEmpty
+                ? 'Pilih waktu'
+                : 'Tambah pilihan waktu',
             icon: LucideIcons.plus,
             variant: AppButtonVariant.secondary,
             expand: false,
@@ -95,7 +99,7 @@ class _SlotEditorState extends State<SlotEditor> {
         ],
         const SizedBox(height: AppSpace.s4),
         Text(
-          'Zona waktu WIB. Maksimal $maxInterviewSlots pilihan.',
+          'Waktu dalam WIB. Maksimal $maxInterviewSlots pilihan.',
           style: context.text.bodySm,
         ),
       ],
@@ -147,6 +151,11 @@ class _RescheduleSheetState extends State<_RescheduleSheet>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Usulkan waktu lain', style: context.text.h2),
+          const SizedBox(height: AppSpace.s4),
+          Text(
+            'Pihak lain akan memilih salah satunya.',
+            style: context.text.body.copyWith(color: context.tokens.textMuted),
+          ),
           const SizedBox(height: AppSpace.s16),
           if (actionError != null) ActionErrorBox(error: actionError!),
           SlotEditor(
@@ -157,7 +166,7 @@ class _RescheduleSheetState extends State<_RescheduleSheet>
           const SizedBox(height: AppSpace.s16),
           AppButton(
             key: K.interviewSubmit,
-            label: 'Kirim jadwal baru',
+            label: 'Kirim usulan waktu',
             loading: busy,
             onPressed: canAct && _slots.isNotEmpty ? _send : null,
           ),

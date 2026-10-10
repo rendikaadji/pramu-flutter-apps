@@ -36,7 +36,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
     final ok = await ConfirmDialog.show(
       context,
       title: 'Tarik lamaran?',
-      message: 'Tarik lamaran ini? Anda tidak dapat melamar ulang pekerjaan yang sama.',
+      message: 'Setelah ditarik, Anda tidak dapat melamar ulang lowongan ini.',
       confirmLabel: 'Tarik lamaran',
       destructive: true,
     );
@@ -116,7 +116,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
       ),
       ApplicationStatus.accepted => (
         'Anda diterima',
-        'Lanjutkan menyusun kesepakatan kerja.',
+        'Lanjutkan ke penyusunan kontrak.',
         () => go(
           a.agreementId == null
               ? Routes.agreementNew(a.id)
@@ -177,7 +177,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
             Text('Pencari', style: context.text.caption),
             Text(a.seeker.name, style: context.text.h3),
             const SizedBox(height: AppSpace.s12),
-            Text('Tarif usulan', style: context.text.caption),
+            Text('Tarif yang Anda usulkan', style: context.text.caption),
             MoneyText(formatRupiah(a.proposedRate)),
             const SizedBox(height: AppSpace.s12),
             Text('Pesan Anda', style: context.text.caption),
@@ -191,7 +191,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
           a.status != ApplicationStatus.withdrawn) ...[
         AppButton(
           key: K.applicationChat,
-          label: 'Buka chat',
+          label: 'Buka percakapan',
           icon: LucideIcons.messageCircle,
           variant: AppButtonVariant.secondary,
           onPressed: () => context.push(Routes.chatRoom(a.conversationId!)),

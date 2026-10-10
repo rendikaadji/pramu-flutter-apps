@@ -48,7 +48,7 @@ class ListingCard extends StatelessWidget {
     if (featured && !ownerView) {
       return FeaturedCard(
         title: l.title,
-        subtitle: '${l.category} - ${l.city}',
+        subtitle: '${l.category} · ${l.city}',
         leadingIcon: categoryIcon(l.category),
         tags: [
           if (l.applied) 'Sudah dilamar',
@@ -120,7 +120,7 @@ class ListingCard extends StatelessWidget {
                     Text(l.title, style: context.text.h3),
                     const SizedBox(height: AppSpace.s2),
                     Text(
-                      '${l.category} - ${l.city}',
+                      '${l.category} · ${l.city}',
                       style: context.text.bodySm.copyWith(color: t.textMuted),
                     ),
                   ],

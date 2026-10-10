@@ -85,8 +85,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
     );
     if (!ok && mounted) {
       setState(
-        () => _joinError =
-            'Tautan wawancara tidak dapat dibuka. Hubungi pencari lewat chat.',
+        () => _joinError = 'Tautan wawancara tidak dapat dibuka. Hubungi pencari lewat percakapan.',
       );
     }
   }
@@ -95,10 +94,9 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
     final ok = await ConfirmDialog.show(
       context,
       title: 'Batalkan wawancara?',
-      message:
-          'Pihak lain akan diberi tahu. Anda bisa menjadwalkan ulang nanti.',
+      message: 'Pihak lain akan kami beri kabar. Anda bisa mengatur jadwal ulang nanti.',
       confirmLabel: 'Batalkan wawancara',
-      cancelLabel: 'Kembali',
+      cancelLabel: 'Jangan batalkan',
       destructive: true,
     );
     if (!ok || !mounted) return;
@@ -117,7 +115,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
     );
     if (ok && mounted) {
       _reload();
-      AppSnack.show(context, 'Usulan waktu terkirim', success: true);
+      AppSnack.show(context, 'Usulan waktu sudah terkirim.', success: true);
     }
   }
 
@@ -197,7 +195,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
                 _Countdown(slot),
                 const SizedBox(height: AppSpace.s4),
                 Text(
-                  'Kami kirim pengingat 1 jam sebelum wawancara.',
+                  'Kami kirim pengingat 1 jam sebelum mulai.',
                   style: context.text.bodySm,
                 ),
               ],
@@ -205,9 +203,9 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
               Text(
                 iv.status == InterviewStatus.proposed
                     ? (c.isSeeker
-                          ? 'Menunggu asisten memilih salah satu waktu.'
-                          : 'Pilih salah satu waktu yang diajukan.')
-                    : 'Jadwal tidak tersedia.',
+                          ? 'Menunggu pelamar memilih salah satu waktu.'
+                          : 'Pilih satu dari waktu yang diajukan.')
+                    : 'Belum ada jadwal.',
                 style: context.text.body,
               ),
               const SizedBox(height: AppSpace.s12),
@@ -221,7 +219,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
             ],
             if (iv.note != null && iv.note!.isNotEmpty) ...[
               const SizedBox(height: AppSpace.s12),
-              Text('Catatan: ${iv.note}', style: context.text.body),
+              Text('Pesan: ${iv.note}', style: context.text.body),
             ],
           ],
         ),
@@ -246,7 +244,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
           padding: const EdgeInsets.only(bottom: AppSpace.s12),
           child: AppButton(
             key: K.interviewConfirm,
-            label: 'Konfirmasi jadwal',
+            label: 'Pilih waktu wawancara',
             onPressed: () => context
                 .push(Routes.interviewConfirm(iv.id))
                 .then((_) => _reload()),
@@ -257,7 +255,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
           padding: const EdgeInsets.only(bottom: AppSpace.s12),
           child: AppButton(
             key: K.interviewEvaluate,
-            label: 'Catatan & skor wawancara',
+            label: 'Beri catatan dan skor',
             icon: LucideIcons.notebookPen,
             variant: AppButtonVariant.secondary,
             onPressed: () => context
@@ -271,7 +269,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
           padding: const EdgeInsets.only(bottom: AppSpace.s12),
           child: AppButton(
             key: K.interviewReschedule,
-            label: 'Jadwal ulang',
+            label: 'Atur jadwal ulang',
             variant: AppButtonVariant.secondary,
             onPressed: canAct ? _reschedule : null,
           ),

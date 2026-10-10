@@ -107,7 +107,9 @@ class _State extends ConsumerState<ListingBrowseScreen> {
               empty: EmptyState(
                 icon: LucideIcons.briefcase,
                 title: _filtered ? 'Tidak ada hasil' : 'Belum ada lowongan',
-                message: 'Belum ada lowongan yang cocok.',
+                message: _filtered
+                    ? 'Belum ada lowongan yang cocok. Coba ganti kata kunci, kota, atau budget.'
+                    : 'Belum ada lowongan yang tayang. Coba lagi nanti.',
                 actionLabel: _filtered ? 'Reset filter' : null,
                 onAction: _reset,
               ),

@@ -103,7 +103,9 @@ class _State extends ConsumerState<AssistantSearchScreen> {
               empty: EmptyState(
                 icon: LucideIcons.search,
                 title: _filtered ? 'Tidak ada hasil' : 'Belum ada asisten',
-                message: 'Belum ada asisten yang cocok. Coba perluas kota atau rentang tarif.',
+                message: _filtered
+                    ? 'Belum ada asisten yang cocok. Coba perluas kota atau rentang tarif.'
+                    : 'Belum ada asisten yang terdaftar. Coba lagi nanti.',
                 actionLabel: _filtered ? 'Reset filter' : null,
                 onAction: _reset,
               ),

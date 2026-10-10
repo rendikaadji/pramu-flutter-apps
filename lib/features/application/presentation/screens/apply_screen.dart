@@ -20,7 +20,7 @@ import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
 const _templates = {
-  'Tertarik & siap':
+  'Tertarik dan siap':
       'Halo, saya tertarik dan siap bekerja sesuai kebutuhan Anda.',
   'Berpengalaman': 'Saya berpengalaman di bidang ini dan bisa mulai sesuai tanggal yang diminta.',
 };
@@ -93,14 +93,16 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
 
   Future<void> _submit(Listing l) async {
     final errors = <String, String>{};
-    if (_message.text.trim().isEmpty) errors['message'] = 'Pesan wajib diisi';
+    if (_message.text.trim().isEmpty) {
+      errors['message'] = 'Tulis pesan singkat untuk pencari';
+    }
     final rate = parseRupiah(_rate.text);
     if (rate == null || rate <= 0) {
-      errors['proposed_rate'] = 'Tarif harus lebih dari 0';
+      errors['proposed_rate'] = 'Isi tarif lebih dari Rp0';
     }
     for (var i = 0; i < _answers.length; i++) {
       if (_answers[i].text.trim().isEmpty) {
-        errors['answer_$i'] = 'Jawaban wajib diisi';
+        errors['answer_$i'] = 'Jawab pertanyaan ini dulu';
       }
     }
     if (errors.isNotEmpty) {
@@ -142,7 +144,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
         padded: false,
         body: SuccessView(
           title: 'Lamaran terkirim',
-          message: 'Pemberi kerja akan meninjau lamaran Anda. Kami kabari lewat notifikasi.',
+          message: 'Pencari akan memeriksa lamaran Anda. Kami kabari lewat notifikasi.',
           actionLabel: 'Lihat lamaran',
           onAction: () =>
               context.pushReplacement(Routes.applicationDetail(sent)),
@@ -193,7 +195,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
                         children: [
                           Text(l.title, style: context.text.h3),
                           Text(
-                            '${l.city} - ${budgetRange(l)}',
+                            '${l.city} · ${budgetRange(l)}',
                             style: context.text.bodySm.copyWith(
                               color: t.textMuted,
                             ),
@@ -232,7 +234,8 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
               const SizedBox(height: AppSpace.s16),
               AppTextField(
                 key: K.applyRate,
-                label: 'Tarif usulan per ${l.unit.label.toLowerCase()}',
+                label:
+                    'Tarif yang Anda usulkan per ${l.unit.label.toLowerCase()}',
                 prefixText: 'Rp',
                 controller: _rate,
                 keyboardType: TextInputType.number,
@@ -292,13 +295,13 @@ class _SkckUpload extends ConsumerWidget {
         ? ('SKCK terverifikasi', 'Dokumen siap dilampirkan', StatusTone.success)
         : pending
         ? (
-            'SKCK sedang ditinjau',
+            'SKCK sedang diperiksa',
             'Ketuk untuk melihat status',
             StatusTone.info,
           )
         : (
             'Unggah SKCK',
-            'Foto SKCK Anda sekali, dipakai untuk lamaran lain',
+            'Unggah sekali, bisa dipakai untuk lamaran lain',
             StatusTone.warning,
           );
     return Material(
