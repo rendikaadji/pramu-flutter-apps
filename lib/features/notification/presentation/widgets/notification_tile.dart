@@ -45,10 +45,19 @@ class NotificationTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  _icon(n.type),
-                  size: 24,
-                  color: n.unread ? t.primary : t.textMuted,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: n.unread ? t.primaryContainer : t.sunken,
+                    shape: BoxShape.circle,
+                  ),
+                  child: SizedBox.square(
+                    dimension: 40,
+                    child: Icon(
+                      _icon(n.type),
+                      size: 20,
+                      color: n.unread ? t.primary : t.textMuted,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: AppSpace.s12),
                 Expanded(

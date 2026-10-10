@@ -11,10 +11,12 @@ import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
+import 'package:pramu_apps/features/booking/presentation/state/booking_state.dart';
 import 'package:pramu_apps/features/payment/data/payment_providers.dart';
 import 'package:pramu_apps/features/payment/presentation/state/payment_state.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 
 /// M-74 Bayar period. Idempotency-Key dibuat sekali per niat dan dipakai ulang saat retry.
@@ -68,13 +70,32 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
   @override
   Widget build(BuildContext context) {
     final value = ref.watch(payPeriodProvider(widget.periodId));
+    final period = value.value;
+    final payable = period != null && period.status.canPay;
     return AppScaffold(
       title: 'Bayar periode',
+      bottomNavigationBar: payable
+          ? PinnedActionsBar(
+              children: [
+                AppButton(
+                  key: K.payButton,
+                  label: 'Bayar ${formatRupiah(period.total)}',
+                  icon: LucideIcons.lock,
+                  large: true,
+                  loading: busy,
+                  onPressed: canAct ? () => _pay(period) : null,
+                ),
+              ],
+            )
+          : null,
       body: AsyncBody<BookingPeriod>(
         value: value,
         onRetry: () => ref.invalidate(payPeriodProvider(widget.periodId)),
         data: (context, p) => SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: AppSpace.s24),
+          padding: const EdgeInsets.only(
+            top: AppSpace.s8,
+            bottom: AppSpace.s24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -86,17 +107,10 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
                 ),
               ),
               const SizedBox(height: AppSpace.s16),
-              FeeBreakdown(
-                rows: [
-                  FeeRow('Gaji periode ${p.index}', formatRupiah(p.amount)),
-                  FeeRow('Biaya layanan', formatRupiah(p.serviceFee)),
-                  FeeRow('Total', formatRupiah(p.total), total: true),
-                ],
-              ),
-              const SizedBox(height: AppSpace.s12),
-              const PrivacyNote(
-                'Uang Anda ditahan aman dan baru dicairkan ke asisten setelah pekerjaan selesai.',
-              ),
+              _ContractSummary(bookingId: p.bookingId),
+              _Breakdown(p: p),
+              const SizedBox(height: AppSpace.s16),
+              const _HeldSeal(),
               const SizedBox(height: AppSpace.s16),
               if (actionError != null) ActionErrorBox(error: actionError!),
               if (_localError != null)
@@ -116,15 +130,134 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
                   message: 'Periode ini tidak dapat dibayar saat ini.',
                   actionLabel: 'Kembali',
                   onAction: () => context.pop(),
-                )
-              else
-                AppButton(
-                  key: K.payButton,
-                  label: 'Bayar ${formatRupiah(p.total)}',
-                  large: true,
-                  loading: busy,
-                  onPressed: canAct ? () => _pay(p) : null,
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ringkasan kontrak (judul + lawan kontrak). Diam bila data kontrak belum ada.
+class _ContractSummary extends ConsumerWidget {
+  const _ContractSummary({required this.bookingId});
+  final String bookingId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final b = ref.watch(bookingProvider(bookingId)).value;
+    if (b == null) return const SizedBox.shrink();
+    final t = context.tokens;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpace.s16),
+      child: AppCard(
+        child: Row(
+          children: [
+            AvatarImage(
+              name: b.assistant.name,
+              url: b.assistant.photoUrl,
+              size: 48,
+            ),
+            const SizedBox(width: AppSpace.s12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(b.listingTitle, style: context.text.h3),
+                  const SizedBox(height: AppSpace.s2),
+                  Text(
+                    'Dengan ${b.assistant.name}',
+                    style: context.text.bodySm.copyWith(color: t.textMuted),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Rincian nominal + biaya layanan + total yang tegas (angka mono).
+class _Breakdown extends StatelessWidget {
+  const _Breakdown({required this.p});
+  final BookingPeriod p;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Rincian pembayaran', style: context.text.label),
+          const SizedBox(height: AppSpace.s8),
+          FeeBreakdown(
+            rows: [
+              FeeRow('Gaji periode ${p.index}', formatRupiah(p.amount)),
+              FeeRow('Biaya layanan', formatRupiah(p.serviceFee)),
+            ],
+          ),
+          Divider(color: t.borderStrong),
+          const SizedBox(height: AppSpace.s4),
+          Semantics(
+            container: true,
+            excludeSemantics: true,
+            label: 'Total: ${formatRupiah(p.total)}',
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(child: Text('Total', style: context.text.h3)),
+                MoneyText(formatRupiah(p.total), size: MoneySize.hero),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Segel "Dana ditahan aman": penegas kepercayaan sebelum bayar.
+class _HeldSeal extends StatelessWidget {
+  const _HeldSeal();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return Semantics(
+      container: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: t.successContainer,
+          borderRadius: AppRadius.brMd,
+          border: Border.all(color: t.success.withValues(alpha: .4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpace.s16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExcludeSemantics(
+                child: Icon(LucideIcons.shieldCheck, color: t.success),
+              ),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Dana ditahan aman', style: context.text.h3),
+                    const SizedBox(height: AppSpace.s2),
+                    Text(
+                      'Uang Anda ditahan aman dan baru dicairkan ke asisten '
+                      'setelah pekerjaan selesai.',
+                      style: context.text.bodySm.copyWith(color: t.textPrimary),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

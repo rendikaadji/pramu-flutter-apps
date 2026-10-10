@@ -151,24 +151,31 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   icon: LucideIcons.clock,
                 ),
                 const SizedBox(height: AppSpace.s16),
-                Semantics(
-                  header: true,
-                  child: Text(
-                    'Bagaimana pengalaman Anda?',
-                    style: context.text.h3,
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'Bagaimana pengalaman Anda?',
+                          style: context.text.h3,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpace.s8),
+                      RatingStars(
+                        key: K.ratingStars,
+                        value: _stars.toDouble(),
+                        size: 44,
+                        onChanged: _busy
+                            ? null
+                            : (n) => setState(() {
+                                _stars = n;
+                                _starsError = null;
+                              }),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: AppSpace.s8),
-                RatingStars(
-                  key: K.ratingStars,
-                  value: _stars.toDouble(),
-                  size: 44,
-                  onChanged: _busy
-                      ? null
-                      : (n) => setState(() {
-                          _stars = n;
-                          _starsError = null;
-                        }),
                 ),
                 if (_starsError != null) FieldErrorText(_starsError!),
                 const SizedBox(height: AppSpace.s16),

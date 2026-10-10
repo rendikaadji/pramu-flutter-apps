@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
+import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/payment/presentation/state/payment_state.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/status_hero_panel.dart';
 
 /// M-75 Status pembayaran. Status selalu dari API; parameter return/deep link hanya pemicu.
 class PaymentStatusScreen extends ConsumerStatefulWidget {
@@ -73,41 +76,97 @@ class _State extends ConsumerState<PaymentStatusScreen>
 }
 
 class _Checking extends StatelessWidget {
-  const _Checking({this.onRecheck});
+  const _Checking({this.onRecheck, this.period});
   final VoidCallback? onRecheck;
+  final BookingPeriod? period;
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Semantics(
-      key: K.paymentChecking,
-      liveRegion: true,
-      container: true,
-      label: 'Memeriksa pembayaran',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: AppSpace.s24),
-          Text('Memeriksa pembayaran', style: context.text.h2),
-          const SizedBox(height: AppSpace.s8),
-          Text(
-            'Mohon tunggu. Jangan tutup halaman ini.',
-            textAlign: TextAlign.center,
-            style: context.text.body.copyWith(color: context.tokens.textMuted),
-          ),
-          if (onRecheck != null) ...[
-            const SizedBox(height: AppSpace.s16),
-            AppButton(
-              label: 'Cek sekarang',
-              variant: AppButtonVariant.secondary,
-              expand: false,
-              onPressed: onRecheck,
+  Widget build(BuildContext context) => _StatusLayout(
+    semanticsKey: K.paymentChecking,
+    semanticsLabel: 'Memeriksa pembayaran',
+    hero: StatusHeroPanel(
+      icon: LucideIcons.hourglass,
+      tone: StatusTone.info,
+      title: 'Memeriksa pembayaran',
+      message: 'Mohon tunggu. Jangan tutup halaman ini.',
+      footer: period == null ? null : _PeriodSummary(period!),
+    ),
+    actions: [
+      if (onRecheck != null)
+        AppButton(
+          label: 'Cek sekarang',
+          variant: AppButtonVariant.secondary,
+          onPressed: onRecheck,
+        ),
+    ],
+  );
+}
+
+/// Hero di tengah (bisa di-scroll), aksi menempel di bawah isi.
+class _StatusLayout extends StatelessWidget {
+  const _StatusLayout({
+    required this.hero,
+    required this.actions,
+    this.semanticsKey,
+    this.semanticsLabel,
+  });
+  final Widget hero;
+  final List<Widget> actions;
+  final Key? semanticsKey;
+  final String? semanticsLabel;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Expanded(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Semantics(
+              key: semanticsKey,
+              liveRegion: true,
+              container: true,
+              label: semanticsLabel,
+              child: hero,
             ),
-          ],
+          ),
+        ),
+      ),
+      for (final a in actions) ...[a, const SizedBox(height: AppSpace.s8)],
+      const SizedBox(height: AppSpace.s8),
+    ],
+  );
+}
+
+/// Ringkasan periode di bawah status: periode, rentang tanggal, nominal.
+class _PeriodSummary extends StatelessWidget {
+  const _PeriodSummary(this.p);
+  final BookingPeriod p;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return AppCard(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Periode ${p.index}', style: context.text.h3),
+                const SizedBox(height: AppSpace.s2),
+                Text(
+                  '${formatDate(p.start)} - ${formatDate(p.end)}',
+                  style: context.text.bodySm.copyWith(color: t.textMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpace.s12),
+          MoneyText(formatRupiah(p.total)),
         ],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _Result extends StatelessWidget {
@@ -124,84 +183,69 @@ class _Result extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = check.period;
     if (p.status.canPay && check.polling) {
-      return _Checking(onRecheck: onRecheck);
+      return _Checking(onRecheck: onRecheck, period: p);
     }
-    final t = context.tokens;
     final pending = p.status.canPay;
-    final (icon, color, title, message) = switch (p.status) {
+    final (icon, tone, title, message) = switch (p.status) {
       _ when pending => (
         LucideIcons.hourglass,
-        t.warning,
+        StatusTone.warning,
         'Pembayaran sedang diproses',
         'Jangan bayar lagi; kami kabari begitu selesai. '
             'Belum membayar? Buka kontrak untuk membayar.',
       ),
       PeriodStatus.expired => (
         LucideIcons.circleX,
-        t.danger,
+        StatusTone.danger,
         'Tagihan kedaluwarsa',
         'Batas waktu pembayaran sudah lewat. Buka kontrak untuk langkah berikutnya.',
       ),
       PeriodStatus.cancelled || PeriodStatus.refunded => (
         LucideIcons.ban,
-        t.textMuted,
+        StatusTone.neutral,
         'Dibatalkan',
         'Periode ini dibatalkan.',
       ),
       PeriodStatus.disputed => (
         LucideIcons.triangleAlert,
-        t.warning,
+        StatusTone.warning,
         'Sedang ditinjau',
         'Tim kami sedang meninjau periode ini.',
       ),
       PeriodStatus.unknown => (
         LucideIcons.info,
-        t.textMuted,
+        StatusTone.neutral,
         'Status belum dikenal',
         'Buka kontrak untuk melihat rincian terbaru.',
       ),
       _ => (
         LucideIcons.circleCheck,
-        t.success,
+        StatusTone.success,
         'Pembayaran diterima',
         'Dana ditahan aman sampai periode selesai.',
       ),
     };
-    return Center(
-      child: SingleChildScrollView(
-        child: Semantics(
-          key: pending ? K.paymentPending : K.periodStatus,
-          liveRegion: true,
-          container: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 48, color: color),
-              const SizedBox(height: AppSpace.s16),
-              Text(title, style: context.text.h2, textAlign: TextAlign.center),
-              const SizedBox(height: AppSpace.s8),
-              Text(
-                message,
-                style: context.text.body.copyWith(color: t.textMuted),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpace.s24),
-              if (pending) ...[
-                AppButton(
-                  label: 'Cek status',
-                  variant: AppButtonVariant.secondary,
-                  onPressed: onRecheck,
-                ),
-                const SizedBox(height: AppSpace.s8),
-              ],
-              AppButton(
-                label: 'Lihat kontrak',
-                onPressed: () => onContract(p.bookingId),
-              ),
-            ],
-          ),
-        ),
+    return _StatusLayout(
+      semanticsKey: pending ? K.paymentPending : K.periodStatus,
+      hero: StatusHeroPanel(
+        icon: icon,
+        tone: tone,
+        title: title,
+        message: message,
+        footer: _PeriodSummary(p),
       ),
+      actions: [
+        if (pending)
+          AppButton(
+            label: 'Cek status',
+            variant: AppButtonVariant.secondary,
+            onPressed: onRecheck,
+          ),
+        AppButton(
+          label: 'Lihat kontrak',
+          onPressed: () => onContract(p.bookingId),
+        ),
+      ],
     );
   }
 }
