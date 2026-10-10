@@ -269,11 +269,34 @@ void main() {
   screen('37-listing-new', 'Bu Rina', (t, e) async {
     e.go('/listings/new');
   });
+  screen('40-report-new', 'Bu Rina', (t, e) async {
+    e.go('/report/new');
+  });
+  screen('41-privacy', 'Bu Rina', (t, e) async {
+    e.go('/account/privacy');
+  });
+  screen('42-bank', 'Siti', (t, e) async {
+    e.go('/wallet/bank');
+  });
+  screen('43-cancel', 'Bu Rina', (t, e) async {
+    e.go('/bookings/${sitiBooking(e.b).id}/cancel');
+  });
   screen('38-apply', 'Siti', (t, e) async {
     final l = e.b.listings.values.firstWhere(
       (x) => x.title == 'Juru masak untuk 4 orang',
     );
     e.go('/listings/${l.id}/apply');
+  });
+
+  screen('39-propose', 'Bu Rina', (t, e) async {
+    final a = e.b.applications.values.firstWhere(
+      (x) => x.seeker.name == 'Bu Rina',
+    );
+    e.go('/applications/${a.id}/interview/propose');
+  });
+  screen('40-interview-confirm', 'Siti', (t, e) async {
+    final i = e.b.interviews.values.first;
+    e.go('/interviews/${i.id}/confirm');
   });
 
   const variants = <(String, bool, double)>[

@@ -57,7 +57,10 @@ void main() {
     await t.ensureVisible(find.byKey(K.reportSubmit));
     await t.tap(find.byKey(K.reportSubmit));
     await t.pumpAndSettle();
-    expect(find.text('Jelaskan minimal 10 karakter.'), findsOneWidget);
+    expect(
+      find.text('Ceritakan sedikit lebih rinci, minimal 10 karakter.'),
+      findsOneWidget,
+    );
     expect(rig.backend.reports, isEmpty);
 
     await t.ensureVisible(find.byKey(K.reportType('fraud')));
@@ -120,7 +123,7 @@ void main() {
     await t.tap(find.byKey(K.shareConsent));
     await t.pumpAndSettle();
     expect(rig.backend.reports[r.id]!.$2.share, isNotNull);
-    expect(find.textContaining('Dibagikan sampai'), findsOneWidget);
+    expect(find.textContaining('Dibagikan hingga'), findsOneWidget);
   });
 
   testWidgets('M-96: menolak tidak membagikan apa pun', (t) async {
@@ -149,7 +152,7 @@ void main() {
       ),
     );
     await t.pumpAndSettle();
-    expect(find.textContaining('Dibagikan sampai'), findsOneWidget);
+    expect(find.textContaining('Dibagikan hingga'), findsOneWidget);
 
     await t.ensureVisible(find.byKey(K.reportAddEvidence));
     await t.tap(find.byKey(K.reportAddEvidence));
@@ -157,7 +160,7 @@ void main() {
     await t.tap(find.text('Dari galeri'));
     await t.pumpAndSettle();
     expect(picker.calls, 1);
-    expect(find.text('Bukti ditambahkan.'), findsOneWidget);
+    expect(find.text('Bukti sudah ditambahkan.'), findsOneWidget);
     await t.pump(const Duration(seconds: 5)); // snackbar menutupi tombol
     await t.pumpAndSettle();
 
@@ -167,7 +170,7 @@ void main() {
     await t.tap(find.widgetWithText(TextButton, 'Cabut persetujuan'));
     await t.pumpAndSettle();
     expect(rig.backend.reports[r.id]!.$2.share!.revoked, isTrue);
-    expect(find.text('Persetujuan dicabut'), findsOneWidget);
+    expect(find.text('Persetujuan sudah dicabut'), findsOneWidget);
     expect(find.byKey(K.reportRevokeShare), findsNothing);
   });
 
@@ -185,6 +188,6 @@ void main() {
     await t.pumpWidget(rig.app(router: _router(Routes.privacy)));
     await t.pumpAndSettle();
     expect(find.text('Perilaku'), findsOneWidget);
-    expect(find.textContaining('Dibagikan sampai'), findsOneWidget);
+    expect(find.textContaining('Dibagikan hingga'), findsOneWidget);
   });
 }

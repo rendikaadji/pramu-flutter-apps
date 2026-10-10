@@ -42,14 +42,11 @@ void main() {
     await t.ensureVisible(find.byKey(K.ratingSubmit));
     await t.tap(find.byKey(K.ratingSubmit));
     await t.pumpAndSettle();
-    expect(
-      find.text('Penilaian tidak dapat diubah setelah dikirim.'),
-      findsOne,
-    );
-    await t.tap(find.widgetWithText(TextButton, 'Kirim penilaian'));
+    expect(find.text('Ulasan tidak bisa diubah setelah dikirim.'), findsOne);
+    await t.tap(find.widgetWithText(TextButton, 'Kirim ulasan'));
     await t.pumpAndSettle();
 
-    expect(find.text('Penilaian Anda'), findsOneWidget);
+    expect(find.text('Ulasan Anda'), findsOneWidget);
     expect(
       rig.backend.reviews.where((r) => r.review.bookingId == bookingId),
       hasLength(1),
@@ -63,7 +60,7 @@ void main() {
     await t.ensureVisible(find.byKey(K.ratingSubmit));
     await t.tap(find.byKey(K.ratingSubmit));
     await t.pumpAndSettle();
-    expect(find.text('Pilih 1 sampai 5 bintang.'), findsOneWidget);
+    expect(find.text('Pilih jumlah bintang, 1 sampai 5.'), findsOneWidget);
     expect(
       rig.backend.reviews.where((r) => r.review.bookingId == bookingId),
       isEmpty,
@@ -82,9 +79,9 @@ void main() {
     await t.ensureVisible(find.byKey(K.ratingSubmit));
     await t.tap(find.byKey(K.ratingSubmit));
     await t.pumpAndSettle();
-    await t.tap(find.widgetWithText(TextButton, 'Kirim penilaian'));
+    await t.tap(find.widgetWithText(TextButton, 'Kirim ulasan'));
     await t.pumpAndSettle();
-    expect(find.text('Data sudah berubah'), findsOneWidget);
+    expect(find.text('Data baru saja berubah'), findsOneWidget);
   });
 
   testWidgets('M-90: lewat 7 hari -> info penilaian otomatis', (t) async {
@@ -93,10 +90,7 @@ void main() {
     );
     await t.pumpWidget(rig.app(home: RatingScreen(bookingId: bookingId)));
     await t.pumpAndSettle();
-    expect(
-      find.text('Penilaian otomatis bintang 5 diberikan.'),
-      findsOneWidget,
-    );
+    expect(find.text('Ulasan bintang 5 diberikan otomatis.'), findsOneWidget);
     expect(find.byKey(K.ratingSubmit), findsNothing);
   });
 

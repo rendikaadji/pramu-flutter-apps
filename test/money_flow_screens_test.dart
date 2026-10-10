@@ -169,7 +169,7 @@ void main() {
       await settle(tester);
       await tester.tap(dialogButton('Bayar'));
       await settle(tester);
-      expect(find.textContaining('tidak dapat dibuka'), findsOneWidget);
+      expect(find.textContaining('belum bisa dibuka'), findsOneWidget);
       expect(find.byKey(K.payButton), findsOneWidget);
     });
 
@@ -190,7 +190,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
       expect(find.byKey(K.paymentPending), findsOneWidget);
       expect(find.text('Pembayaran diterima'), findsNothing);
-      expect(find.textContaining('Jangan bayar lagi'), findsOneWidget);
+      expect(
+        find.textContaining('Anda tidak perlu membayar lagi'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('konfirmasi selesai: dialog lalu dana dicairkan', (
@@ -220,7 +223,7 @@ void main() {
       final b = sitiBooking(env.backend);
       env.go('/bookings/${b.id}/cancel');
       await settle(tester);
-      expect(find.textContaining('Dikembalikan ke Anda'), findsOneWidget);
+      expect(find.textContaining('Kembali ke Anda'), findsOneWidget);
       await tap(tester, find.byKey(K.cancelReason(0)));
       await tester.pump();
       env.backend.bookings[b.id] = env.backend.bookings[b.id]!.copyWith(
@@ -271,7 +274,7 @@ void main() {
       );
       await tap(tester, find.byKey(K.agreementApprove));
       await settle(tester);
-      await tester.tap(dialogButton('Setuju'));
+      await tester.tap(dialogButton('Setujui'));
       await settle(tester);
       expect(find.text('Data sudah berubah'), findsOneWidget);
       await tester.tap(find.text('Muat ulang'));
@@ -315,7 +318,10 @@ void main() {
       await tester.enterText(find.byKey(K.payoutAmount), '99999999');
       await tap(tester, find.byKey(K.payoutSubmit));
       await settle(tester);
-      expect(find.text('Nominal melebihi saldo Anda.'), findsOneWidget);
+      expect(
+        find.text('Nominal melebihi saldo yang bisa ditarik.'),
+        findsOneWidget,
+      );
       expect(find.byType(Dialog), findsNothing);
     });
 
@@ -328,7 +334,7 @@ void main() {
       await settle(tester);
       await tap(tester, find.byKey(K.bankSave));
       await settle(tester);
-      expect(find.text('Pilih bank'), findsWidgets);
+      expect(find.text('Pilih bank Anda.'), findsWidgets);
       expect(find.textContaining('8 sampai 16 digit'), findsOneWidget);
     });
 

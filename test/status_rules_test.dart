@@ -67,7 +67,7 @@ void main() {
     );
     expect(
       PeriodStatus.awaitingPayment.labelFor(Role.assistant),
-      'Menunggu pembayaran pencari',
+      'Menunggu pembayaran Pencari',
     );
     expect(
       PeriodStatus.from('status_baru').labelFor(Role.seeker),
