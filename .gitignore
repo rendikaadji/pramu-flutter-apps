@@ -49,3 +49,4 @@ app.*.map.json
 
 # Output harness screenshot
 /tool/screenshots/out*/
+tool/screenshots/device/
