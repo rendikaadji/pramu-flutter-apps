@@ -39,7 +39,10 @@ class AccountScreen extends ConsumerWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSpace.tap),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpace.s8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpace.s16,
+              vertical: AppSpace.s8,
+            ),
             child: Row(
               children: [
                 Icon(icon, color: t.textMuted),
@@ -54,6 +57,49 @@ class AccountScreen extends ConsumerWidget {
                 Icon(LucideIcons.chevronRight, color: t.textSubtle, size: 20),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _caption(BuildContext context, String text) => Padding(
+    padding: const EdgeInsets.fromLTRB(
+      AppSpace.s4,
+      AppSpace.s24,
+      AppSpace.s4,
+      AppSpace.s8,
+    ),
+    child: Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: context.text.label.copyWith(color: context.tokens.textMuted),
+      ),
+    ),
+  );
+
+  /// Satu kartu berisi baris-baris menu dengan pemisah di antaranya.
+  Widget _group(BuildContext context, List<Widget> rows) {
+    final t = context.tokens;
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: ClipRRect(
+        borderRadius: AppRadius.brMd,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            children: [
+              for (var i = 0; i < rows.length; i++) ...[
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    indent: AppSpace.s16 + 24 + AppSpace.s16,
+                    color: t.borderSubtle,
+                  ),
+                rows[i],
+              ],
+            ],
           ),
         ),
       ),
@@ -129,82 +175,104 @@ class AccountScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: AppSpace.s16),
-          _row(
-            context,
-            icon: LucideIcons.shieldCheck,
-            label: 'Verifikasi identitas',
-            value: verified.label,
-            onTap: () => context.push(
-              verified == VerificationStatus.none
-                  ? Routes.verificationGate
-                  : Routes.verificationStatus,
-            ),
-          ),
-          if (isAssistant) ...[
+          _caption(context, isAssistant ? 'Identitas & profil' : 'Identitas'),
+          _group(context, [
             _row(
               context,
-              icon: LucideIcons.fileCheck,
-              label: 'SKCK',
-              onTap: () => context.push(Routes.skck),
+              icon: LucideIcons.shieldCheck,
+              label: 'Verifikasi identitas',
+              value: verified.label,
+              onTap: () => context.push(
+                verified == VerificationStatus.none
+                    ? Routes.verificationGate
+                    : Routes.verificationStatus,
+              ),
             ),
-            _row(
-              context,
-              icon: LucideIcons.userPen,
-              label: 'Edit profil asisten',
-              onTap: () => context.push(Routes.profileEdit),
-            ),
-            _row(
-              context,
-              icon: LucideIcons.landmark,
-              label: 'Rekening bank',
-              onTap: () => context.push(Routes.bank),
-            ),
-          ],
-          _row(
-            context,
-            key: K.accountRoleRow,
-            icon: LucideIcons.repeat,
-            label: 'Ganti peran',
-            value: user.activeRole?.label,
-            onTap: () => showRoleSwitch(context, ref),
-          ),
-          _row(
-            context,
-            icon: LucideIcons.bell,
-            label: 'Notifikasi',
-            onTap: () => context.push(Routes.notifications),
-          ),
-          _row(
-            context,
-            icon: LucideIcons.smartphone,
-            label: 'Perangkat masuk',
-            onTap: () => context.push(Routes.devices),
-          ),
-          _row(
-            context,
-            icon: LucideIcons.lock,
-            label: 'Pusat privasi',
-            onTap: () => context.push(Routes.privacy),
-          ),
-          const SizedBox(height: AppSpace.s16),
-          const SectionHeader('Tema'),
-          Wrap(
-            spacing: AppSpace.s8,
-            children: [
-              for (final (key, m, label) in [
-                (K.themeSystem, ThemeMode.system, 'Sistem'),
-                (K.themeLight, ThemeMode.light, 'Terang'),
-                (K.themeDark, ThemeMode.dark, 'Gelap'),
-              ])
-                ChoiceChip(
-                  key: key,
-                  label: Text(label),
-                  selected: mode == m,
-                  onSelected: (_) =>
-                      ref.read(themeModeProvider.notifier).set(m),
-                ),
+            if (isAssistant) ...[
+              _row(
+                context,
+                icon: LucideIcons.fileCheck,
+                label: 'SKCK',
+                onTap: () => context.push(Routes.skck),
+              ),
+              _row(
+                context,
+                icon: LucideIcons.userPen,
+                label: 'Edit profil asisten',
+                onTap: () => context.push(Routes.profileEdit),
+              ),
+              _row(
+                context,
+                icon: LucideIcons.landmark,
+                label: 'Rekening bank',
+                onTap: () => context.push(Routes.bank),
+              ),
             ],
+          ]),
+          _caption(context, 'Pengaturan'),
+          _group(context, [
+            _row(
+              context,
+              key: K.accountRoleRow,
+              icon: LucideIcons.repeat,
+              label: 'Ganti peran',
+              value: user.activeRole?.label,
+              onTap: () => showRoleSwitch(context, ref),
+            ),
+            _row(
+              context,
+              icon: LucideIcons.bell,
+              label: 'Notifikasi',
+              onTap: () => context.push(Routes.notifications),
+            ),
+            _row(
+              context,
+              icon: LucideIcons.smartphone,
+              label: 'Perangkat masuk',
+              onTap: () => context.push(Routes.devices),
+            ),
+            _row(
+              context,
+              icon: LucideIcons.lock,
+              label: 'Pusat privasi',
+              onTap: () => context.push(Routes.privacy),
+            ),
+          ]),
+          _caption(context, 'Tema'),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<ThemeMode>(
+              showSelectedIcon: false,
+              style: SegmentedButton.styleFrom(
+                minimumSize: const Size.fromHeight(AppSpace.tap),
+                backgroundColor: t.surface,
+                foregroundColor: t.textPrimary,
+                selectedBackgroundColor: t.primaryContainer,
+                selectedForegroundColor: t.primary,
+                side: BorderSide(color: t.borderSubtle),
+                textStyle: context.text.label,
+              ),
+              segments: [
+                for (final (key, m, label, icon) in [
+                  (
+                    K.themeSystem,
+                    ThemeMode.system,
+                    'Sistem',
+                    LucideIcons.monitor,
+                  ),
+                  (K.themeLight, ThemeMode.light, 'Terang', LucideIcons.sun),
+                  (K.themeDark, ThemeMode.dark, 'Gelap', LucideIcons.moon),
+                ])
+                  ButtonSegment<ThemeMode>(
+                    value: m,
+                    icon: Icon(icon, size: 18),
+                    label: Text(label, key: key),
+                  ),
+              ],
+              selected: {mode},
+              onSelectionChanged: (s) =>
+                  ref.read(themeModeProvider.notifier).set(s.first),
+            ),
           ),
           const SizedBox(height: AppSpace.s32),
           AppButton(

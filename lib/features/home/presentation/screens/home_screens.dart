@@ -117,6 +117,88 @@ class _BookingTile extends StatelessWidget {
   }
 }
 
+/// Baris lowongan Pencari: status + sisa waktu, judul, lalu satu baris tindakan
+/// yang menyesuaikan status (jumlah pelamar / lanjutkan draf / bayar).
+class _ListingTile extends StatelessWidget {
+  const _ListingTile(this.l);
+  final Listing l;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    final exp = l.expiresAt;
+    String? remain;
+    if (l.status == ListingStatus.open && exp != null) {
+      final d = exp.difference(DateTime.now()).inDays;
+      remain = d <= 0 ? 'Berakhir hari ini' : 'Sisa $d hari';
+    }
+    final (IconData icon, String text, Color color) = switch (l.status) {
+      ListingStatus.draft => (LucideIcons.pencil, 'Lanjutkan draf', t.primary),
+      ListingStatus.awaitingPayment => (
+        LucideIcons.creditCard,
+        'Selesaikan pembayaran',
+        t.textPrimary,
+      ),
+      _ when l.applicantCount > 0 => (
+        LucideIcons.users,
+        '${l.applicantCount} pelamar',
+        t.primary,
+      ),
+      _ => (LucideIcons.users, 'Belum ada pelamar', t.textMuted),
+    };
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpace.s12),
+      child: AppCard(
+        onTap: () => context.push(switch (l.status) {
+          ListingStatus.draft => '${Routes.listingNew}?draft=${l.id}',
+          ListingStatus.awaitingPayment => Routes.listingPay(l.id),
+          _ => Routes.listingManage(l.id),
+        }),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Flexible(
+                  child: StatusChip.of(StatusDomain.listing, wire(l.status)),
+                ),
+                if (remain != null) ...[
+                  const Spacer(),
+                  Text(
+                    remain,
+                    style: context.text.caption.copyWith(color: t.textMuted),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: AppSpace.s12),
+            Text(l.title, style: context.text.h3),
+            const SizedBox(height: AppSpace.s4),
+            Text(
+              '${l.category} - ${l.city}',
+              style: context.text.bodySm.copyWith(color: t.textMuted),
+            ),
+            const SizedBox(height: AppSpace.s12),
+            Row(
+              children: [
+                ExcludeSemantics(child: Icon(icon, size: 18, color: color)),
+                const SizedBox(width: AppSpace.s8),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: context.text.label.copyWith(color: color),
+                  ),
+                ),
+                Icon(LucideIcons.chevronRight, size: 20, color: t.textSubtle),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 Widget _loadingSkeleton() => const Padding(
   padding: EdgeInsets.symmetric(vertical: AppSpace.s16),
   child: Column(
@@ -227,36 +309,7 @@ class SeekerHomeScreen extends ConsumerWidget {
           ),
           if (listings.isEmpty)
             Text('Belum ada lowongan aktif.', style: context.text.body),
-          for (final l in listings)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpace.s12),
-              child: AppCard(
-                onTap: () => context.push(switch (l.status) {
-                  ListingStatus.draft => '${Routes.listingNew}?draft=${l.id}',
-                  ListingStatus.awaitingPayment => Routes.listingPay(l.id),
-                  _ => Routes.listingManage(l.id),
-                }),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l.title, style: context.text.h3),
-                    const SizedBox(height: AppSpace.s8),
-                    Wrap(
-                      spacing: AppSpace.s8,
-                      runSpacing: AppSpace.s4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        StatusChip.of(StatusDomain.listing, wire(l.status)),
-                        Text(
-                          '${l.applicantCount} pelamar',
-                          style: context.text.bodySm,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          for (final l in listings) _ListingTile(l),
           AppButton(
             key: K.homeCreateListing,
             label: 'Buat lowongan',
@@ -264,6 +317,7 @@ class SeekerHomeScreen extends ConsumerWidget {
             variant: AppButtonVariant.secondary,
             onPressed: () => context.push(Routes.listingNew),
           ),
+          const SizedBox(height: AppSpace.s16),
           SectionHeader(
             'Kontrak berjalan',
             actionLabel: 'Lihat semua',
@@ -397,21 +451,40 @@ class AssistantHomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(l.title, style: context.text.h3),
-                      Text(
-                        '${l.category} - ${l.city}',
-                        style: context.text.bodySm,
-                      ),
                       const SizedBox(height: AppSpace.s4),
                       Text(
-                        '${formatRupiah(l.budgetMin)} - '
-                        '${formatRupiah(l.budgetMax)} per ${l.unit.label.toLowerCase()}',
-                        style: context.text.body,
+                        '${l.category} - ${l.city}',
+                        style: context.text.bodySm.copyWith(
+                          color: context.tokens.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpace.s12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Flexible(
+                            child: MoneyText(
+                              '${formatRupiah(l.budgetMin)} - '
+                              '${formatRupiah(l.budgetMax)}',
+                              size: MoneySize.small,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpace.s4),
+                          Text(
+                            'per ${l.unit.label.toLowerCase()}',
+                            style: context.text.bodySm.copyWith(
+                              color: context.tokens.textMuted,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
           ],
+          const SizedBox(height: AppSpace.s16),
           SectionHeader(
             'Kontrak berjalan',
             actionLabel: 'Lihat semua',
