@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/features/profile/domain/profile.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/compact_rating.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
+import 'package:pramu_apps/shared/app_ui/rate_text.dart';
 
+/// Kartu asisten di hasil cari: identitas + kepercayaan di atas, rating dan tarif di footer.
 class AssistantCard extends StatelessWidget {
   const AssistantCard({super.key, required this.profile, required this.onTap});
   final AssistantProfile profile;
@@ -14,47 +19,73 @@ class AssistantCard extends StatelessWidget {
     final t = context.tokens;
     return AppCard(
       onTap: onTap,
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AvatarImage(name: p.name, url: p.photoUrl, size: 48),
-          const SizedBox(width: AppSpace.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AvatarImage(name: p.name, url: p.photoUrl, size: 56),
+              const SizedBox(width: AppSpace.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      p.name,
+                      style: context.text.h3,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpace.s4),
+                    if (p.verified)
+                      const VerificationSeal(size: SealSize.sm)
+                    else
+                      Text(
+                        'Belum terverifikasi',
+                        style: context.text.bodySm.copyWith(color: t.textMuted),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (p.categories.isNotEmpty || p.city.isNotEmpty) ...[
+            const SizedBox(height: AppSpace.s12),
+            if (p.categories.isNotEmpty)
+              IconInfoRow(
+                icon: LucideIcons.briefcase,
+                text: p.categories.join(', '),
+                small: true,
+              ),
+            if (p.categories.isNotEmpty && p.city.isNotEmpty)
+              const SizedBox(height: AppSpace.s4),
+            if (p.city.isNotEmpty)
+              IconInfoRow(icon: LucideIcons.mapPin, text: p.city, small: true),
+          ],
+          const SizedBox(height: AppSpace.s12),
+          Divider(height: 1, color: t.borderSubtle),
+          const SizedBox(height: AppSpace.s12),
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: AppSpace.s12,
+              runSpacing: AppSpace.s8,
               children: [
-                Text(p.name, style: context.text.h3),
-                const SizedBox(height: AppSpace.s4),
-                if (p.verified)
-                  const VerificationSeal(size: SealSize.sm)
+                if (p.ratingCount > 0)
+                  CompactRating(value: p.ratingAvg, count: p.ratingCount)
                 else
                   Text(
-                    'Belum terverifikasi',
+                    'Belum ada ulasan',
                     style: context.text.bodySm.copyWith(color: t.textMuted),
                   ),
-                const SizedBox(height: AppSpace.s4),
-                Text(
-                  [
-                    if (p.categories.isNotEmpty) p.categories.join(', '),
-                    if (p.city.isNotEmpty) p.city,
-                  ].join(' - '),
-                  style: context.text.bodySm.copyWith(color: t.textMuted),
-                ),
-                const SizedBox(height: AppSpace.s8),
-                if (p.ratingCount > 0)
-                  RatingStars(value: p.ratingAvg, count: p.ratingCount)
-                else
-                  Text('Belum ada ulasan', style: context.text.bodySm),
-                if (p.rate > 0) ...[
-                  const SizedBox(height: AppSpace.s4),
-                  Wrap(
-                    spacing: AppSpace.s4,
-                    children: [
-                      MoneyText(formatRupiah(p.rate)),
-                      Text('/ ${p.unit.label.toLowerCase()}'),
-                    ],
+                if (p.rate > 0)
+                  RateText(
+                    formatRupiah(p.rate),
+                    unit: p.unit.label.toLowerCase(),
                   ),
-                ],
               ],
             ),
           ),

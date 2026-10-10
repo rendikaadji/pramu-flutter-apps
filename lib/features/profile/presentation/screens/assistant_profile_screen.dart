@@ -11,6 +11,8 @@ import 'package:pramu_apps/features/profile/data/profile_providers.dart';
 import 'package:pramu_apps/features/profile/domain/profile.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
+import 'package:pramu_apps/shared/app_ui/rate_text.dart';
 
 final assistantProfileProvider = FutureProvider.autoDispose
     .family<AssistantProfile, String>((ref, id) {
@@ -95,11 +97,11 @@ class AssistantProfileScreen extends ConsumerWidget {
                     header: true,
                     child: Text(p.name, style: context.text.h1),
                   ),
-                  if (p.verified)
-                    VerificationSeal(
-                      size: SealSize.sm,
-                      onTap: () => _explainSeal(context),
-                    ),
+                  const SizedBox(height: AppSpace.s8),
+                  StatusChip(
+                    label: p.available ? 'Tersedia' : 'Belum tersedia',
+                    tone: p.available ? StatusTone.success : StatusTone.neutral,
+                  ),
                 ],
               ),
             ),
@@ -114,48 +116,40 @@ class AssistantProfileScreen extends ConsumerWidget {
           onSealTap: p.verified ? () => _explainSeal(context) : null,
         ),
         const SizedBox(height: AppSpace.s16),
+        const SizedBox(height: AppSpace.s8),
+        const SectionHeader('Tentang asisten'),
+        const SizedBox(height: AppSpace.s8),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                spacing: AppSpace.s8,
-                runSpacing: AppSpace.s8,
-                children: [
-                  for (final c in p.categories)
-                    StatusChip(label: c, tone: StatusTone.info),
-                  StatusChip(
-                    label: p.available ? 'Tersedia' : 'Belum tersedia',
-                    tone: p.available ? StatusTone.success : StatusTone.neutral,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpace.s12),
-              Row(
-                children: [
-                  Icon(LucideIcons.mapPin, size: 18, color: t.textMuted),
-                  const SizedBox(width: AppSpace.s8),
-                  Expanded(child: Text(p.city, style: context.text.body)),
-                ],
-              ),
+              if (p.rate > 0) ...[
+                Text(
+                  'Tarif',
+                  style: context.text.caption.copyWith(color: t.textMuted),
+                ),
+                RateText(
+                  formatRupiah(p.rate),
+                  unit: p.unit.label.toLowerCase(),
+                ),
+                const SizedBox(height: AppSpace.s12),
+                Divider(height: 1, color: t.borderSubtle),
+                const SizedBox(height: AppSpace.s12),
+              ],
+              if (p.categories.isNotEmpty)
+                IconInfoRow(
+                  icon: LucideIcons.briefcase,
+                  text: p.categories.join(', '),
+                ),
+              if (p.categories.isNotEmpty) const SizedBox(height: AppSpace.s8),
+              IconInfoRow(icon: LucideIcons.mapPin, text: p.city),
               const SizedBox(height: AppSpace.s8),
-              Text(
-                '${p.experienceYears} tahun pengalaman',
-                style: context.text.body,
-              ),
-              const SizedBox(height: AppSpace.s8),
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  MoneyText(formatRupiah(p.rate)),
-                  Text(
-                    ' per ${p.unit.label.toLowerCase()}',
-                    style: context.text.body,
-                  ),
-                ],
+              IconInfoRow(
+                icon: LucideIcons.award,
+                text: '${p.experienceYears} tahun pengalaman',
               ),
               if (p.skills.isNotEmpty) ...[
-                const SizedBox(height: AppSpace.s12),
+                const SizedBox(height: AppSpace.s16),
                 Text('Keahlian', style: context.text.h3),
                 const SizedBox(height: AppSpace.s8),
                 Wrap(
@@ -168,7 +162,9 @@ class AssistantProfileScreen extends ConsumerWidget {
                 ),
               ],
               if (p.bio.isNotEmpty) ...[
-                const SizedBox(height: AppSpace.s12),
+                const SizedBox(height: AppSpace.s16),
+                Text('Tentang saya', style: context.text.h3),
+                const SizedBox(height: AppSpace.s8),
                 Text(p.bio, style: context.text.body),
               ],
             ],
@@ -179,13 +175,6 @@ class AssistantProfileScreen extends ConsumerWidget {
           'Nomor HP disembunyikan sampai pembayaran dilakukan, demi keamanan Anda.',
         ),
         const SizedBox(height: AppSpace.s16),
-        AppButton(
-          label: 'Lihat ulasan',
-          icon: LucideIcons.star,
-          variant: AppButtonVariant.secondary,
-          onPressed: () => context.push(Routes.userReviews(p.userId)),
-        ),
-        const SizedBox(height: AppSpace.s12),
         if (own)
           AppButton(
             key: K.profileEdit,
@@ -201,6 +190,13 @@ class AssistantProfileScreen extends ConsumerWidget {
             large: true,
             onPressed: () => context.push(Routes.invite(p.userId)),
           ),
+        const SizedBox(height: AppSpace.s12),
+        AppButton(
+          label: 'Lihat ulasan',
+          icon: LucideIcons.star,
+          variant: AppButtonVariant.secondary,
+          onPressed: () => context.push(Routes.userReviews(p.userId)),
+        ),
       ],
     );
   }

@@ -69,10 +69,7 @@ class _PagedListViewState<T> extends State<PagedListView<T>> {
           if (s.loadingMore) {
             return Semantics(
               label: 'Memuat lainnya',
-              child: const Padding(
-                padding: EdgeInsets.all(AppSpace.s16),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+              child: const ExcludeSemantics(child: ListSkeleton(count: 1)),
             );
           }
           if (s.error != null && !offline) {

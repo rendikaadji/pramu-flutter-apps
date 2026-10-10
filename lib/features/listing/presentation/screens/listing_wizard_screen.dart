@@ -15,6 +15,7 @@ import 'package:pramu_apps/features/listing/presentation/state/listing_state.dar
 import 'package:pramu_apps/features/listing/presentation/widgets/chip_select.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
 import 'package:pramu_apps/shared/app_ui/wib_picker.dart';
 
 const _steps = [
@@ -235,27 +236,35 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
       return;
     }
     if (_savable) {
-      final r = await showDialog<_Exit>(
+      final r = await showAdaptiveDialog<_Exit>(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Simpan draf?'),
-          content: const Text(
-            'Lowongan ini belum dibayar. Simpan sebagai draf agar bisa dilanjutkan nanti.',
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Lowongan ini belum dibayar. Simpan sebagai draf agar bisa dilanjutkan nanti.',
+              ),
+              const SizedBox(height: AppSpace.s16),
+              AppButton(
+                label: 'Simpan draf',
+                onPressed: () => Navigator.pop(ctx, _Exit.save),
+              ),
+              const SizedBox(height: AppSpace.s8),
+              AppButton(
+                label: 'Lanjut mengisi',
+                variant: AppButtonVariant.secondary,
+                onPressed: () => Navigator.pop(ctx, _Exit.keep),
+              ),
+              AppButton(
+                label: 'Buang',
+                variant: AppButtonVariant.text,
+                onPressed: () => Navigator.pop(ctx, _Exit.discard),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, _Exit.keep),
-              child: const Text('Lanjut mengisi'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, _Exit.discard),
-              child: const Text('Buang'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, _Exit.save),
-              child: const Text('Simpan draf'),
-            ),
-          ],
         ),
       );
       if (!mounted) return;
@@ -418,29 +427,42 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
           onChanged: (_) => _touch('budget_max'),
         ),
       ),
-      SwitchListTile(
-        key: K.listingRequireSkck,
-        contentPadding: EdgeInsets.zero,
-        title: const Text('Wajib SKCK'),
-        subtitle: const Text(
-          'Hanya asisten ber-SKCK terverifikasi yang bisa melamar.',
+      AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpace.s16),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            children: [
+              SwitchListTile(
+                key: K.listingRequireSkck,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Wajib SKCK'),
+                subtitle: const Text(
+                  'Hanya asisten ber-SKCK terverifikasi yang bisa melamar.',
+                ),
+                value: _skck,
+                onChanged: (v) {
+                  setState(() => _skck = v);
+                  _touch();
+                },
+              ),
+              Divider(height: 1, color: context.tokens.borderSubtle),
+              SwitchListTile(
+                key: K.listingSkipInterview,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Lewati wawancara'),
+                subtitle: const Text(
+                  'Pelamar bisa langsung diterima tanpa wawancara.',
+                ),
+                value: _skip,
+                onChanged: (v) {
+                  setState(() => _skip = v);
+                  _touch();
+                },
+              ),
+            ],
+          ),
         ),
-        value: _skck,
-        onChanged: (v) {
-          setState(() => _skck = v);
-          _touch();
-        },
-      ),
-      SwitchListTile(
-        key: K.listingSkipInterview,
-        contentPadding: EdgeInsets.zero,
-        title: const Text('Lewati wawancara'),
-        subtitle: const Text('Pelamar bisa langsung diterima tanpa wawancara.'),
-        value: _skip,
-        onChanged: (v) {
-          setState(() => _skip = v);
-          _touch();
-        },
       ),
     ],
     _ => [
@@ -495,17 +517,43 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_title.text.trim(), style: context.text.h3),
-            Text('${_category ?? '-'} - ${_city ?? '-'}'),
             Text(
-              '${_count.text} periode ${_unit.label.toLowerCase()}'
-              '${_start == null ? '' : ', mulai ${formatDate(_start!)}'}',
+              _title.text.trim().isEmpty ? '-' : _title.text.trim(),
+              style: context.text.h3,
+            ),
+            const SizedBox(height: AppSpace.s8),
+            MoneyText(
+              '${formatRupiah(parseRupiah(_min.text) ?? 0)} - ${formatRupiah(parseRupiah(_max.text) ?? 0)}',
             ),
             Text(
-              'Budget ${formatRupiah(parseRupiah(_min.text) ?? 0)} - ${formatRupiah(parseRupiah(_max.text) ?? 0)}',
+              'Budget per ${_unit.label.toLowerCase()}',
+              style: context.text.bodySm.copyWith(
+                color: context.tokens.textMuted,
+              ),
             ),
-            if (_skck) const Text('Wajib SKCK'),
-            if (_skip) const Text('Tanpa wawancara'),
+            const SizedBox(height: AppSpace.s12),
+            IconInfoRow(
+              icon: LucideIcons.briefcase,
+              text: '${_category ?? '-'} - ${_city ?? '-'}',
+            ),
+            const SizedBox(height: AppSpace.s8),
+            IconInfoRow(
+              icon: LucideIcons.calendar,
+              text:
+                  '${_count.text} periode ${_unit.label.toLowerCase()}'
+                  '${_start == null ? '' : ', mulai ${formatDate(_start!)}'}',
+            ),
+            if (_skck) ...[
+              const SizedBox(height: AppSpace.s8),
+              const IconInfoRow(
+                icon: LucideIcons.fileCheck,
+                text: 'Wajib SKCK',
+              ),
+            ],
+            if (_skip) ...[
+              const SizedBox(height: AppSpace.s8),
+              const IconInfoRow(icon: LucideIcons.zap, text: 'Tanpa wawancara'),
+            ],
           ],
         ),
       ),

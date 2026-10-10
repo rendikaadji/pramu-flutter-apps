@@ -13,6 +13,7 @@ import 'package:pramu_apps/features/application/presentation/state/application_s
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/rate_text.dart';
 
 /// M-37 Detail pelamar (pencari): kartu kepercayaan + keputusan.
 class ApplicantScreen extends ConsumerStatefulWidget {
@@ -96,14 +97,16 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(a.name, style: context.text.h2),
-                const SizedBox(height: AppSpace.s4),
+                const SizedBox(height: AppSpace.s8),
                 StatusChip.of(StatusDomain.application, wire(app.status)),
               ],
             ),
           ),
         ],
       ),
-      const SizedBox(height: AppSpace.s16),
+      const SizedBox(height: AppSpace.s8),
+      const SectionHeader('Kepercayaan'),
+      const SizedBox(height: AppSpace.s8),
       TrustCard(
         seal: a.verified ? SealState.verified : SealState.pending,
         skckVerified: app.skckVerified,
@@ -112,6 +115,8 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
         completedJobs: d.profile?.completedJobs ?? 0,
       ),
       const SizedBox(height: AppSpace.s16),
+      const SectionHeader('Lamaran'),
+      const SizedBox(height: AppSpace.s8),
       AppCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,12 +125,9 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
             Text(app.listingTitle, style: context.text.h3),
             const SizedBox(height: AppSpace.s12),
             Text('Tarif usulan', style: context.text.caption),
-            Wrap(
-              spacing: AppSpace.s4,
-              children: [
-                MoneyText(formatRupiah(app.proposedRate)),
-                Text('/ ${d.listing.unit.label.toLowerCase()}'),
-              ],
+            RateText(
+              formatRupiah(app.proposedRate),
+              unit: d.listing.unit.label.toLowerCase(),
             ),
             const SizedBox(height: AppSpace.s12),
             Text('Pesan', style: context.text.caption),
@@ -161,6 +163,8 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
         ),
       ],
       const SizedBox(height: AppSpace.s24),
+      const SectionHeader('Keputusan'),
+      const SizedBox(height: AppSpace.s8),
       if (actions.contains(ApplicationAction.shortlist))
         _gap(
           AppButton(
@@ -177,6 +181,9 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
             key: K.interviewPropose,
             label: 'Ajukan wawancara',
             icon: LucideIcons.video,
+            variant: actions.contains(ApplicationAction.shortlist)
+                ? AppButtonVariant.secondary
+                : AppButtonVariant.primary,
             onPressed: () => context
                 .push(Routes.interviewPropose(app.id))
                 .then((_) => _reload()),
@@ -241,11 +248,10 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
           ),
         ),
       if (actions.contains(ApplicationAction.reject))
-        _gap(
-          AppButton(
+        Padding(
+          padding: const EdgeInsets.only(top: AppSpace.s8),
+          child: _RejectButton(
             key: K.applicationReject,
-            label: 'Tolak',
-            variant: AppButtonVariant.danger,
             loading: busy,
             onPressed: canAct
                 ? () => _do(
@@ -265,4 +271,39 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
     padding: const EdgeInsets.only(bottom: AppSpace.s12),
     child: w,
   );
+}
+
+/// Tolak = aksi sekunder: outline bahaya, tidak mendominasi tombol utama.
+class _RejectButton extends StatelessWidget {
+  const _RejectButton({
+    super.key,
+    required this.onPressed,
+    this.loading = false,
+  });
+  final VoidCallback? onPressed;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.tokens;
+    return OutlinedButton.icon(
+      onPressed: loading ? null : onPressed,
+      icon: loading
+          ? SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: t.danger,
+                semanticsLabel: 'Tolak, sedang diproses',
+              ),
+            )
+          : const Icon(LucideIcons.circleX, size: 20),
+      label: const Text('Tolak'),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(AppSpace.tap),
+        foregroundColor: t.danger,
+        side: BorderSide(color: t.danger.withValues(alpha: .6)),
+      ),
+    );
+  }
 }

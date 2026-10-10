@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/models/wire.dart';
+import 'package:pramu_apps/core/money.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
@@ -14,6 +15,9 @@ import 'package:pramu_apps/features/listing/presentation/widgets/listing_card.da
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/compact_rating.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
+import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 
 /// M-42 Detail lowongan (asisten). Pencari pemilik dialihkan ke M-36.
 class ListingDetailScreen extends ConsumerWidget {
@@ -25,6 +29,7 @@ class ListingDetailScreen extends ConsumerWidget {
     final async = ref.watch(listingDetailProvider(id));
     final user = ref.watch(sessionProvider.select((s) => s.user));
     final l = async.value;
+    final assistant = user?.activeRole == Role.assistant;
     if (l != null && user != null && l.owner.id == user.id) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) context.pushReplacement(Routes.listingManage(id));
@@ -32,6 +37,9 @@ class ListingDetailScreen extends ConsumerWidget {
     }
     return AppScaffold(
       title: 'Detail lowongan',
+      bottomNavigationBar: l != null && assistant
+          ? PinnedActionsBar(children: [_Cta(listing: l)])
+          : null,
       body: AsyncBody<Listing>(
         value: async,
         onRetry: () => ref.invalidate(listingDetailProvider(id)),
@@ -43,11 +51,7 @@ class ListingDetailScreen extends ConsumerWidget {
               top: AppSpace.s8,
               bottom: AppSpace.s24,
             ),
-            children: [
-              _Body(listing: l),
-              const SizedBox(height: AppSpace.s24),
-              if (user?.activeRole == Role.assistant) _Cta(listing: l),
-            ],
+            children: [_Body(listing: l, assistantView: assistant)],
           ),
         ),
       ),
@@ -56,8 +60,9 @@ class ListingDetailScreen extends ConsumerWidget {
 }
 
 class _Body extends StatelessWidget {
-  const _Body({required this.listing});
+  const _Body({required this.listing, required this.assistantView});
   final Listing listing;
+  final bool assistantView;
 
   @override
   Widget build(BuildContext context) {
@@ -75,13 +80,11 @@ class _Body extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             StatusChip.of(StatusDomain.listing, wire(l.status)),
-            if (l.requireSkck)
-              const StatusChip(
-                label: 'Wajib SKCK',
-                tone: StatusTone.neutral,
-                icon: LucideIcons.fileCheck,
+            if (days != null)
+              Text(
+                'Sisa $days hari',
+                style: context.text.bodySm.copyWith(color: t.textMuted),
               ),
-            if (days != null) Text('Sisa $days hari'),
           ],
         ),
         const SizedBox(height: AppSpace.s16),
@@ -89,18 +92,36 @@ class _Body extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${l.category} - ${l.city}', style: context.text.body),
-              const SizedBox(height: AppSpace.s4),
-              Text(budgetText(l), style: context.text.body),
               Text(
-                '${l.periodCount} periode, mulai ${formatDate(l.startDate)}',
-                style: context.text.body,
+                'Budget per ${l.unit.label.toLowerCase()}',
+                style: context.text.caption.copyWith(color: t.textMuted),
+              ),
+              const SizedBox(height: AppSpace.s4),
+              MoneyText(
+                '${formatRupiah(l.budgetMin)} - ${formatRupiah(l.budgetMax)}',
+              ),
+              const SizedBox(height: AppSpace.s12),
+              Divider(height: 1, color: t.borderSubtle),
+              const SizedBox(height: AppSpace.s12),
+              IconInfoRow(icon: LucideIcons.briefcase, text: l.category),
+              const SizedBox(height: AppSpace.s8),
+              IconInfoRow(icon: LucideIcons.mapPin, text: l.city),
+              const SizedBox(height: AppSpace.s8),
+              IconInfoRow(
+                icon: LucideIcons.calendar,
+                text:
+                    '${l.periodCount} periode, mulai ${formatDate(l.startDate)}',
               ),
             ],
           ),
         ),
+        if (l.requireSkck) ...[
+          const SizedBox(height: AppSpace.s12),
+          _SkckPanel(assistantView: assistantView),
+        ],
         if (l.description.isNotEmpty) ...[
           const SizedBox(height: AppSpace.s16),
+          const SectionHeader('Tentang pekerjaan'),
           Text(l.description, style: context.text.body),
         ],
         const SizedBox(height: AppSpace.s16),
@@ -116,10 +137,11 @@ class _Body extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(l.owner.name, style: context.text.h3),
+                    const SizedBox(height: AppSpace.s4),
                     if (l.owner.verified)
                       const VerificationSeal(size: SealSize.sm),
                     if (l.owner.ratingCount > 0)
-                      RatingStars(
+                      CompactRating(
                         value: l.owner.ratingAvg,
                         count: l.owner.ratingCount,
                       )
@@ -135,6 +157,53 @@ class _Body extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Panel syarat SKCK: tinta nada sukses bila sudah terverifikasi, peringatan bila belum.
+class _SkckPanel extends ConsumerWidget {
+  const _SkckPanel({required this.assistantView});
+  final bool assistantView;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = context.tokens;
+    var ok = false;
+    var message = 'Hanya asisten ber-SKCK terverifikasi yang bisa melamar.';
+    if (assistantView) {
+      final status =
+          ref.watch(mySkckStatusProvider).value ?? VerificationStatus.none;
+      ok = status.isVerified;
+      message = ok
+          ? 'SKCK Anda sudah terverifikasi, Anda bisa melamar.'
+          : status == VerificationStatus.pending
+          ? 'SKCK Anda sedang ditinjau. Anda bisa melamar setelah terverifikasi.'
+          : 'Lowongan ini mewajibkan SKCK. Unggah SKCK Anda sekali, bisa dipakai untuk lamaran lain.';
+    }
+    final tone = ok ? StatusTone.success : StatusTone.warning;
+    return AppCard(
+      color: tone.bg(t),
+      borderColor: tone.fg(t).withValues(alpha: .35),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ExcludeSemantics(
+            child: Icon(LucideIcons.fileCheck, size: 22, color: tone.fg(t)),
+          ),
+          const SizedBox(width: AppSpace.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Wajib SKCK', style: context.text.label),
+                const SizedBox(height: AppSpace.s4),
+                Text(message, style: context.text.bodySm),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -162,6 +231,7 @@ class _Cta extends ConsumerWidget {
       return AppButton(
         key: K.listingViewApplication,
         label: 'Lihat lamaran',
+        icon: LucideIcons.fileText,
         variant: AppButtonVariant.secondary,
         onPressed: existing == null
             ? null
@@ -178,28 +248,17 @@ class _Cta extends ConsumerWidget {
     final status = skck.value ?? VerificationStatus.none;
     if (l.requireSkck && !status.isVerified) {
       final pending = status == VerificationStatus.pending;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            pending
-                ? 'SKCK Anda sedang ditinjau. Anda bisa melamar setelah terverifikasi.'
-                : 'Lowongan ini mewajibkan SKCK. Unggah SKCK Anda sekali, bisa dipakai untuk lamaran lain.',
-            style: context.text.body,
-          ),
-          const SizedBox(height: AppSpace.s12),
-          AppButton(
-            key: K.listingUploadSkck,
-            label: pending ? 'Lihat status SKCK' : 'Unggah SKCK untuk melamar',
-            icon: LucideIcons.lock,
-            onPressed: () => context.push('${Routes.skck}?listing=${l.id}'),
-          ),
-        ],
+      return AppButton(
+        key: K.listingUploadSkck,
+        label: pending ? 'Lihat status SKCK' : 'Unggah SKCK untuk melamar',
+        icon: LucideIcons.lock,
+        onPressed: () => context.push('${Routes.skck}?listing=${l.id}'),
       );
     }
     return AppButton(
       key: K.listingApply,
       label: 'Lamar sekarang',
+      icon: LucideIcons.send,
       large: true,
       onPressed: () => context.push(Routes.apply(l.id)).then((_) {
         ref.invalidate(myApplicationForListingProvider(l.id));
@@ -217,6 +276,7 @@ class _Locked extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const AppButton(label: 'Lamar sekarang', onPressed: null),

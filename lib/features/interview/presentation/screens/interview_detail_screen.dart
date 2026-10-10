@@ -16,6 +16,7 @@ import 'package:pramu_apps/features/interview/presentation/state/interview_state
 import 'package:pramu_apps/features/interview/presentation/widgets/slot_editor.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 
 String countdownText(DateTime slot, DateTime now) {
@@ -58,7 +59,7 @@ class _CountdownState extends State<_Countdown> {
     liveRegion: true,
     child: Text(
       countdownText(widget.slot, DateTime.now().toUtc()),
-      style: context.text.body,
+      style: context.text.label.copyWith(color: context.tokens.primary),
     ),
   );
 }
@@ -154,22 +155,37 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
     return [
       if (actionError != null) ActionErrorBox(error: actionError!),
       Text('Wawancara dengan ${c.otherName}', style: context.text.h2),
-      Text(c.application.listingTitle, style: context.text.bodySm),
-      const SizedBox(height: AppSpace.s8),
-      StatusChip.of(
-        StatusDomain.interview,
-        wire(iv.status),
-        role: c.isSeeker ? AppRole.seeker : AppRole.assistant,
+      const SizedBox(height: AppSpace.s4),
+      Text(
+        c.application.listingTitle,
+        style: context.text.bodySm.copyWith(color: context.tokens.textMuted),
+      ),
+      const SizedBox(height: AppSpace.s12),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: StatusChip.of(
+          StatusDomain.interview,
+          wire(iv.status),
+          role: c.isSeeker ? AppRole.seeker : AppRole.assistant,
+        ),
       ),
       const SizedBox(height: AppSpace.s16),
       AppCard(
+        color: iv.status == InterviewStatus.confirmed
+            ? context.tokens.primaryContainer
+            : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (slot != null) ...[
+              Text('Waktu wawancara', style: context.text.caption),
+              const SizedBox(height: AppSpace.s8),
               Row(
                 children: [
-                  const Icon(LucideIcons.calendarClock),
+                  Icon(
+                    LucideIcons.calendarClock,
+                    color: context.tokens.primary,
+                  ),
                   const SizedBox(width: AppSpace.s12),
                   Expanded(
                     child: Text(formatDateTime(slot), style: context.text.h3),
@@ -177,9 +193,9 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
                 ],
               ),
               if (iv.status == InterviewStatus.confirmed) ...[
-                const SizedBox(height: AppSpace.s4),
+                const SizedBox(height: AppSpace.s12),
                 _Countdown(slot),
-                const SizedBox(height: AppSpace.s8),
+                const SizedBox(height: AppSpace.s4),
                 Text(
                   'Kami kirim pengingat 1 jam sebelum wawancara.',
                   style: context.text.bodySm,
@@ -194,9 +210,14 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
                     : 'Jadwal tidak tersedia.',
                 style: context.text.body,
               ),
-              const SizedBox(height: AppSpace.s8),
-              for (final s in iv.slots)
-                Text(formatDateTime(s), style: context.text.body),
+              const SizedBox(height: AppSpace.s12),
+              for (final s in iv.slots) ...[
+                IconInfoRow(
+                  icon: LucideIcons.calendarClock,
+                  text: formatDateTime(s),
+                ),
+                const SizedBox(height: AppSpace.s8),
+              ],
             ],
             if (iv.note != null && iv.note!.isNotEmpty) ...[
               const SizedBox(height: AppSpace.s12),
