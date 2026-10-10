@@ -100,6 +100,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const StepProgress(current: 1, total: 2, title: 'Data akun'),
+          const SizedBox(height: AppSpace.s24),
           if (actionError != null) ActionErrorBox(error: actionError!),
           AppTextField(
             key: K.registerName,

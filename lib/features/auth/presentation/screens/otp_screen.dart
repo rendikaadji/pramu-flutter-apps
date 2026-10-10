@@ -83,6 +83,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const StepProgress(current: 2, total: 2, title: 'Verifikasi nomor'),
+          const SizedBox(height: AppSpace.s24),
           Text(
             'Masukkan 6 digit kode yang kami kirim ke ${maskPhone(phone)}.',
             style: context.text.body,
@@ -133,7 +135,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
                 ? () => _verify(phone)
                 : null,
           ),
-          const SizedBox(height: AppSpace.s12),
+          const SizedBox(height: AppSpace.s16),
           CountdownBuilder(
             key: ValueKey('otp-$_round'),
             seconds: _otpValidSeconds,
@@ -141,35 +143,56 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
               children: [
                 Semantics(
                   liveRegion: left == 0,
-                  child: Text(
-                    left > 0
-                        ? 'Kode berlaku ${formatCountdown(left)}'
-                        : 'Kode kedaluwarsa. Kirim ulang kode.',
-                    style: context.text.bodySm.copyWith(color: t.textMuted),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ExcludeSemantics(
+                        child: Icon(
+                          LucideIcons.timer,
+                          size: 16,
+                          color: t.textMuted,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpace.s8),
+                      Flexible(
+                        child: Text(
+                          left > 0
+                              ? 'Kode berlaku ${formatCountdown(left)}'
+                              : 'Kode kedaluwarsa. Kirim ulang kode.',
+                          style: context.text.bodySm.copyWith(
+                            color: t.textMuted,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: AppSpace.s8),
-                AppButton(
-                  key: K.otpResend,
-                  label: 'Kirim ulang kode',
-                  variant: AppButtonVariant.secondary,
-                  onPressed: left == 0 && canAct && !_locked
-                      ? () => _resend(phone)
-                      : null,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    AppButton(
+                      key: K.otpChangePhone,
+                      label: 'Ubah nomor',
+                      variant: AppButtonVariant.text,
+                      expand: false,
+                      onPressed: () => context.canPop()
+                          ? context.pop()
+                          : context.go(Routes.register),
+                    ),
+                    AppButton(
+                      key: K.otpResend,
+                      label: 'Kirim ulang kode',
+                      variant: AppButtonVariant.text,
+                      expand: false,
+                      onPressed: left == 0 && canAct && !_locked
+                          ? () => _resend(phone)
+                          : null,
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: AppSpace.s8),
-          Center(
-            child: AppButton(
-              key: K.otpChangePhone,
-              label: 'Ubah nomor',
-              variant: AppButtonVariant.text,
-              expand: false,
-              onPressed: () => context.canPop()
-                  ? context.pop()
-                  : context.go(Routes.register),
             ),
           ),
         ],
