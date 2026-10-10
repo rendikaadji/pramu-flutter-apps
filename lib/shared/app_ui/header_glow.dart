@@ -10,7 +10,7 @@ class HeaderGlow extends StatelessWidget {
 
   final double height;
 
-  static double _alpha(AppTokens t) => t.isDark ? .4 : .24;
+  static double _alpha(AppTokens t) => t.isDark ? .16 : .24;
   static Color _radial(AppTokens t) => t.isDark ? t.glow : t.primaryBright;
 
   /// Warna latar paling pekat yang bisa berada di bawah teks (untuk test kontras).
