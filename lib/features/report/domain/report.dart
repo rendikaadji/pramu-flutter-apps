@@ -32,9 +32,9 @@ enum ReportStatus {
 
   String get label => switch (this) {
     received => 'Diterima',
-    reviewing => 'Ditinjau',
-    needsInfo => 'Butuh info',
-    decided => 'Diputuskan',
+    reviewing => 'Sedang ditinjau',
+    needsInfo => 'Perlu info tambahan',
+    decided => 'Sudah diputuskan',
     unknown => 'Status tidak dikenal',
   };
 

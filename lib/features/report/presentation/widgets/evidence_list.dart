@@ -65,7 +65,7 @@ class EvidenceList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: AppSpace.s4),
             child: Text(
-              'Maksimal $max foto.',
+              'Batas $max foto sudah tercapai.',
               style: context.text.caption.copyWith(
                 color: context.tokens.textMuted,
               ),

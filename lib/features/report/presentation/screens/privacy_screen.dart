@@ -9,11 +9,11 @@ import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
 const _visibility = <(String, String)>[
-  ('Profil', 'Terlihat oleh pengguna yang melihat lowongan atau profil Anda.'),
-  ('Nomor HP dan email', 'Disembunyikan sampai ada pembayaran.'),
+  ('Profil', 'Terlihat oleh pengguna yang membuka lowongan atau profil Anda.'),
+  ('Nomor HP dan email', 'Tersembunyi sampai pembayaran dilakukan.'),
   (
     'Percakapan',
-    'Hanya Anda dan lawan bicara, kecuali Anda sendiri membagikannya.',
+    'Hanya Anda dan lawan bicara, kecuali Anda sendiri yang membagikannya.',
   ),
   ('KTP dan selfie', 'Hanya petugas verifikasi yang berwenang.'),
   ('Catatan wawancara', 'Hanya Anda.'),
@@ -43,7 +43,7 @@ class PrivacyScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader('Siapa dapat melihat apa'),
+          const SectionHeader('Siapa yang bisa melihat apa'),
           ListTileCard(
             children: [
               for (final (i, (what, who)) in _visibility.indexed)
@@ -57,7 +57,7 @@ class PrivacyScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpace.s24),
-          const SectionHeader('Laporan dan persetujuan berbagi chat'),
+          const SectionHeader('Laporan dan persetujuan Anda'),
           reports.when(
             loading: () =>
                 Semantics(label: 'Memuat', child: const AppSkeleton.box(72)),
@@ -69,7 +69,8 @@ class PrivacyScreen extends ConsumerWidget {
                 ? const EmptyState(
                     compact: true,
                     title: 'Belum ada riwayat',
-                    message: 'Laporan dan persetujuan Anda muncul di sini.',
+                    message:
+                        'Laporan dan persetujuan Anda akan muncul di sini.',
                   )
                 : Column(
                     children: [
@@ -92,7 +93,7 @@ class PrivacyScreen extends ConsumerWidget {
                                       ),
                                       Text(
                                         r.share == null
-                                            ? 'Tanpa berbagi percakapan'
+                                            ? 'Percakapan tidak dibagikan'
                                             : shareLabel(r.share!, now),
                                         style: context.text.bodySm.copyWith(
                                           color: t.textMuted,

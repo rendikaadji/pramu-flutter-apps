@@ -9,18 +9,21 @@ import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 const _facts = <(IconData, String)>[
   (
     LucideIcons.messageCircle,
-    'Yang dibagikan: percakapan ini saja, bukan chat lain.',
+    'Hanya percakapan ini yang dibagikan, bukan chat lain.',
   ),
-  (LucideIcons.users, 'Dibagikan ke tim Pramu yang menangani kasus Anda.'),
+  (
+    LucideIcons.users,
+    'Hanya tim Pramu yang menangani kasus Anda yang bisa membacanya.',
+  ),
   (
     LucideIcons.clock,
-    'Berlaku 7 hari atau sampai kasus ditutup, mana lebih dulu.',
+    'Berlaku 7 hari atau sampai kasus selesai, mana yang lebih dulu.',
   ),
+  (LucideIcons.eye, 'Setiap akses dicatat, dan pihak lawan akan diberi tahu.'),
   (
-    LucideIcons.eye,
-    'Setiap akses admin tercatat, dan pihak lawan akan diberi tahu.',
+    LucideIcons.undo2,
+    'Anda bisa mencabutnya kapan saja di halaman Status laporan.',
   ),
-  (LucideIcons.undo2, 'Anda dapat mencabutnya kapan saja di Status laporan.'),
 ];
 
 /// Isi consent M-96. Memanggil [onDone] dengan true (dibagikan) / false (ditolak).
@@ -75,7 +78,7 @@ class _ShareConsentBodyState extends ConsumerState<ShareConsentBody> {
         ),
         const SizedBox(height: AppSpace.s8),
         Text(
-          'Bagikan percakapan ini ke tim kami selama 7 hari? Anda bisa mencabutnya kapan saja.',
+          'Tim kami bisa membaca percakapan ini selama 7 hari agar laporan Anda dapat diproses. Anda bisa mencabutnya kapan saja.',
           style: context.text.body.copyWith(color: t.textMuted),
         ),
         const SizedBox(height: AppSpace.s16),
@@ -95,14 +98,14 @@ class _ShareConsentBodyState extends ConsumerState<ShareConsentBody> {
         const SizedBox(height: AppSpace.s8),
         AppButton(
           key: K.shareConsent,
-          label: 'Setuju dan bagikan',
+          label: 'Setuju, bagikan',
           loading: _busy,
           onPressed: _busy ? null : _share,
         ),
         const SizedBox(height: AppSpace.s8),
         AppButton(
           key: K.shareDecline,
-          label: 'Lanjutkan tanpa membagikan',
+          label: 'Lanjut tanpa berbagi',
           variant: AppButtonVariant.secondary,
           onPressed: _busy ? null : () => widget.onDone(false),
         ),

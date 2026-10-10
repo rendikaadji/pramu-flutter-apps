@@ -38,7 +38,7 @@ class AgreementFormScreen extends ConsumerWidget {
             return EmptyState(
               icon: LucideIcons.circleCheck,
               title: 'Kesepakatan sudah disetujui',
-              message: 'Kontrak sudah dibuat dan tidak dapat diubah.',
+              message: 'Kontrak sudah dibuat dan tidak bisa diubah lagi.',
               actionLabel: existing.bookingId == null ? null : 'Lihat kontrak',
               onAction: existing.bookingId == null
                   ? null
@@ -102,9 +102,9 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
     final rate = parseRupiah(_rate.text);
     setState(() {
       _localRate = rate == null || rate <= 0
-          ? 'Tarif harus lebih dari Rp0'
+          ? 'Isi tarif lebih dari Rp0.'
           : null;
-      _localStart = _start == null ? 'Pilih tanggal mulai' : null;
+      _localStart = _start == null ? 'Pilih tanggal mulai kontrak.' : null;
     });
     if (_localRate != null || _localStart != null) return;
     final input = AgreementInput(
@@ -150,97 +150,123 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
             const Padding(
               padding: EdgeInsets.only(bottom: AppSpace.s12),
               child: PrivacyNote(
-                'Ajukan balik membuat versi baru. Persetujuan sebelumnya direset.',
+                'Usulan balik membuat versi baru. Persetujuan sebelumnya perlu diulang.',
+              ),
+            ),
+          if (!counter)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpace.s16),
+              child: Text(
+                role == Role.seeker
+                    ? 'Tentukan tarif, siklus pembayaran, dan tanggal mulai. Pelamar akan meninjau usulan Anda.'
+                    : 'Tentukan tarif, siklus pembayaran, dan tanggal mulai. Pencari akan meninjau usulan Anda.',
+                style: context.text.body.copyWith(color: t.textMuted),
               ),
             ),
           if (actionError != null) ActionErrorBox(error: actionError!),
-          AppTextField(
-            key: K.agreementRate,
-            controller: _rate,
-            label: 'Tarif per periode',
-            prefixText: 'Rp',
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            maxLength: 10,
-            errorText: _localRate ?? fieldError('rate'),
-          ),
-          const SizedBox(height: AppSpace.s16),
-          Text('Siklus bayar', style: context.text.label),
-          const SizedBox(height: AppSpace.s8),
-          SegmentedButton<PeriodUnit>(
-            segments: const [
-              ButtonSegment(value: PeriodUnit.daily, label: Text('Harian')),
-              ButtonSegment(value: PeriodUnit.weekly, label: Text('Mingguan')),
-              ButtonSegment(value: PeriodUnit.monthly, label: Text('Bulanan')),
-            ],
-            selected: {_unit},
-            onSelectionChanged: (s) => setState(() => _unit = s.first),
-          ),
-          const SizedBox(height: AppSpace.s16),
-          Text('Jumlah periode', style: context.text.label),
-          Semantics(
-            label: 'Jumlah periode $_count',
-            child: Row(
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppIconButton(
-                  key: K.agreementPeriodMinus,
-                  icon: LucideIcons.minus,
-                  label: 'Kurangi periode',
-                  onPressed: _count > 1
-                      ? () {
-                          setState(() => _count--);
-                          _schedule();
-                        }
-                      : null,
+                AppTextField(
+                  key: K.agreementRate,
+                  controller: _rate,
+                  label: 'Tarif per periode',
+                  prefixText: 'Rp',
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  maxLength: 10,
+                  errorText: _localRate ?? fieldError('rate'),
                 ),
-                SizedBox(
-                  width: AppSpace.s48,
-                  child: Text(
-                    '$_count',
-                    textAlign: TextAlign.center,
-                    style: context.text.h3,
+                const SizedBox(height: AppSpace.s16),
+                Text('Siklus pembayaran', style: context.text.label),
+                const SizedBox(height: AppSpace.s8),
+                SegmentedButton<PeriodUnit>(
+                  segments: const [
+                    ButtonSegment(
+                      value: PeriodUnit.daily,
+                      label: Text('Harian'),
+                    ),
+                    ButtonSegment(
+                      value: PeriodUnit.weekly,
+                      label: Text('Mingguan'),
+                    ),
+                    ButtonSegment(
+                      value: PeriodUnit.monthly,
+                      label: Text('Bulanan'),
+                    ),
+                  ],
+                  selected: {_unit},
+                  onSelectionChanged: (s) => setState(() => _unit = s.first),
+                ),
+                const SizedBox(height: AppSpace.s16),
+                Text('Jumlah periode', style: context.text.label),
+                Semantics(
+                  label: 'Jumlah periode $_count',
+                  child: Row(
+                    children: [
+                      AppIconButton(
+                        key: K.agreementPeriodMinus,
+                        icon: LucideIcons.minus,
+                        label: 'Kurangi periode',
+                        onPressed: _count > 1
+                            ? () {
+                                setState(() => _count--);
+                                _schedule();
+                              }
+                            : null,
+                      ),
+                      SizedBox(
+                        width: AppSpace.s48,
+                        child: Text(
+                          '$_count',
+                          textAlign: TextAlign.center,
+                          style: context.text.h3,
+                        ),
+                      ),
+                      AppIconButton(
+                        key: K.agreementPeriodPlus,
+                        icon: LucideIcons.plus,
+                        label: 'Tambah periode',
+                        onPressed: _count < 24
+                            ? () {
+                                setState(() => _count++);
+                                _schedule();
+                              }
+                            : null,
+                      ),
+                    ],
                   ),
                 ),
-                AppIconButton(
-                  key: K.agreementPeriodPlus,
-                  icon: LucideIcons.plus,
-                  label: 'Tambah periode',
-                  onPressed: _count < 24
-                      ? () {
-                          setState(() => _count++);
-                          _schedule();
-                        }
-                      : null,
+                if (fieldError('period_count') != null)
+                  FieldErrorText(fieldError('period_count')!),
+                const SizedBox(height: AppSpace.s16),
+                Text('Tanggal mulai', style: context.text.label),
+                const SizedBox(height: AppSpace.s8),
+                AppButton(
+                  key: K.agreementStart,
+                  label: _start == null ? 'Pilih tanggal' : formatDate(_start!),
+                  icon: LucideIcons.calendar,
+                  variant: AppButtonVariant.secondary,
+                  onPressed: () async {
+                    final d = await pickWibDate(context, initial: _start);
+                    if (d != null) setState(() => _start = d);
+                  },
                 ),
+                if ((_localStart ?? fieldError('start_date')) != null)
+                  FieldErrorText((_localStart ?? fieldError('start_date'))!),
               ],
             ),
           ),
-          if (fieldError('period_count') != null)
-            FieldErrorText(fieldError('period_count')!),
-          const SizedBox(height: AppSpace.s16),
-          Text('Tanggal mulai', style: context.text.label),
-          const SizedBox(height: AppSpace.s8),
-          AppButton(
-            key: K.agreementStart,
-            label: _start == null ? 'Pilih tanggal' : formatDate(_start!),
-            icon: LucideIcons.calendar,
-            variant: AppButtonVariant.secondary,
-            onPressed: () async {
-              final d = await pickWibDate(context, initial: _start);
-              if (d != null) setState(() => _start = d);
-            },
-          ),
-          if ((_localStart ?? fieldError('start_date')) != null)
-            FieldErrorText((_localStart ?? fieldError('start_date'))!),
           const SizedBox(height: AppSpace.s24),
           SectionHeader(
             role == Role.seeker
-                ? 'Perkiraan biaya'
+                ? 'Perkiraan yang Anda bayar'
                 : 'Perkiraan yang Anda terima',
           ),
           if (preview == null)
             Text(
-              'Isi tarif untuk melihat perkiraan.',
+              'Isi tarif untuk melihat perkiraan biaya.',
               style: context.text.body.copyWith(color: t.textMuted),
             )
           else
@@ -250,19 +276,19 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
                 child: const AppSkeleton.line(width: 200),
               ),
               error: (_, _) => Text(
-                'Perkiraan belum tersedia. Angka final ditampilkan setelah usulan dikirim.',
+                'Perkiraan belum bisa ditampilkan. Angka pastinya muncul setelah usulan terkirim.',
                 style: context.text.body.copyWith(color: t.textMuted),
               ),
               data: (f) => FeeBreakdown(rows: contractFeeRows(f, role)),
             ),
           const SizedBox(height: AppSpace.s4),
           Text(
-            'Ini hanya perkiraan. Angka final dihitung server.',
+            'Ini baru perkiraan. Angka pasti dihitung saat usulan terkirim.',
             style: context.text.caption.copyWith(color: t.textMuted),
           ),
           const SizedBox(height: AppSpace.s16),
           const PrivacyNote(
-            'Setelah kedua pihak setuju, kesepakatan dikunci dan tidak bisa diubah.',
+            'Setelah kedua pihak setuju, kesepakatan terkunci dan tidak bisa diubah lagi.',
           ),
           const SizedBox(height: AppSpace.s16),
           AppButton(

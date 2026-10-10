@@ -50,7 +50,7 @@ class _State extends ConsumerState<ContractsScreen> {
                       SizedBox(height: AppSpace.s24),
                       EmptyState(
                         title: 'Belum ada kontrak',
-                        message: 'Kontrak muncul setelah kedua pihak menyetujui kesepakatan.',
+                        message: 'Kontrak akan muncul di sini setelah kedua pihak menyetujui kesepakatan.',
                       ),
                     ],
                   )

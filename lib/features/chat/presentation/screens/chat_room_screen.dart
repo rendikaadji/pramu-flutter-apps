@@ -70,8 +70,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       context,
       title: 'Bagikan percakapan?',
       message:
-          'Percakapan ini dibagikan lewat laporan masalah, dan hanya setelah '
-          'Anda menyetujuinya. Lanjut membuat laporan?',
+          'Percakapan hanya dibagikan lewat laporan masalah, dan hanya dengan '
+          'persetujuan Anda. Lanjutkan membuat laporan?',
       confirmLabel: 'Lanjut',
     );
     if (ok && mounted) context.push(path);
@@ -182,7 +182,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           ),
                           child: open
                               ? const PrivacyNote(
-                                  'Kontak pribadi kini dapat dibagikan.',
+                                  'Kontak pribadi sekarang sudah bisa dibagikan.',
                                 )
                               : _bannerClosed
                               ? const SizedBox.shrink()

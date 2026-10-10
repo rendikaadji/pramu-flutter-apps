@@ -36,7 +36,7 @@ class NotificationsScreen extends ConsumerWidget {
     }
     if (route == null) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Notifikasi ini tidak dapat dibuka.')),
+        const SnackBar(content: Text('Notifikasi ini belum bisa dibuka.')),
       );
       return;
     }

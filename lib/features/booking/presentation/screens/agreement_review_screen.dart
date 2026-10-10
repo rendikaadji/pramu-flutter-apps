@@ -29,12 +29,12 @@ class _State extends ConsumerState<AgreementReviewScreen> with ApiActionMixin {
   Future<void> _approve(Agreement a, Role role) async {
     final ok = await ConfirmDialog.show(
       context,
-      title: 'Setujui kesepakatan?',
+      title: 'Setujui kesepakatan ini?',
       message:
           'Tarif ${formatRupiah(a.rate)} per periode (${a.unit.label}), '
           '${a.periodCount} periode, mulai ${formatDate(a.startDate)}. '
-          'Setelah kedua pihak setuju, kesepakatan dikunci.',
-      confirmLabel: 'Setuju',
+          'Setelah kedua pihak setuju, kesepakatan terkunci.',
+      confirmLabel: 'Setujui',
     );
     if (!ok || !mounted) return;
     await act(
@@ -80,7 +80,7 @@ class _Done extends StatelessWidget {
   @override
   Widget build(BuildContext context) => EmptyState(
     icon: LucideIcons.circleCheck,
-    title: 'Kontrak dibuat',
+    title: 'Kontrak sudah dibuat',
     message: 'Kedua pihak sudah setuju. Tagihan periode pertama siap dibayar.',
     actionLabel: a.bookingId == null ? null : 'Lihat kontrak',
     onAction: a.bookingId == null
@@ -188,7 +188,7 @@ class _Body extends StatelessWidget {
                 child: Text('Versi ${a.version}', style: context.text.h2),
               ),
               Text(
-                'Diusulkan ${a.proposedBy == Role.seeker ? 'Pencari' : 'Asisten'}',
+                'Diusulkan ${a.proposedBy == Role.seeker ? 'Pencari' : 'Pelamar'}',
                 style: context.text.bodySm,
               ),
             ],
@@ -198,68 +198,83 @@ class _Body extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(bottom: AppSpace.s8),
               child: PrivacyNote(
-                'Syarat bertanda pensil berubah dari versi yang Anda lihat sebelumnya.',
+                'Syarat bertanda pensil berubah dari versi yang terakhir Anda lihat.',
               ),
             ),
-          _Term(
-            'Tarif per periode',
-            formatRupiah(a.rate),
-            before: diff(
-              b != null && b.rate != a.rate,
-              formatRupiah(b?.rate ?? 0),
-            ),
-          ),
-          _Term(
-            'Siklus bayar',
-            a.unit.label,
-            before: diff(b != null && b.unit != a.unit, b?.unit.label ?? ''),
-          ),
-          _Term(
-            'Jumlah periode',
-            '${a.periodCount} periode',
-            before: diff(
-              b != null && b.count != a.periodCount,
-              '${b?.count} periode',
-            ),
-          ),
-          _Term(
-            'Tanggal mulai',
-            formatDate(a.startDate),
-            before: diff(
-              b != null && b.start != a.startDate,
-              b == null ? '' : formatDate(b.start),
+          AppCard(
+            child: Column(
+              children: [
+                _Term(
+                  'Tarif per periode',
+                  formatRupiah(a.rate),
+                  before: diff(
+                    b != null && b.rate != a.rate,
+                    formatRupiah(b?.rate ?? 0),
+                  ),
+                ),
+                _Term(
+                  'Siklus pembayaran',
+                  a.unit.label,
+                  before: diff(
+                    b != null && b.unit != a.unit,
+                    b?.unit.label ?? '',
+                  ),
+                ),
+                _Term(
+                  'Jumlah periode',
+                  '${a.periodCount} periode',
+                  before: diff(
+                    b != null && b.count != a.periodCount,
+                    '${b?.count} periode',
+                  ),
+                ),
+                _Term(
+                  'Tanggal mulai',
+                  formatDate(a.startDate),
+                  before: diff(
+                    b != null && b.start != a.startDate,
+                    b == null ? '' : formatDate(b.start),
+                  ),
+                ),
+              ],
             ),
           ),
           const SectionHeader('Rincian biaya'),
           FeeBreakdown(rows: contractFeeRows(a.fees, role)),
-          const SectionHeader('Persetujuan'),
-          for (final r in Role.values)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpace.s4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${r == Role.seeker ? 'Pencari' : 'Asisten'}'
-                      '${r == role ? ' (Anda)' : ''}',
-                      style: context.text.body,
+          const SectionHeader('Status persetujuan'),
+          AppCard(
+            child: Column(
+              children: [
+                for (final r in Role.values)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppSpace.s4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${r == Role.seeker ? 'Pencari' : 'Pelamar'}'
+                            '${r == role ? ' (Anda)' : ''}',
+                            style: context.text.body,
+                          ),
+                        ),
+                        StatusChip(
+                          label: a.approvedBy(r) ? 'Setuju' : 'Belum setuju',
+                          tone: a.approvedBy(r)
+                              ? StatusTone.success
+                              : StatusTone.neutral,
+                        ),
+                      ],
                     ),
                   ),
-                  StatusChip(
-                    label: a.approvedBy(r) ? 'Setuju' : 'Belum setuju',
-                    tone: a.approvedBy(r)
-                        ? StatusTone.success
-                        : StatusTone.neutral,
-                  ),
-                ],
-              ),
+              ],
             ),
+          ),
           const SizedBox(height: AppSpace.s16),
           if (error != null) ActionErrorBox(error: error),
           if (a.canApprove(role))
             AppButton(
               key: K.agreementApprove,
-              label: 'Setuju',
+              label: 'Setujui kesepakatan',
               large: true,
               loading: busy,
               onPressed: canAct ? onApprove : null,
@@ -267,15 +282,15 @@ class _Body extends StatelessWidget {
           else
             Text(
               seeker
-                  ? 'Anda sudah setuju. Menunggu persetujuan Asisten.'
-                  : 'Anda sudah setuju. Menunggu persetujuan Pencari.',
+                  ? 'Anda sudah setuju. Kami menunggu persetujuan Pelamar.'
+                  : 'Anda sudah setuju. Kami menunggu persetujuan Pencari.',
               style: context.text.body,
             ),
           if (a.canCounter(role)) ...[
             const SizedBox(height: AppSpace.s8),
             AppButton(
               key: K.agreementCounter,
-              label: 'Ajukan balik',
+              label: 'Ajukan usulan balik',
               variant: AppButtonVariant.secondary,
               onPressed: busy ? null : onCounter,
             ),

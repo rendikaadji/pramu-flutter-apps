@@ -13,7 +13,7 @@ import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 const _reasons = [
   'Pekerjaan tidak sesuai kesepakatan',
   'Jadwal atau kebutuhan berubah',
-  'Tidak lagi membutuhkan asisten',
+  'Saya tidak lagi membutuhkan asisten',
   'Alasan lain',
 ];
 
@@ -34,10 +34,10 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
       context,
       title: 'Batalkan kontrak?',
       message:
-          'Pengembalian dana: ${formatRupiah(pv.refundToSeeker)}. '
-          'Biaya layanan untuk bagian yang sudah dijalani tidak dikembalikan.',
+          'Dana yang kembali ke Anda: ${formatRupiah(pv.refundToSeeker)}. '
+          'Biaya layanan untuk pekerjaan yang sudah dijalani tidak dikembalikan.',
       confirmLabel: 'Batalkan kontrak',
-      cancelLabel: 'Kembali',
+      cancelLabel: 'Tidak jadi',
       destructive: true,
     );
     if (!ok || !mounted) return;
@@ -85,16 +85,16 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
               ),
               if (fieldError('reason') != null)
                 FieldErrorText(fieldError('reason')!),
-              const SectionHeader('Perkiraan pengembalian'),
+              const SectionHeader('Perkiraan dana kembali'),
               FeeBreakdown(
                 rows: [
                   FeeRow(
-                    'Hak Asisten untuk bagian yang dijalani',
+                    'Hak Pelamar untuk pekerjaan yang sudah dijalani',
                     formatRupiah(pv.assistantEntitlement),
                   ),
                   FeeRow('Biaya layanan', formatRupiah(pv.fee)),
                   FeeRow(
-                    'Dikembalikan ke Anda',
+                    'Kembali ke Anda',
                     formatRupiah(pv.refundToSeeker),
                     total: true,
                   ),
@@ -102,7 +102,7 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
               ),
               const SizedBox(height: AppSpace.s8),
               const PrivacyNote(
-                'Pembatalan tidak dapat diurungkan. Angka final ditentukan server saat pembatalan.',
+                'Pembatalan tidak bisa diurungkan. Angka pasti dihitung saat pembatalan diproses.',
               ),
               const SizedBox(height: AppSpace.s16),
               if (actionError != null) ActionErrorBox(error: actionError!),

@@ -112,19 +112,19 @@ class _State extends ConsumerState<BookingDetailScreen>
         StatusBanner(
           icon: LucideIcons.clock,
           text: dueBanner == null
-              ? 'Kontrak dijeda: tagihan belum dibayar.'
-              : 'Kontrak dijeda: tagihan belum dibayar. Batas ${formatDate(dueBanner)}.',
+              ? 'Kontrak dijeda karena tagihan belum dibayar.'
+              : 'Kontrak dijeda karena tagihan belum dibayar. Batas pembayaran ${formatDate(dueBanner)}.',
         ),
       if (b.status == BookingStatus.disputed)
         const StatusBanner(
           icon: LucideIcons.triangleAlert,
-          text: 'Kontrak sedang ditinjau tim kami. Aksi pembayaran dibekukan sementara.',
+          text: 'Tim kami sedang meninjau kontrak ini. Pembayaran dibekukan sementara.',
         ),
       if (b.status == BookingStatus.cancelled)
         const StatusBanner(
           icon: LucideIcons.ban,
           danger: true,
-          text: 'Kontrak dibatalkan. Dana mengikuti rincian pembatalan.',
+          text: 'Kontrak dibatalkan. Dana dikembalikan sesuai rincian pembatalan.',
         ),
       if (b.status == BookingStatus.paused ||
           b.status == BookingStatus.disputed ||
@@ -146,6 +146,13 @@ class _State extends ConsumerState<BookingDetailScreen>
               Text(next.status.labelFor(role), style: context.text.h3),
               const SizedBox(height: AppSpace.s4),
               Text(periodRange(next), style: context.text.bodySm),
+              if (!seeker) ...[
+                const SizedBox(height: AppSpace.s4),
+                Text(
+                  'Dana diterima ${formatRupiah(next.amount)}',
+                  style: context.text.label,
+                ),
+              ],
               if (actions.contains(PeriodAction.pay)) ...[
                 const SizedBox(height: AppSpace.s12),
                 AppButton(
@@ -177,8 +184,8 @@ class _State extends ConsumerState<BookingDetailScreen>
                 const SizedBox(height: AppSpace.s8),
                 Text(
                   next.status.canConfirmComplete && next.autoReleaseAt != null
-                      ? 'Dana otomatis dicairkan ${formatDateTime(next.autoReleaseAt!)} bila tidak dikonfirmasi.'
-                      : 'Dana Anda aman dan dicairkan setelah periode selesai.',
+                      ? 'Dana masuk dompet Anda otomatis pada ${formatDateTime(next.autoReleaseAt!)} jika Pencari tidak mengonfirmasi.'
+                      : 'Dana sudah diamankan dan masuk dompet Anda setelah periode selesai.',
                   style: context.text.bodySm,
                 ),
               ],
@@ -190,7 +197,7 @@ class _State extends ConsumerState<BookingDetailScreen>
       const SectionHeader('Rincian biaya'),
       AppCard(child: FeeBreakdown(rows: contractFeeRows(b.fees, role))),
       const SizedBox(height: AppSpace.s16),
-      const SectionHeader('Jadwal pembayaran'),
+      SectionHeader(seeker ? 'Jadwal pembayaran' : 'Jadwal dana diterima'),
       LedgerTimeline(
         entries: [
           for (final p in b.periods)
@@ -216,7 +223,7 @@ class _State extends ConsumerState<BookingDetailScreen>
         const SizedBox(height: AppSpace.s8),
         AppButton(
           key: K.bookingRate,
-          label: 'Beri penilaian',
+          label: 'Beri ulasan',
           icon: LucideIcons.star,
           onPressed: () => context.push(Routes.rating(b.id)),
         ),
