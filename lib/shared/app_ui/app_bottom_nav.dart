@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 
@@ -64,7 +65,10 @@ class AppBottomNav extends StatelessWidget {
           ),
           child: NavigationBar(
             selectedIndex: index,
-            onDestinationSelected: onTap,
+            onDestinationSelected: (i) {
+              if (i != index) HapticFeedback.selectionClick();
+              onTap(i);
+            },
             animationDuration: context.motion(AppMotion.base),
             destinations: [
               for (final i in items)

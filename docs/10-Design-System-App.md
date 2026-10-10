@@ -121,3 +121,8 @@ Keluarga yang dirujuk tema: `Fraunces` (display, h1), `IBMPlexSans` (UI), `IBMPl
 
 - `flutter test test/shared` menjalankan: kontras token (dua tema), `AppButton` (loading mengunci ketukan, tap target 48dp), `StatusChip`, `OtpInput`, `RatingStars` (semantik), dan smoke galeri 360dp (terang/gelap, skala 100/130%).
 - Di test fitur gunakan helper `host()` di `test/shared/app_ui/harness.dart` sebagai contoh membungkus widget dengan `AppTheme`, dan `meetsGuideline(androidTapTargetGuideline / labeledTapTargetGuideline)` untuk layar baru.
+
+## 7. Harness screenshot dan polish (2026-10)
+
+- `flutter test tool/screenshots/screens_test.dart --update-goldens` menulis PNG ke `tool/screenshots/out/` (di-gitignore): 18 layar + galeri x terang/gelap/skala 1,3, 390x844. Filter: `SHOTS=home flutter test ...`. Font Segoe UI/Georgia/Consolas dari `C:\Windows\Fonts` sebagai pengganti Plex/Fraunces.
+- Perubahan: radius tombol/input 12; chip filter pill; `StatusChip` pill; `AppCard` penuh lebar bila lebar terbatas dan haptic selection saat diketuk; `AppButton` secondary berborder primary 45% + haptic ringan pada primary/danger; haptic saat ganti tab; `EmptyState` ikon dalam lingkaran; segel kecil tanpa gerigi; rating 16dp tanpa ikon bintang ganda di `TrustCard`; ikon tab bawah Lucide (sebelumnya Material); Android memakai `PredictiveBackPageTransitionsBuilder`.

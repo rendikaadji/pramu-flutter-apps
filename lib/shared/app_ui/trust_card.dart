@@ -33,16 +33,17 @@ class TrustCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
-    Widget row(IconData icon, Widget child) => Padding(
+    Widget row(IconData? icon, Widget child) => Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpace.s4),
       child: Row(
         children: [
-          SizedBox(
-            width: 28,
-            child: ExcludeSemantics(
-              child: Icon(icon, size: 20, color: t.textMuted),
+          if (icon != null)
+            SizedBox(
+              width: 28,
+              child: ExcludeSemantics(
+                child: Icon(icon, size: 20, color: t.textMuted),
+              ),
             ),
-          ),
           Expanded(
             child: Align(alignment: Alignment.centerLeft, child: child),
           ),
@@ -63,7 +64,7 @@ class TrustCard extends StatelessWidget {
               Text('SKCK terverifikasi', style: context.text.body),
             ),
           row(
-            LucideIcons.star,
+            null,
             rating == null
                 ? Text('Belum ada ulasan', style: context.text.body)
                 : RatingStars(value: rating!, count: reviewCount),

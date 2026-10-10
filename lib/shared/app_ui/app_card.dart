@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 
@@ -28,6 +29,16 @@ class AppCard extends StatelessWidget {
       side: BorderSide(color: borderColor ?? t.borderSubtle),
     );
     final padded = Padding(padding: padding, child: child);
+    // Penuh lebar bila lebar terbatas (Column start); di Row/Wrap tetap ikut isi.
+    return LayoutBuilder(
+      builder: (context, c) => SizedBox(
+        width: c.hasBoundedWidth ? double.infinity : null,
+        child: _frame(t, shape, padded),
+      ),
+    );
+  }
+
+  Widget _frame(AppTokens t, ShapeBorder shape, Widget padded) {
     return DecoratedBox(
       decoration: ShapeDecoration(
         color: color ?? t.surface,
@@ -39,7 +50,10 @@ class AppCard extends StatelessWidget {
           : Material(
               type: MaterialType.transparency,
               child: InkWell(
-                onTap: onTap,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  onTap!();
+                },
                 customBorder: shape,
                 child: MergeSemantics(child: padded),
               ),

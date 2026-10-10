@@ -66,12 +66,12 @@ class StatusChip extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: tone.bg(t),
-        borderRadius: AppRadius.brSm,
-        border: Border.all(color: fg.withValues(alpha: .3)),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: fg.withValues(alpha: .22)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.s8,
+          horizontal: AppSpace.s12,
           vertical: AppSpace.s4,
         ),
         child: Row(

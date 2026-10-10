@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 
@@ -31,7 +32,11 @@ class AppButton extends StatelessWidget {
     final t = context.tokens;
     final (bg, fg, border) = switch (variant) {
       AppButtonVariant.primary => (t.primary, t.onPrimary, null),
-      AppButtonVariant.secondary => (t.surface, t.primary, t.borderStrong),
+      AppButtonVariant.secondary => (
+        t.surface,
+        t.primary,
+        t.primary.withValues(alpha: .45),
+      ),
       AppButtonVariant.tonal => (t.primaryContainer, t.primary, null),
       AppButtonVariant.danger => (t.danger, t.onDanger, null),
       AppButtonVariant.text => (Colors.transparent, t.primary, null),
@@ -78,7 +83,16 @@ class AppButton extends StatelessWidget {
           ),
       ],
     );
-    final tap = loading ? null : onPressed;
+    final tap = loading || onPressed == null
+        ? null
+        : () {
+            // Haptic ringan pada aksi utama saja.
+            if (variant == AppButtonVariant.primary ||
+                variant == AppButtonVariant.danger) {
+              HapticFeedback.lightImpact();
+            }
+            onPressed!();
+          };
     return isText
         ? TextButton(onPressed: tap, style: style, child: child)
         : FilledButton(onPressed: tap, style: style, child: child);

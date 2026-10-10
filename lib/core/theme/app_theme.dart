@@ -16,7 +16,7 @@ abstract final class AppTheme {
 
   static OutlineInputBorder outline(Color color, [double width = 1]) =>
       OutlineInputBorder(
-        borderRadius: AppRadius.brSm,
+        borderRadius: AppRadius.brMd,
         borderSide: BorderSide(color: color, width: width),
       );
 
@@ -54,8 +54,11 @@ abstract final class AppTheme {
     );
     final text = AppText.theme(t);
     const none = Colors.transparent;
-    final btnShape = RoundedRectangleBorder(borderRadius: AppRadius.brSm);
-    final btnText = text.body.copyWith(fontWeight: FontWeight.w600);
+    final btnShape = RoundedRectangleBorder(borderRadius: AppRadius.brMd);
+    final btnText = text.body.copyWith(
+      fontWeight: FontWeight.w600,
+      letterSpacing: .1,
+    );
     ButtonStyle btn() => ButtonStyle(
       minimumSize: const WidgetStatePropertyAll(Size(64, AppSpace.tap)),
       padding: const WidgetStatePropertyAll(
@@ -89,7 +92,7 @@ abstract final class AppTheme {
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: _ReduceMotionTransitions(
-            FadeForwardsPageTransitionsBuilder(),
+            PredictiveBackPageTransitionsBuilder(),
           ),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
@@ -139,8 +142,8 @@ abstract final class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: t.surface,
         selectedColor: t.primaryContainer,
-        side: BorderSide(color: t.borderStrong),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.brSm),
+        side: BorderSide(color: t.borderSubtle),
+        shape: const StadiumBorder(),
         labelStyle: text.body.copyWith(color: t.textPrimary),
         checkmarkColor: t.primary,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
@@ -216,7 +219,7 @@ abstract final class AppTheme {
         backgroundColor: t.textPrimary,
         contentTextStyle: text.body.copyWith(color: t.canvas),
         actionTextColor: inverse.primary,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.brSm),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.brMd),
       ),
       listTileTheme: ListTileThemeData(
         minTileHeight: 56,

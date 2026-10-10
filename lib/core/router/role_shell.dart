@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
@@ -11,20 +12,25 @@ const seekerTabs = <TabSpec>[
   (
     id: 'home',
     label: 'Beranda',
-    icon: Icons.home_outlined,
+    icon: LucideIcons.house,
     path: Routes.seekerHome,
   ),
-  (id: 'search', label: 'Cari', icon: Icons.search, path: Routes.seekerSearch),
+  (
+    id: 'search',
+    label: 'Cari',
+    icon: LucideIcons.search,
+    path: Routes.seekerSearch,
+  ),
   (
     id: 'jobs',
     label: 'Pekerjaan',
-    icon: Icons.work_outline,
+    icon: LucideIcons.briefcase,
     path: Routes.seekerJobs,
   ),
   (
     id: 'chat',
     label: 'Pesan',
-    icon: Icons.chat_bubble_outline,
+    icon: LucideIcons.messageSquare,
     path: Routes.seekerChat,
   ),
 ];
@@ -33,31 +39,31 @@ const assistantTabs = <TabSpec>[
   (
     id: 'home',
     label: 'Beranda',
-    icon: Icons.home_outlined,
+    icon: LucideIcons.house,
     path: Routes.assistantHome,
   ),
   (
     id: 'listings',
     label: 'Lowongan',
-    icon: Icons.search,
+    icon: LucideIcons.search,
     path: Routes.assistantListings,
   ),
   (
     id: 'jobs',
     label: 'Pekerjaan',
-    icon: Icons.work_outline,
+    icon: LucideIcons.briefcase,
     path: Routes.assistantJobs,
   ),
   (
     id: 'chat',
     label: 'Pesan',
-    icon: Icons.chat_bubble_outline,
+    icon: LucideIcons.messageSquare,
     path: Routes.assistantChat,
   ),
   (
     id: 'wallet',
     label: 'Dompet',
-    icon: Icons.account_balance_wallet_outlined,
+    icon: LucideIcons.wallet,
     path: Routes.assistantWallet,
   ),
 ];

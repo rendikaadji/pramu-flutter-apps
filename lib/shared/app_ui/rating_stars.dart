@@ -29,7 +29,7 @@ class RatingStars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
-    final s = size ?? (_input ? 36 : 18);
+    final s = size ?? (_input ? 36 : 16);
     Widget star(int i) {
       final fill = (value - i).clamp(0.0, 1.0);
       final paint = CustomPaint(
@@ -128,7 +128,7 @@ class _StarPainter extends CustomPainter {
       path,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
+        ..strokeWidth = 1.25
         ..strokeJoin = StrokeJoin.round
         ..color = fill > 0 ? on : off,
     );

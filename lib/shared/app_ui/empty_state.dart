@@ -30,7 +30,19 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ExcludeSemantics(child: Icon(icon, size: 48, color: t.textSubtle)),
+            ExcludeSemantics(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: t.sunken,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: t.borderSubtle),
+                ),
+                child: SizedBox.square(
+                  dimension: 72,
+                  child: Icon(icon, size: 32, color: t.textMuted),
+                ),
+              ),
+            ),
             const SizedBox(height: AppSpace.s16),
             Semantics(
               header: true,
