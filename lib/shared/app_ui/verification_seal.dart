@@ -130,7 +130,7 @@ class _SealPainter extends CustomPainter {
     final path = Path();
     for (var i = 0; i <= 144; i++) {
       final a = 2 * math.pi * i / 144;
-      final rr = r * (.94 + .06 * math.cos(12 * a));
+      final rr = ring ? r * (.94 + .06 * math.cos(12 * a)) : r * .96;
       final p = c + Offset(math.cos(a), math.sin(a)) * rr;
       i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
     }
