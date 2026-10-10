@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
+import 'package:pramu_apps/features/auth/presentation/widgets/auth_widgets.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
@@ -45,10 +46,12 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
     required IconData icon,
     required String title,
     required String body,
+    required Widget illustration,
   }) {
     final t = context.tokens;
     final on = _picked.contains(role);
     final app = role == Role.seeker ? AppRole.seeker : AppRole.assistant;
+    final color = t.roleColor(app);
     return Semantics(
       key: key,
       button: true,
@@ -56,35 +59,63 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
       excludeSemantics: true,
       label: '$title. $body',
       onTap: () => _toggle(role),
-      child: InkWell(
-        onTap: () => _toggle(role),
-        borderRadius: AppRadius.brMd,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 88),
-          padding: const EdgeInsets.all(AppSpace.s16),
-          decoration: BoxDecoration(
-            color: on ? t.roleContainer(app) : t.surface,
-            borderRadius: AppRadius.brMd,
-            border: Border.all(
-              color: on ? t.roleColor(app) : t.borderSubtle,
-              width: on ? 2 : 1,
-            ),
+      child: AnimatedContainer(
+        duration: context.motion(AppMotion.fast),
+        decoration: BoxDecoration(
+          color: t.surface,
+          borderRadius: AppRadius.brCard,
+          border: Border.all(
+            color: on ? color : t.borderSubtle,
+            width: on ? 2 : 1,
           ),
-          child: Row(
-            children: [
-              Icon(icon, size: 32, color: t.roleColor(app)),
-              const SizedBox(width: AppSpace.s16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: context.text.h3),
-                    Text(body, style: context.text.body),
-                  ],
-                ),
+          boxShadow: t.e1,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.card - 1),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: () => _toggle(role),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: t.roleContainer(app),
+                    padding: const EdgeInsets.symmetric(vertical: AppSpace.s12),
+                    child: Center(child: illustration),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpace.s16),
+                    child: Row(
+                      children: [
+                        Icon(icon, size: 28, color: color),
+                        const SizedBox(width: AppSpace.s12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(title, style: context.text.h3),
+                              Text(
+                                body,
+                                style: context.text.bodySm.copyWith(
+                                  color: t.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: AppSpace.s8),
+                        Icon(
+                          on ? LucideIcons.circleCheck : LucideIcons.circle,
+                          size: 28,
+                          color: on ? color : t.borderStrong,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              if (on) Icon(LucideIcons.circleCheck, color: t.roleColor(app)),
-            ],
+            ),
           ),
         ),
       ),
@@ -97,15 +128,16 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
         _picked.contains(Role.seeker) && _picked.contains(Role.assistant);
     return AppScaffold(
       title: 'Pilih peran',
+      glow: true,
       scrollable: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Anda ingin memakai Pramu sebagai apa? Peran bisa diganti kapan saja.',
-            style: context.text.body,
+          const AuthHeader(
+            icon: LucideIcons.users,
+            title: 'Pakai Pramu sebagai apa?',
+            subtitle: 'Peran bisa diganti kapan saja di menu Akun.',
           ),
-          const SizedBox(height: AppSpace.s16),
           if (actionError != null) ActionErrorBox(error: actionError!),
           _card(
             context,
@@ -114,6 +146,7 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
             icon: LucideIcons.search,
             title: 'Cari asisten',
             body: 'Saya mencari asisten rumah tangga',
+            illustration: const VerifyIllustration(size: 120),
           ),
           const SizedBox(height: AppSpace.s12),
           _card(
@@ -123,6 +156,7 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
             icon: LucideIcons.briefcase,
             title: 'Saya asisten',
             body: 'Saya mencari pekerjaan',
+            illustration: const MoneySafeIllustration(size: 120),
           ),
           const SizedBox(height: AppSpace.s8),
           CheckboxListTile(

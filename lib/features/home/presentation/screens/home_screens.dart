@@ -10,11 +10,11 @@ import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/home/presentation/state/home_state.dart';
+import 'package:pramu_apps/features/home/presentation/widgets/home_header.dart';
 import 'package:pramu_apps/features/listing/domain/listing.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
-import 'package:pramu_apps/shared/app_ui/shell_app_bar.dart';
 import 'package:pramu_apps/shared/app_ui/status_presets.dart';
 
 /// Banner verifikasi (belum verified): tombol ke gerbang atau status.
@@ -27,50 +27,35 @@ class _VerifyBanner extends ConsumerWidget {
       sessionProvider.select((s) => s.user?.verification),
     );
     if (status == null || status.isVerified) return const SizedBox.shrink();
-    final t = context.tokens;
-    final (text, action) = switch (status) {
+    final (title, text, action) = switch (status) {
       VerificationStatus.pending => (
-        'Verifikasi Anda sedang diperiksa. Fitur penuh aktif setelah selesai.',
+        'Verifikasi sedang diperiksa',
+        'Fitur penuh aktif setelah selesai.',
         'Lihat status',
       ),
       VerificationStatus.rejected => (
-        'Verifikasi belum berhasil. Unggah ulang berkas Anda.',
+        'Verifikasi belum berhasil',
+        'Unggah ulang berkas Anda.',
         'Perbaiki sekarang',
       ),
       _ => (
+        'Verifikasi identitas Anda',
         'Verifikasi dulu untuk memasang lowongan atau melamar.',
         'Verifikasi sekarang',
       ),
     };
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpace.s16),
-      child: AppCard(
+      child: HeroBannerCard(
         key: K.homeVerifyBanner,
-        color: t.warningContainer,
-        borderColor: t.warning.withValues(alpha: .4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(LucideIcons.shieldAlert, color: t.warning),
-                const SizedBox(width: AppSpace.s12),
-                Expanded(child: Text(text, style: context.text.body)),
-              ],
-            ),
-            const SizedBox(height: AppSpace.s12),
-            AppButton(
-              label: action,
-              variant: AppButtonVariant.secondary,
-              expand: false,
-              onPressed: () => context.push(
-                status == VerificationStatus.none
-                    ? Routes.verificationGate
-                    : Routes.verificationStatus,
-              ),
-            ),
-          ],
+        title: title,
+        subtitle: text,
+        ctaLabel: action,
+        illustration: const VerifyIllustration(size: 104),
+        onTap: () => context.push(
+          status == VerificationStatus.none
+              ? Routes.verificationGate
+              : Routes.verificationStatus,
         ),
       ),
     );
@@ -119,6 +104,32 @@ class _BookingTile extends StatelessWidget {
 
 /// Baris lowongan Pencari: status + sisa waktu, judul, lalu satu baris tindakan
 /// yang menyesuaikan status (jumlah pelamar / lanjutkan draf / bayar).
+String _listingRoute(Listing l) => switch (l.status) {
+  ListingStatus.draft => '${Routes.listingNew}?draft=${l.id}',
+  ListingStatus.awaitingPayment => Routes.listingPay(l.id),
+  _ => Routes.listingManage(l.id),
+};
+
+/// Banner "Langkah berikutnya" (hero lembut) dengan caption.
+class _NextHero extends StatelessWidget {
+  const _NextHero({required this.next, this.illustration});
+  final NextStep next;
+  final Widget? illustration;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: AppSpace.s16),
+    child: HeroBannerCard(
+      key: K.homeNextStep,
+      title: next.title,
+      subtitle: next.message,
+      ctaLabel: 'Lanjutkan',
+      illustration: illustration ?? const MoneySafeIllustration(size: 104),
+      onTap: () => context.push(next.route),
+    ),
+  );
+}
+
 class _ListingTile extends StatelessWidget {
   const _ListingTile(this.l);
   final Listing l;
@@ -149,11 +160,7 @@ class _ListingTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpace.s12),
       child: AppCard(
-        onTap: () => context.push(switch (l.status) {
-          ListingStatus.draft => '${Routes.listingNew}?draft=${l.id}',
-          ListingStatus.awaitingPayment => Routes.listingPay(l.id),
-          _ => Routes.listingManage(l.id),
-        }),
+        onTap: () => context.push(_listingRoute(l)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -220,13 +227,13 @@ class SeekerHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(seekerHomeProvider);
-    return Scaffold(
-      appBar: const ShellAppBar(title: 'Beranda'),
-      body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppSpace.maxContent),
+    return AppScaffold(
+      glow: true,
+      padded: false,
+      body: Column(
+        children: [
+          const HomeHeader(subtitle: 'Selamat datang'),
+          Expanded(
             child: RefreshIndicator(
               onRefresh: () async => ref.refresh(seekerHomeProvider.future),
               child: AsyncBody<SeekerHome>(
@@ -237,7 +244,7 @@ class SeekerHomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -264,16 +271,15 @@ class SeekerHomeScreen extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppSpace.s16),
       children: [
+        SearchField(
+          hint: 'Cari asisten',
+          onTap: () => context.go(Routes.seekerSearch),
+        ),
+        const SizedBox(height: AppSpace.s16),
+        const HomeCategoryRow(route: Routes.seekerSearch),
+        const SizedBox(height: AppSpace.s20),
         const _VerifyBanner(),
-        if (next != null) ...[
-          NextStepCard(
-            key: K.homeNextStep,
-            title: next.title,
-            message: next.message,
-            onTap: () => context.push(next.route),
-          ),
-          const SizedBox(height: AppSpace.s16),
-        ],
+        if (next != null) _NextHero(next: next),
         if (d.isNewUser)
           Padding(
             padding: const EdgeInsets.only(top: AppSpace.s16),
@@ -309,7 +315,22 @@ class SeekerHomeScreen extends ConsumerWidget {
           ),
           if (listings.isEmpty)
             Text('Belum ada lowongan aktif.', style: context.text.body),
-          for (final l in listings) _ListingTile(l),
+          for (final (i, l) in listings.indexed)
+            if (i == 0 &&
+                l.status == ListingStatus.open &&
+                l.applicantCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpace.s12),
+                child: FeaturedCard(
+                  title: l.title,
+                  subtitle: '${l.category} - ${l.city}',
+                  tags: ['${l.applicantCount} pelamar'],
+                  leadingIcon: LucideIcons.users,
+                  onTap: () => context.push(_listingRoute(l)),
+                ),
+              )
+            else
+              _ListingTile(l),
           AppButton(
             key: K.homeCreateListing,
             label: 'Buat lowongan',
@@ -342,13 +363,13 @@ class AssistantHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final value = ref.watch(assistantHomeProvider);
-    return Scaffold(
-      appBar: const ShellAppBar(title: 'Beranda'),
-      body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppSpace.maxContent),
+    return AppScaffold(
+      glow: true,
+      padded: false,
+      body: Column(
+        children: [
+          const HomeHeader(subtitle: 'Selamat datang'),
+          Expanded(
             child: RefreshIndicator(
               onRefresh: () async => ref.refresh(assistantHomeProvider.future),
               child: AsyncBody<AssistantHome>(
@@ -359,7 +380,7 @@ class AssistantHomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -379,17 +400,19 @@ class AssistantHomeScreen extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppSpace.s16),
       children: [
+        SearchField(
+          hint: 'Cari lowongan',
+          onTap: () => context.go(Routes.assistantListings),
+        ),
+        const SizedBox(height: AppSpace.s16),
+        const HomeCategoryRow(route: Routes.assistantListings),
+        const SizedBox(height: AppSpace.s20),
         const _VerifyBanner(),
-        if (next != null) ...[
-          NextStepCard(
-            key: K.homeNextStep,
-            role: AppRole.assistant,
-            title: next.title,
-            message: next.message,
-            onTap: () => context.push(next.route),
+        if (next != null)
+          _NextHero(
+            next: next,
+            illustration: const WelcomeIllustration(size: 104),
           ),
-          const SizedBox(height: AppSpace.s16),
-        ],
         if (meter < 100)
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpace.s16),
@@ -442,47 +465,61 @@ class AssistantHomeScreen extends ConsumerWidget {
               actionLabel: 'Lihat semua',
               onAction: () => context.go(Routes.assistantListings),
             ),
-            for (final l in d.suggested)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpace.s12),
-                child: AppCard(
-                  onTap: () => context.push(Routes.listingDetail(l.id)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l.title, style: context.text.h3),
-                      const SizedBox(height: AppSpace.s4),
-                      Text(
-                        '${l.category} - ${l.city}',
-                        style: context.text.bodySm.copyWith(
-                          color: context.tokens.textMuted,
+            for (final (i, l) in d.suggested.indexed)
+              if (i == 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpace.s12),
+                  child: FeaturedCard(
+                    title: l.title,
+                    subtitle: '${l.category} - ${l.city}',
+                    tags: [l.category],
+                    trailing:
+                        '${formatRupiah(l.budgetMin)} / '
+                        '${l.unit.label.toLowerCase()}',
+                    onTap: () => context.push(Routes.listingDetail(l.id)),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpace.s12),
+                  child: AppCard(
+                    onTap: () => context.push(Routes.listingDetail(l.id)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l.title, style: context.text.h3),
+                        const SizedBox(height: AppSpace.s4),
+                        Text(
+                          '${l.category} - ${l.city}',
+                          style: context.text.bodySm.copyWith(
+                            color: context.tokens.textMuted,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpace.s12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Flexible(
-                            child: MoneyText(
-                              '${formatRupiah(l.budgetMin)} - '
-                              '${formatRupiah(l.budgetMax)}',
-                              size: MoneySize.small,
+                        const SizedBox(height: AppSpace.s12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Flexible(
+                              child: MoneyText(
+                                '${formatRupiah(l.budgetMin)} - '
+                                '${formatRupiah(l.budgetMax)}',
+                                size: MoneySize.small,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: AppSpace.s4),
-                          Text(
-                            'per ${l.unit.label.toLowerCase()}',
-                            style: context.text.bodySm.copyWith(
-                              color: context.tokens.textMuted,
+                            const SizedBox(width: AppSpace.s4),
+                            Text(
+                              'per ${l.unit.label.toLowerCase()}',
+                              style: context.text.bodySm.copyWith(
+                                color: context.tokens.textMuted,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
           ],
           const SizedBox(height: AppSpace.s16),
           SectionHeader(
