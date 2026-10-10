@@ -12,7 +12,7 @@ enum Role {
     return null;
   }
 
-  String get label => this == seeker ? 'Pencari' : 'Asisten';
+  String get label => this == seeker ? 'Pencari' : 'Pelamar';
 }
 
 class AuthUser {

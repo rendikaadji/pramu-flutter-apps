@@ -34,7 +34,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     (
       title: 'Dana aman, privasi terjaga',
       body:
-          'Uang ditahan aman dan dicairkan setelah pekerjaan selesai. '
+          'Dana ditahan dengan aman dan dicairkan setelah pekerjaan selesai. '
           'Kontak pribadi disembunyikan sampai pembayaran dilakukan.',
     ),
   ];

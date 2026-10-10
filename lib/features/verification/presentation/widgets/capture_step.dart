@@ -96,7 +96,9 @@ class CaptureStep extends ConsumerStatefulWidget {
     required this.captureKey,
     this.front = false,
     this.galleryWhenDenied = false,
-    this.nextLabel = 'Lanjut',
+    this.guideIcon = LucideIcons.idCard,
+    this.guideLabel = 'Seluruh kartu berada di dalam bingkai',
+    this.nextLabel = 'Lanjutkan',
   });
 
   final String title;
@@ -108,6 +110,10 @@ class CaptureStep extends ConsumerStatefulWidget {
   final Key captureKey;
   final bool front;
   final bool galleryWhenDenied;
+
+  /// Ikon dan keterangan bingkai petunjuk sebelum foto diambil.
+  final IconData guideIcon;
+  final String guideLabel;
   final String nextLabel;
 
   @override
@@ -175,7 +181,7 @@ class _CaptureStepState extends ConsumerState<CaptureStep> {
             ] else if (_denied)
               PermissionRationaleCard(
                 icon: LucideIcons.cameraOff,
-                title: 'Izin kamera dimatikan',
+                title: 'Izin kamera belum aktif',
                 message: widget.galleryWhenDenied
                     ? 'Aktifkan di Pengaturan, atau pilih foto dari galeri.'
                     : 'Aktifkan izin kamera di Pengaturan untuk melanjutkan.',
@@ -188,6 +194,40 @@ class _CaptureStepState extends ConsumerState<CaptureStep> {
                 denied: true,
               )
             else ...[
+              Semantics(
+                label: 'Petunjuk bingkai: ${widget.guideLabel}',
+                excludeSemantics: true,
+                child: AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: t.primaryContainer.withValues(alpha: .5),
+                      borderRadius: AppRadius.brCard,
+                      border: Border.all(color: t.primary, width: 2),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(widget.guideIcon, size: 56, color: t.primary),
+                        const SizedBox(height: AppSpace.s12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpace.s16,
+                          ),
+                          child: Text(
+                            widget.guideLabel,
+                            style: context.text.label.copyWith(
+                              color: t.primary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpace.s16),
               AppCard(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +238,7 @@ class _CaptureStepState extends ConsumerState<CaptureStep> {
                     const SizedBox(width: AppSpace.s12),
                     Expanded(
                       child: Text(
-                        'Kami butuh kamera untuk memotret KTP dan wajah Anda. '
+                        'Kami memakai kamera untuk memotret KTP dan wajah Anda. '
                         'Foto tidak disimpan di galeri.',
                         style: context.text.body,
                       ),

@@ -56,7 +56,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       'phone': validatePhone(_phone.text),
       'email': validateEmail(_email.text),
       'password': validatePassword(_password.text),
-      'consent': _consent ? null : 'Setujui persyaratan privasi untuk lanjut',
+      'consent': _consent ? null : 'Centang persetujuan ini untuk melanjutkan',
     };
     setState(() {
       actionError = null;
@@ -105,7 +105,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           const AuthHeader(
             icon: LucideIcons.userPlus,
             title: 'Buat akun Pramu',
-            subtitle: 'Cukup beberapa data. Verifikasi identitas menyusul.',
+            subtitle: 'Isi beberapa data dulu. Verifikasi identitas menyusul.',
           ),
           const StepProgress(current: 1, total: 2, title: 'Data akun'),
           const SizedBox(height: AppSpace.s24),

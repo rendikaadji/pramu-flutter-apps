@@ -43,7 +43,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
     final v = _id.text.trim();
     final bad = isValidPhone(v) || validateEmail(v) == null
         ? null
-        : 'Masukkan nomor HP atau email yang valid';
+        : 'Nomor HP atau email belum valid. Periksa lagi penulisannya.';
     setState(() => _localError = bad);
     if (bad != null) return;
     if (await act(
@@ -73,7 +73,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
     if (ok) {
       AppSnack.show(
         context,
-        'Kata sandi diperbarui. Silakan masuk.',
+        'Kata sandi sudah diganti. Masuk dengan kata sandi baru.',
         success: true,
       );
       context.go(Routes.login);
@@ -99,7 +99,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
           AuthHeader(
             icon: _step == 2 ? LucideIcons.keyRound : LucideIcons.shieldCheck,
             title: 'Pulihkan akun',
-            subtitle: 'Tiga langkah singkat untuk membuat kata sandi baru.',
+            subtitle: 'Atur ulang kata sandi dalam tiga langkah singkat.',
           ),
           StepProgress(current: _step + 1, total: 3, title: titles[_step]),
           const SizedBox(height: AppSpace.s24),
@@ -107,7 +107,8 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
             ActionErrorBox(error: actionError!),
           if (_step == 0) ...[
             Text(
-              'Kami kirim kode ke nomor HP atau email yang terdaftar.',
+              'Kami akan mengirim kode ke nomor HP atau email yang '
+              'terdaftar.',
               style: context.text.body,
             ),
             const SizedBox(height: AppSpace.s16),
@@ -130,7 +131,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
             ),
           ] else if (_step == 1) ...[
             Text(
-              'Masukkan 6 digit kode yang kami kirim.',
+              'Masukkan 6 digit kode yang baru kami kirim.',
               style: context.text.body,
             ),
             const SizedBox(height: AppSpace.s16),
@@ -159,7 +160,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
             const SizedBox(height: AppSpace.s24),
             AppButton(
               key: K.forgotSave,
-              label: 'Simpan',
+              label: 'Simpan kata sandi',
               large: true,
               loading: busy,
               onPressed: canAct ? _save : null,

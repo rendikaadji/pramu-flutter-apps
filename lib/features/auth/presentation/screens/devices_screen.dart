@@ -27,11 +27,14 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen>
   Future<void> _revoke(Device d) async {
     final ok = await ConfirmDialog.show(
       context,
-      title: d.current ? 'Keluar dari perangkat ini?' : 'Cabut perangkat?',
+      title: d.current
+          ? 'Keluar dari perangkat ini?'
+          : 'Keluarkan perangkat ini?',
       message: d.current
-          ? 'Mencabut perangkat ini akan mengeluarkan Anda dari akun.'
-          : '${d.name} tidak akan bisa mengakses akun Anda lagi.',
-      confirmLabel: d.current ? 'Keluar' : 'Cabut',
+          ? 'Anda akan keluar dari akun dan perlu masuk lagi.'
+          : '${d.name} akan keluar dari akun Anda. Pemilik perangkat perlu '
+                'masuk lagi untuk memakainya.',
+      confirmLabel: d.current ? 'Keluar' : 'Keluarkan',
       destructive: true,
     );
     if (!ok || !mounted) return;
@@ -44,7 +47,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen>
       await ref.read(sessionProvider.notifier).logout();
     } else {
       ref.invalidate(devicesProvider);
-      AppSnack.show(context, 'Perangkat dicabut', success: true);
+      AppSnack.show(context, 'Perangkat sudah dikeluarkan.', success: true);
     }
   }
 
@@ -62,8 +65,8 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen>
           if (devices.isEmpty) {
             return const EmptyState(
               icon: LucideIcons.smartphone,
-              title: 'Tidak ada perangkat',
-              message: 'Perangkat yang masuk ke akun Anda tampil di sini.',
+              title: 'Belum ada perangkat',
+              message: 'Perangkat yang masuk ke akun Anda akan tampil di sini.',
             );
           }
           return RefreshIndicator(
@@ -71,8 +74,19 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen>
             child: ListView(
               padding: const EdgeInsets.all(AppSpace.s16),
               children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpace.s16),
+                  child: Text(
+                    'Perangkat yang sedang masuk ke akun Anda. Keluarkan '
+                    'perangkat yang tidak Anda kenali.',
+                    style: context.text.body.copyWith(color: t.textMuted),
+                  ),
+                ),
                 if (actionError != null) ActionErrorBox(error: actionError!),
-                for (final d in devices)
+                for (final d in [
+                  ...devices.where((d) => d.current),
+                  ...devices.where((d) => !d.current),
+                ])
                   Padding(
                     padding: const EdgeInsets.only(bottom: AppSpace.s12),
                     child: AppCard(
@@ -103,7 +117,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen>
                           const SizedBox(height: AppSpace.s8),
                           AppButton(
                             key: K.deviceRevoke(d.id),
-                            label: d.current ? 'Keluar' : 'Cabut',
+                            label: d.current ? 'Keluar' : 'Keluarkan',
                             variant: AppButtonVariant.secondary,
                             expand: false,
                             onPressed: canAct ? () => _revoke(d) : null,

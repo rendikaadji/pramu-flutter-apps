@@ -27,21 +27,26 @@ class _VerifyBanner extends ConsumerWidget {
       sessionProvider.select((s) => s.user?.verification),
     );
     if (status == null || status.isVerified) return const SizedBox.shrink();
+    final seeker = ref.watch(
+      sessionProvider.select((s) => s.activeRole == Role.seeker),
+    );
     final (title, text, action) = switch (status) {
       VerificationStatus.pending => (
         'Verifikasi sedang diperiksa',
-        'Fitur penuh aktif setelah selesai.',
+        'Biasanya selesai dalam 1x24 jam. Kami kabari lewat notifikasi.',
         'Lihat status',
       ),
       VerificationStatus.rejected => (
         'Verifikasi belum berhasil',
-        'Unggah ulang berkas Anda.',
-        'Perbaiki sekarang',
+        'Kirim ulang dengan foto yang lebih jelas.',
+        'Kirim ulang',
       ),
       _ => (
         'Verifikasi identitas Anda',
-        'Verifikasi dulu untuk memasang lowongan atau melamar.',
-        'Verifikasi sekarang',
+        seeker
+            ? 'Verifikasi dulu sebelum memasang lowongan.'
+            : 'Verifikasi dulu sebelum melamar pekerjaan.',
+        'Mulai verifikasi',
       ),
     };
     return Padding(
@@ -232,7 +237,7 @@ class SeekerHomeScreen extends ConsumerWidget {
       padded: false,
       body: Column(
         children: [
-          const HomeHeader(subtitle: 'Selamat datang'),
+          const HomeHeader(subtitle: 'Temukan asisten tepercaya'),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => ref.refresh(seekerHomeProvider.future),
@@ -288,7 +293,9 @@ class SeekerHomeScreen extends ConsumerWidget {
                 const EmptyState(
                   icon: LucideIcons.clipboardList,
                   title: 'Mulai dari sini',
-                  message: 'Pasang lowongan atau cari asisten yang sudah terverifikasi.',
+                  message:
+                      'Pasang lowongan, atau cari langsung asisten yang '
+                      'sudah terverifikasi.',
                 ),
                 AppButton(
                   key: K.homeCreateListing,
@@ -314,7 +321,11 @@ class SeekerHomeScreen extends ConsumerWidget {
             onAction: () => context.go(Routes.seekerJobs),
           ),
           if (listings.isEmpty)
-            Text('Belum ada lowongan aktif.', style: context.text.body),
+            Text(
+              'Belum ada lowongan aktif. Buat lowongan agar asisten bisa '
+              'melamar.',
+              style: context.text.body,
+            ),
           for (final (i, l) in listings.indexed)
             if (i == 0 &&
                 l.status == ListingStatus.open &&
@@ -346,7 +357,7 @@ class SeekerHomeScreen extends ConsumerWidget {
           ),
           if (bookings.isEmpty)
             Text(
-              'Belum ada kontrak. Kontrak dibuat setelah Anda dan asisten sepakat.',
+              'Belum ada kontrak. Kontrak muncul setelah Anda dan asisten sepakat.',
               style: context.text.body,
             ),
           for (final b in bookings) _BookingTile(b, Role.seeker),
@@ -356,7 +367,7 @@ class SeekerHomeScreen extends ConsumerWidget {
   }
 }
 
-/// M-21 Beranda Asisten.
+/// M-21 Beranda Pelamar.
 class AssistantHomeScreen extends ConsumerWidget {
   const AssistantHomeScreen({super.key});
 
@@ -368,7 +379,7 @@ class AssistantHomeScreen extends ConsumerWidget {
       padded: false,
       body: Column(
         children: [
-          const HomeHeader(subtitle: 'Selamat datang'),
+          const HomeHeader(subtitle: 'Temukan pekerjaan yang cocok'),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => ref.refresh(assistantHomeProvider.future),
@@ -442,7 +453,7 @@ class AssistantHomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpace.s8),
                   Text(
-                    'Profil lengkap lebih mudah dipilih pencari.',
+                    'Profil yang lengkap lebih mudah dipilih Pencari.',
                     style: context.text.bodySm,
                   ),
                 ],
@@ -528,7 +539,11 @@ class AssistantHomeScreen extends ConsumerWidget {
             onAction: () => context.push(Routes.contracts),
           ),
           if (bookings.isEmpty)
-            Text('Belum ada kontrak berjalan.', style: context.text.body),
+            Text(
+              'Belum ada kontrak berjalan. Kontrak muncul setelah lamaran '
+              'Anda diterima.',
+              style: context.text.body,
+            ),
           for (final b in bookings) _BookingTile(b, Role.assistant),
         ],
       ],

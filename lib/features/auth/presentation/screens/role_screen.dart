@@ -135,8 +135,10 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
         children: [
           const AuthHeader(
             icon: LucideIcons.users,
-            title: 'Pakai Pramu sebagai apa?',
-            subtitle: 'Peran bisa diganti kapan saja di menu Akun.',
+            title: 'Apa peran Anda di Pramu?',
+            subtitle:
+                'Pilih satu peran, atau keduanya. Anda bisa menggantinya '
+                'kapan saja di menu Akun.',
           ),
           if (actionError != null) ActionErrorBox(error: actionError!),
           _card(
@@ -144,8 +146,8 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
             key: K.roleSeeker,
             role: Role.seeker,
             icon: LucideIcons.search,
-            title: 'Cari asisten',
-            body: 'Saya mencari asisten rumah tangga',
+            title: 'Saya Pencari',
+            body: 'Cari asisten untuk rumah Anda',
             illustration: const VerifyIllustration(size: 120),
           ),
           const SizedBox(height: AppSpace.s12),
@@ -154,8 +156,8 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
             key: K.roleAssistant,
             role: Role.assistant,
             icon: LucideIcons.briefcase,
-            title: 'Saya asisten',
-            body: 'Saya mencari pekerjaan',
+            title: 'Saya Pelamar',
+            body: 'Cari pekerjaan sebagai asisten',
             illustration: const MoneySafeIllustration(size: 120),
           ),
           const SizedBox(height: AppSpace.s8),
@@ -164,7 +166,13 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
             contentPadding: EdgeInsets.zero,
             controlAffinity: ListTileControlAffinity.leading,
             value: both,
-            title: Text('Keduanya', style: context.text.body),
+            title: Text('Keduanya', style: context.text.label),
+            subtitle: Text(
+              'Saya mencari asisten dan juga mencari pekerjaan',
+              style: context.text.bodySm.copyWith(
+                color: context.tokens.textMuted,
+              ),
+            ),
             onChanged: (v) => setState(() {
               _picked
                 ..clear()
@@ -174,7 +182,7 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
           const SizedBox(height: AppSpace.s16),
           AppButton(
             key: K.roleContinue,
-            label: 'Lanjut',
+            label: 'Lanjutkan',
             large: true,
             loading: busy,
             onPressed: _picked.isEmpty || !canAct ? null : _continue,

@@ -146,7 +146,7 @@ class AccountScreen extends ConsumerWidget {
             const SizedBox(height: AppSpace.s12),
             StatsRow(items: stats),
           ],
-          _caption(context, isAssistant ? 'Identitas & profil' : 'Identitas'),
+          _caption(context, isAssistant ? 'Identitas dan profil' : 'Identitas'),
           ListTileCard(
             children: [
               SettingsRow(
@@ -167,7 +167,7 @@ class AccountScreen extends ConsumerWidget {
                 ),
                 SettingsRow(
                   icon: LucideIcons.userPen,
-                  title: 'Edit profil asisten',
+                  title: 'Ubah profil saya',
                   onTap: () => context.push(Routes.profileEdit),
                 ),
                 SettingsRow(
@@ -184,8 +184,11 @@ class AccountScreen extends ConsumerWidget {
               SettingsRow(
                 key: K.accountRoleRow,
                 icon: LucideIcons.repeat,
-                title: 'Ganti peran',
-                subtitle: user.activeRole?.label,
+                title: 'Peran aktif',
+                subtitle: user.activeRole == null
+                    ? null
+                    : 'Anda sedang masuk sebagai ${user.activeRole!.label}. '
+                          'Ketuk untuk mengganti.',
                 onTap: () => showRoleSwitch(context, ref),
               ),
               SettingsRow(

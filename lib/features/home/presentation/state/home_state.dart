@@ -96,7 +96,7 @@ NextStep? assistantNextStep(
     if (interview.status == InterviewStatus.confirmed && slot != null) {
       return NextStep(
         'Wawancara ${formatDateTime(slot)}',
-        'Buka detail untuk bergabung.',
+        'Buka detail untuk melihat cara bergabung.',
         Routes.interviewDetail(interview.id),
       );
     }
@@ -104,7 +104,7 @@ NextStep? assistantNextStep(
   for (final a in apps) {
     if (a.status == ApplicationStatus.accepted && a.bookingId == null) {
       return NextStep(
-        'Lamaran diterima ${a.seeker.name}',
+        'Lamaran Anda diterima ${a.seeker.name}',
         'Lanjutkan ke kesepakatan kerja.',
         Routes.applicationDetail(a.id),
       );
@@ -115,7 +115,8 @@ NextStep? assistantNextStep(
       if (p.status.canConfirmComplete) {
         return NextStep(
           'Menunggu konfirmasi ${b.seeker.name}',
-          'Periode ${p.index} sudah selesai; dana segera dicairkan.',
+          'Periode ${p.index} sudah selesai. Dana dicairkan setelah '
+              'dikonfirmasi.',
           Routes.bookingDetail(b.id),
         );
       }
