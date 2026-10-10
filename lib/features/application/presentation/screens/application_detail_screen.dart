@@ -68,6 +68,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
       body: AsyncBody<Application>(
         value: async,
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (ctx, a) => RefreshIndicator(
           onRefresh: () async => _reload(),
           child: ListView(

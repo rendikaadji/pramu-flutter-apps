@@ -59,6 +59,7 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
       body: AsyncBody<BookingPeriod>(
         value: value,
         onRetry: () => ref.invalidate(payPeriodProvider(widget.periodId)),
+        skeleton: const DetailSkeleton(),
         data: (context, p) => SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: AppSpace.s24),
           child: Column(

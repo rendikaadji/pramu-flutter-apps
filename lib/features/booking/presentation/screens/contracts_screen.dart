@@ -36,6 +36,7 @@ class _State extends ConsumerState<ContractsScreen> {
       body: AsyncBody(
         value: ref.watch(bookingsProvider),
         onRetry: () => ref.invalidate(bookingsProvider),
+        skeleton: const ListSkeleton(count: 3, kind: SkeletonCardKind.summary),
         data: (context, all) {
           final list = switch (_tab) {
             1 => all.where((b) => !_closed(b)).toList(),

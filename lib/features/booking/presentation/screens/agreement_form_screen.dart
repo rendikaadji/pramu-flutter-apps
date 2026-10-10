@@ -33,6 +33,7 @@ class AgreementFormScreen extends ConsumerWidget {
       body: AsyncBody<Agreement?>(
         value: draft,
         onRetry: () => ref.invalidate(agreementDraftProvider(applicationId)),
+        skeleton: const DetailSkeleton(),
         data: (context, existing) {
           if (existing != null && existing.isAgreed) {
             return EmptyState(
@@ -271,10 +272,7 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
             )
           else
             preview.when(
-              loading: () => Semantics(
-                label: 'Memuat',
-                child: const AppSkeleton.line(width: 200),
-              ),
+              loading: () => const InlineSkeleton(width: 200),
               error: (_, _) => Text(
                 'Perkiraan belum bisa ditampilkan. Angka pastinya muncul setelah usulan terkirim.',
                 style: context.text.body.copyWith(color: t.textMuted),

@@ -37,6 +37,7 @@ class ProfileEditScreen extends ConsumerWidget {
       body: AsyncBody<AssistantProfile?>(
         value: value,
         onRetry: () => ref.invalidate(myProfileProvider),
+        skeleton: const DetailSkeleton(),
         data: (context, p) => _ProfileForm(initial: p),
       ),
     );

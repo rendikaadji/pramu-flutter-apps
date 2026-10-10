@@ -60,21 +60,9 @@ class AssistantProfileScreen extends ConsumerWidget {
       body: AsyncBody<AssistantProfile>(
         value: value,
         onRetry: () => ref.invalidate(assistantProfileProvider(userId)),
-        skeleton: Padding(
-          padding: const EdgeInsets.all(AppSpace.s16),
-          child: Semantics(
-            label: 'Memuat',
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppSkeleton.box(72, radius: 36),
-                SizedBox(height: AppSpace.s16),
-                AppSkeleton.line(width: 200),
-                SizedBox(height: AppSpace.s12),
-                AppSkeleton.box(120, radius: AppRadius.md),
-              ],
-            ),
-          ),
+        skeleton: const Padding(
+          padding: EdgeInsets.all(AppSpace.s16),
+          child: ProfileSkeleton(),
         ),
         data: (context, p) => _body(context, p, me),
       ),

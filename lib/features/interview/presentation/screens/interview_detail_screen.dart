@@ -127,6 +127,7 @@ class _State extends ConsumerState<InterviewDetailScreen> with ApiActionMixin {
       body: AsyncBody<InterviewContext>(
         value: async,
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (ctx, c) => RefreshIndicator(
           onRefresh: () async => _reload(),
           child: ListView(

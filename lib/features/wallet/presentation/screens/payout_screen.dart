@@ -87,8 +87,10 @@ class _State extends ConsumerState<PayoutScreen> with ApiActionMixin {
             : AsyncBody<Wallet>(
                 value: wallet,
                 onRetry: () => ref.invalidate(walletProvider),
+                skeleton: const DetailSkeleton(),
                 data: (context, w) => bank.when(
-                  loading: () => const ListSkeleton(count: 1),
+                  loading: () =>
+                      const SingleChildScrollView(child: DetailSkeleton()),
                   error: (e, _) => ApiErrorView(
                     error: asApiException(e),
                     onRetry: () => ref.invalidate(bankAccountProvider),

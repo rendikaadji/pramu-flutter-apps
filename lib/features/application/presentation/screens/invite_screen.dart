@@ -64,6 +64,7 @@ class _State extends ConsumerState<InviteScreen> with ApiActionMixin {
       body: AsyncBody<List<Listing>>(
         value: async,
         onRetry: () => ref.invalidate(openOwnListingsProvider),
+        skeleton: const ListSkeleton(kind: SkeletonCardKind.listing),
         data: (ctx, list) {
           if (list.isEmpty) {
             return EmptyState(

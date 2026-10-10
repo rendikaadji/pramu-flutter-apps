@@ -57,6 +57,7 @@ class _State extends ConsumerState<AgreementReviewScreen> with ApiActionMixin {
       body: AsyncBody<AgreementView>(
         value: ref.watch(agreementProvider(widget.agreementId)),
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (context, v) => v.agreement.isAgreed
             ? _Done(a: v.agreement)
             : _Body(

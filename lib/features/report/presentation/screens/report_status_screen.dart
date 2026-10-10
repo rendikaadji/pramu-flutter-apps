@@ -131,16 +131,7 @@ class _ReportStatusScreenState extends ConsumerState<ReportStatusScreen> {
       title: 'Status laporan',
       scrollable: true,
       body: async.when(
-        loading: () => Semantics(
-          label: 'Memuat',
-          child: const Column(
-            children: [
-              AppSkeleton.box(120),
-              SizedBox(height: AppSpace.s12),
-              AppSkeleton.box(160),
-            ],
-          ),
-        ),
+        loading: () => const DetailSkeleton(),
         error: (e, _) => ApiErrorView(
           error: asApiException(e),
           onRetry: () => ref.invalidate(reportProvider(widget.reportId)),

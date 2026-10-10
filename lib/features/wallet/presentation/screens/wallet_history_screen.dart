@@ -19,6 +19,10 @@ class WalletHistoryScreen extends ConsumerWidget {
       body: AsyncBody<TxState>(
         value: ref.watch(walletTxProvider),
         onRetry: () => ref.invalidate(walletTxProvider),
+        skeleton: const ListSkeleton(
+          count: 6,
+          kind: SkeletonCardKind.transaction,
+        ),
         data: (context, s) => RefreshIndicator(
           onRefresh: n.refresh,
           child: s.items.isEmpty

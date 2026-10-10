@@ -18,15 +18,10 @@ class UserReviewsScreen extends ConsumerWidget {
     return AppScaffold(
       title: 'Ulasan',
       body: s.when(
-        loading: () => Semantics(
-          label: 'Memuat',
-          child: const Column(
-            children: [
-              SizedBox(height: AppSpace.s16),
-              AppSkeleton.box(96),
-              SizedBox(height: AppSpace.s12),
-              AppSkeleton.box(96),
-            ],
+        loading: () => const SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(top: AppSpace.s8),
+            child: ListSkeleton(count: 3, kind: SkeletonCardKind.summary),
           ),
         ),
         error: (e, _) => Padding(

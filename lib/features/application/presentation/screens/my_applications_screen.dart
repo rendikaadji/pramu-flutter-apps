@@ -35,6 +35,7 @@ class MyApplicationsScreen extends ConsumerWidget {
       body: AsyncBody<List<Application>>(
         value: apps,
         onRetry: () => ref.invalidate(myApplicationsProvider),
+        skeleton: const ListSkeleton(kind: SkeletonCardKind.summary),
         data: (ctx, list) {
           if (list.isEmpty && invites.isEmpty) {
             return EmptyState(

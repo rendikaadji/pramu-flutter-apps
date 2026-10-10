@@ -21,6 +21,10 @@ class ConversationListScreen extends ConsumerWidget {
       body: AsyncBody(
         value: value,
         onRetry: () => ref.invalidate(conversationsProvider),
+        skeleton: const ListSkeleton(
+          count: 6,
+          kind: SkeletonCardKind.conversation,
+        ),
         data: (context, list) => RefreshIndicator(
           onRefresh: n.refresh,
           child: list.isEmpty

@@ -55,6 +55,7 @@ class ListingDetailScreen extends ConsumerWidget {
       body: AsyncBody<Listing>(
         value: async,
         onRetry: () => ref.invalidate(listingDetailProvider(id)),
+        skeleton: const DetailSkeleton(),
         data: (ctx, l) => RefreshIndicator(
           onRefresh: () async => ref.invalidate(listingDetailProvider(id)),
           child: ListView(
@@ -329,9 +330,9 @@ class _Cta extends ConsumerWidget {
         : const AsyncData(VerificationStatus.verified);
 
     if (mine.isLoading || skck.isLoading) {
-      return Semantics(
-        label: 'Memuat',
-        child: const AppSkeleton(height: AppSpace.tap),
+      return const InlineSkeleton(
+        height: AppSpace.tap,
+        radius: AppRadius.button,
       );
     }
     final existing = mine.value;

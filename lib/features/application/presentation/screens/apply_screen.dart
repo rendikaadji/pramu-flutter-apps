@@ -159,6 +159,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
       body: AsyncBody<ApplyContext>(
         value: async,
         onRetry: () => ref.invalidate(applyContextProvider(widget.listingId)),
+        skeleton: const DetailSkeleton(),
         data: (ctx, c) {
           _init(c);
           final l = c.listing;

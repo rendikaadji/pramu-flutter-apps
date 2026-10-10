@@ -67,6 +67,7 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
       body: AsyncBody<ApplicantDetail>(
         value: async,
         onRetry: _reload,
+        skeleton: const DetailSkeleton(),
         data: (ctx, d) => RefreshIndicator(
           onRefresh: () async => _reload(),
           child: ListView(
@@ -291,9 +292,9 @@ class _RejectButton extends StatelessWidget {
       onPressed: loading ? null : onPressed,
       icon: loading
           ? SizedBox.square(
-              dimension: 20,
+              dimension: 18,
               child: CircularProgressIndicator(
-                strokeWidth: 2.5,
+                strokeWidth: 2,
                 color: t.danger,
                 semanticsLabel: 'Menolak pelamar, sedang diproses',
               ),

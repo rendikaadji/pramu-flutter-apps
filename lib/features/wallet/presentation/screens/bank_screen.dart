@@ -80,6 +80,7 @@ class _State extends ConsumerState<BankScreen> with ApiActionMixin {
         body: AsyncBody<BankAccount?>(
           value: bank,
           onRetry: () => ref.invalidate(bankAccountProvider),
+          skeleton: const DetailSkeleton(),
           data: (context, b) => SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: AppSpace.s24),
             child: Column(

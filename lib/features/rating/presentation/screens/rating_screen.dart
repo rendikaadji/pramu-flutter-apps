@@ -85,17 +85,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
       glow: true,
       scrollable: true,
       body: view.when(
-        loading: () => Semantics(
-          label: 'Memuat',
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppSkeleton.line(width: 160),
-              SizedBox(height: AppSpace.s12),
-              AppSkeleton.box(120),
-            ],
-          ),
-        ),
+        loading: () => const DetailSkeleton(),
         error: (e, _) => ApiErrorView(
           error: asApiException(e),
           onRetry: () => ref.invalidate(ratingProvider(widget.bookingId)),
