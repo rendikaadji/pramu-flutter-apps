@@ -18,7 +18,7 @@ class AppNavItem {
 }
 
 /// Bottom nav 4 (Pencari) / 5 (Asisten) item, ikon + label. Indikator dan ikon
-/// terpilih diwarnai peran: Pencari = primary, Asisten = accent.
+/// terpilih diwarnai peran: Pencari = primary (biru), Asisten = assistant (teal).
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,

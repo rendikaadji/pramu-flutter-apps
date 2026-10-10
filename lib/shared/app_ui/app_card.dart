@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/theme/app_theme.dart';
 
-/// Satu bahasa kartu: border + e1, radius md. Jangan menyarang kartu di dalam kartu.
+/// Satu bahasa kartu: border tipis + e1 sangat halus, radius 16. Jangan menyarang kartu di dalam kartu.
 /// Bila `onTap` diisi, seluruh kartu satu target sentuh dan dibacakan sebagai satu item.
 class AppCard extends StatelessWidget {
   const AppCard({
@@ -25,7 +25,7 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.tokens;
     final shape = RoundedRectangleBorder(
-      borderRadius: AppRadius.brMd,
+      borderRadius: AppRadius.brCard,
       side: BorderSide(color: borderColor ?? t.borderSubtle),
     );
     final padded = Padding(padding: padding, child: child);

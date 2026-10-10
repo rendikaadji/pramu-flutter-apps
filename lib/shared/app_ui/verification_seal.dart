@@ -16,7 +16,7 @@ enum SealSize {
   final double px;
 }
 
-/// Segel soga khas Buku Kas Rumah: stempel bergerigi + cincin dalam + ikon.
+/// Lencana verifikasi: stempel bergerigi biru + cincin dalam + perisai-centang.
 /// Selalu disertai teks ("Terverifikasi") kecuali `showLabel: false`.
 /// `stamp: true` memainkan animasi "cap" 0,9 -> 1 sekali (layar status verifikasi).
 class VerificationSeal extends StatelessWidget {
@@ -48,8 +48,8 @@ class VerificationSeal extends StatelessWidget {
     final t = context.tokens;
     final (ink, fill, icon) = switch (state) {
       SealState.verified => (
-        t.accent,
-        t.accentContainer,
+        t.primary,
+        t.primaryContainer,
         LucideIcons.shieldCheck,
       ),
       SealState.pending => (t.textMuted, t.sunken, LucideIcons.clock),

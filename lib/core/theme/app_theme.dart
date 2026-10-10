@@ -8,7 +8,7 @@ import 'app_tokens.dart';
 export 'app_text.dart';
 export 'app_tokens.dart';
 
-/// Tema Material 3 "Buku Kas Rumah". ColorScheme dibangun manual dari token
+/// Tema Material 3 biru langit (terang, bersih, airy). ColorScheme dibangun manual dari token
 /// (bukan fromSeed). Pakai `AppTheme.light()` / `AppTheme.dark()`.
 abstract final class AppTheme {
   static ThemeData light() => _build(AppTokens.light);
@@ -16,7 +16,7 @@ abstract final class AppTheme {
 
   static OutlineInputBorder outline(Color color, [double width = 1]) =>
       OutlineInputBorder(
-        borderRadius: AppRadius.brMd,
+        borderRadius: AppRadius.brInput,
         borderSide: BorderSide(color: color, width: width),
       );
 
@@ -54,7 +54,7 @@ abstract final class AppTheme {
     );
     final text = AppText.theme(t);
     const none = Colors.transparent;
-    final btnShape = RoundedRectangleBorder(borderRadius: AppRadius.brMd);
+    final btnShape = RoundedRectangleBorder(borderRadius: AppRadius.brButton);
     final btnText = text.body.copyWith(
       fontWeight: FontWeight.w600,
       letterSpacing: .1,
@@ -120,6 +120,8 @@ abstract final class AppTheme {
         ),
         floatingLabelBehavior: FloatingLabelBehavior.never,
         hintStyle: text.body.copyWith(color: t.textSubtle),
+        prefixIconColor: t.textMuted,
+        suffixIconColor: t.textMuted,
         errorStyle: text.bodySm.copyWith(color: t.danger),
         prefixStyle: AppText.mono(size: 16, lineHeight: 24, color: t.textMuted),
         border: outline(t.borderStrong),
@@ -135,21 +137,24 @@ abstract final class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.brMd,
+          borderRadius: AppRadius.brCard,
           side: BorderSide(color: t.borderSubtle),
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: t.surface,
+        backgroundColor: t.sunken,
         selectedColor: t.primaryContainer,
-        side: BorderSide(color: t.borderSubtle),
+        side: BorderSide.none,
         shape: const StadiumBorder(),
-        labelStyle: text.body.copyWith(color: t.textPrimary),
+        labelStyle: text.bodySm.copyWith(
+          color: t.textPrimary,
+          fontWeight: FontWeight.w500,
+        ),
         checkmarkColor: t.primary,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: t.canvas,
+        backgroundColor: none,
         foregroundColor: t.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -163,7 +168,7 @@ abstract final class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 72,
+        height: 68,
         elevation: 0,
         backgroundColor: t.surface,
         surfaceTintColor: none,
@@ -196,7 +201,7 @@ abstract final class AppTheme {
         elevation: dark ? 0 : 8,
         shadowColor: t.e3.isEmpty ? null : t.e3.first.color,
         shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.brMd,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           side: dark ? BorderSide(color: t.borderSubtle) : BorderSide.none,
         ),
         titleTextStyle: text.h2,
@@ -219,7 +224,7 @@ abstract final class AppTheme {
         backgroundColor: t.textPrimary,
         contentTextStyle: text.body.copyWith(color: t.canvas),
         actionTextColor: inverse.primary,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.brMd),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.brInput),
       ),
       listTileTheme: ListTileThemeData(
         minTileHeight: 56,
@@ -227,6 +232,16 @@ abstract final class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         iconColor: t.textMuted,
         textColor: t.textPrimary,
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: t.primary,
+        inactiveTrackColor: t.primaryContainer,
+        thumbColor: t.primary,
+        overlayColor: t.primary.withValues(alpha: .12),
+        rangeThumbShape: const RoundRangeSliderThumbShape(
+          enabledThumbRadius: 11,
+        ),
+        trackHeight: 6,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: t.primary,
