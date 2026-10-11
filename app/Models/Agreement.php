@@ -52,3 +52,4 @@ class Agreement extends Model
         return $this->hasOne(Booking::class);
     }
 }
+

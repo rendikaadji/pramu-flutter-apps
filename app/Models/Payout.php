@@ -37,3 +37,4 @@ class Payout extends Model
         return $this->belongsTo(BankAccount::class);
     }
 }
+

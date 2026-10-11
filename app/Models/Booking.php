@@ -62,3 +62,4 @@ class Booking extends Model
         return $this->hasMany(Report::class);
     }
 }
+

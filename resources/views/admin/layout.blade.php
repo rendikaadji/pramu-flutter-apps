@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Panel') — Pramu Asisten Marketplace</title>
+    <title>@yield('title', 'Admin Dashboard') — Pramu Asisten Marketplace</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
             --bg-canvas: #FAF7F2;
             --bg-surface: #FFFFFF;
+            --bg-subtle: #F3EEE6;
             --border-subtle: #E2D9CC;
             --border-strong: #8C8070;
             --text-primary: #1F1B16;
@@ -16,6 +17,7 @@
             --primary: #244C7C;
             --accent: #9A4E1C;
             --success: #1B6E45;
+            --warning: #8A5200;
             --danger: #B3261E;
         }
         body {
@@ -25,90 +27,210 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col md:flex-row antialiased">
-    <!-- Sidebar -->
-    <aside class="w-full md:w-64 bg-white border-r border-[#E2D9CC] flex flex-col flex-shrink-0">
-        <!-- Brand -->
-        <div class="p-6 border-b border-[#E2D9CC] flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[#244C7C] flex items-center justify-center text-white font-bold text-lg">
-                P
-            </div>
-            <div>
-                <h1 class="text-base font-bold text-[#1F1B16] leading-tight">Pramu Backend</h1>
-                <p class="text-xs text-[#5A5146]">Panel Moderasi & Escrow</p>
+<body class="min-h-screen flex antialiased bg-[#FAF7F2] text-[#1F1B16]">
+    <!-- Left Sidebar (Enterprise Style like Reference) -->
+    <aside class="w-64 bg-white border-r border-[#E2D9CC] flex flex-col flex-shrink-0 min-h-screen z-20">
+        <!-- Logo & Header -->
+        <div class="h-16 px-6 border-b border-[#E2D9CC] flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-[#244C7C] flex items-center justify-center text-white font-bold text-base shadow-sm">
+                    P
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-[#1F1B16] tracking-tight">Pramu<span class="text-[#9A4E1C]">Admin</span></h1>
+                    <p class="text-[11px] text-[#5A5146]">Marketplace Backend</p>
+                </div>
             </div>
         </div>
 
-        <!-- Navigation Links -->
-        <nav class="flex-1 p-4 space-y-1">
-            <a href="{{ route('admin.dashboard') }}" 
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
-                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span>Ringkasan</span>
-            </a>
-
-            <a href="{{ route('admin.verifications.index') }}" 
-               class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.verifications.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    <span>Verifikasi KTP</span>
+        <!-- Sidebar Navigation Sections -->
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-6 text-xs">
+            <!-- Section 1: MAIN MENU -->
+            <div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Main Menu</div>
+                <div class="space-y-0.5">
+                    <a href="{{ route('admin.dashboard') }}" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        <span>Executive Dashboard</span>
+                    </a>
                 </div>
-                @php $pendingCount = \App\Models\Verification::where('status', 'pending')->count(); @endphp
-                @if($pendingCount > 0)
-                    <span class="text-xs px-2 py-0.5 rounded-full {{ request()->routeIs('admin.verifications.*') ? 'bg-white/20 text-white' : 'bg-[#9A4E1C] text-white' }}">
-                        {{ $pendingCount }}
-                    </span>
-                @endif
-            </a>
-
-            <a href="{{ route('admin.bookings.index') }}" 
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.bookings.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
-                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                <span>Kontrak & Escrow</span>
-            </a>
-
-            <a href="{{ route('admin.reports.index') }}" 
-               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
-                <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <span>Laporan & Sengketa</span>
-            </a>
-
-            <div class="pt-4 mt-4 border-t border-[#E2D9CC]">
-                <a href="/api/v1/listings" target="_blank"
-                   class="flex items-center gap-3 px-3 py-2 text-xs text-[#5A5146] hover:text-[#1F1B16] rounded transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                    <span>Cek Endpoint API v1 &rarr;</span>
-                </a>
             </div>
-        </nav>
 
-        <!-- Environment Info -->
-        <div class="p-4 border-t border-[#E2D9CC] text-xs text-[#5A5146]">
-            <div>Mode: <span class="font-medium text-[#1B6E45]">Lokal (Herd)</span></div>
-            <div>Database: <span class="font-medium">SQLite</span></div>
+            <!-- Section 2: PENGGUNA & VERIFIKASI -->
+            <div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Pengguna & Verifikasi</div>
+                <div class="space-y-0.5">
+                    <a href="{{ route('admin.verifications.index') }}" 
+                       class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.verifications.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            <span>Verifikasi KTP & Wajah</span>
+                        </div>
+                        @php $pendingVerifCount = \App\Models\Verification::where('status', 'pending')->count(); @endphp
+                        @if($pendingVerifCount > 0)
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ request()->routeIs('admin.verifications.*') ? 'bg-white/20 text-white' : 'bg-[#9A4E1C] text-white' }}">
+                                {{ $pendingVerifCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('admin.verifications.index', ['status' => 'all']) }}" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <span>Data Pengguna (Role)</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Section 3: MARKETPLACE & SELEKSI -->
+            <div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Marketplace & Seleksi</div>
+                <div class="space-y-0.5">
+                    <a href="/api/v1/listings" target="_blank"
+                       class="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <span>Lowongan Kerja (Listing)</span>
+                        </div>
+                        <span class="text-[10px] text-[#8C8070]">API &rarr;</span>
+                    </a>
+
+                    <a href="#interview-queue" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        <span>Jadwal Wawancara Meet</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Section 4: ESCROW & KEUANGAN -->
+            <div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Escrow & Keuangan</div>
+                <div class="space-y-0.5">
+                    <a href="{{ route('admin.bookings.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.bookings.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        <span>Kontrak & Termin Escrow</span>
+                    </a>
+
+                    <a href="#financial-overview" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Fee Platform (5%+5%)</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Section 5: KEAMANAN & SENGKETA -->
+            <div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Keamanan & Mediasi</div>
+                <div class="space-y-0.5">
+                    <a href="{{ route('admin.reports.index') }}" 
+                       class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span>Laporan & Sengketa</span>
+                        </div>
+                        @php $openReportsCount = \App\Models\Report::whereIn('status', ['submitted', 'under_review'])->count(); @endphp
+                        @if($openReportsCount > 0)
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ request()->routeIs('admin.reports.*') ? 'bg-white/20 text-white' : 'bg-[#B3261E] text-white' }}">
+                                {{ $openReportsCount }}
+                            </span>
+                        @endif
+                    </a>
+                </div>
+            </div>
+
+            <!-- Section 6: INTEGRASI & SISTEM -->
+            <div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Sistem & Integrasi</div>
+                <div class="space-y-0.5">
+                    <div class="px-3 py-2 text-[#5A5146] flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#1B6E45]"></span>
+                            <span>Xendit Gateway</span>
+                        </span>
+                        <span class="text-[10px] text-[#1B6E45] font-semibold">Sandbox</span>
+                    </div>
+
+                    <a href="/api/v1/listings" target="_blank"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                        <span>OpenAPI / REST v1</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-[#E2D9CC] bg-[#FAF7F2]/50 text-[11px] text-[#5A5146] space-y-1">
+            <div class="flex items-center justify-between">
+                <span>Versi API:</span>
+                <span class="font-mono font-semibold text-[#1F1B16]">v1.0.0</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span>Zona Waktu:</span>
+                <span class="font-semibold text-[#1F1B16]">WIB (UTC+7)</span>
+            </div>
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col min-w-0">
-        <!-- Topbar -->
-        <header class="bg-white border-b border-[#E2D9CC] px-6 py-4 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-[#1F1B16]">@yield('header', 'Dashboard')</h2>
-            <div class="flex items-center gap-4 text-sm text-[#5A5146]">
-                <span>Petugas: <strong class="text-[#1F1B16]">Admin Pramu</strong></span>
+    <!-- Main Content Container -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <!-- Topbar matching reference -->
+        <header class="h-16 bg-white border-b border-[#E2D9CC] px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
+            <!-- Search Bar with Keyboard Shortcut -->
+            <div class="flex items-center gap-3 w-96">
+                <div class="relative w-full">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8070]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" placeholder="Cari NIK, Nama, Kontrak, atau Lowongan..." 
+                           class="w-full text-xs pl-9 pr-14 py-2 bg-[#FAF7F2] rounded-lg border border-[#E2D9CC] focus:bg-white focus:border-[#244C7C] focus:ring-1 focus:ring-[#244C7C] outline-none transition-all">
+                    <kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#8C8070] bg-white px-1.5 py-0.5 rounded border border-[#E2D9CC]">CTRL + /</kbd>
+                </div>
+            </div>
+
+            <!-- Topbar Right Actions -->
+            <div class="flex items-center gap-4">
+                <!-- Date Range Indicator -->
+                <div class="hidden lg:flex items-center gap-2 text-xs text-[#5A5146] bg-[#FAF7F2] px-3 py-1.5 rounded-lg border border-[#E2D9CC]">
+                    <svg class="w-4 h-4 text-[#8C8070]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>{{ now()->format('d M Y') }} &bull; WIB</span>
+                </div>
+
+                <!-- Notification Bell with Dot -->
+                <div class="relative">
+                    <button class="p-2 text-[#5A5146] hover:text-[#1F1B16] hover:bg-[#F3EEE6] rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        @if($pendingVerifCount > 0 || $openReportsCount > 0)
+                            <span class="w-2 h-2 rounded-full bg-[#B3261E] absolute top-2 right-2 ring-2 ring-white"></span>
+                        @endif
+                    </button>
+                </div>
+
+                <!-- User Profile Dropdown -->
+                <div class="flex items-center gap-3 pl-2 border-l border-[#E2D9CC]">
+                    <div class="w-8 h-8 rounded-full bg-[#244C7C] text-white flex items-center justify-center font-bold text-xs">
+                        AP
+                    </div>
+                    <div class="hidden sm:block text-left text-xs">
+                        <div class="font-bold text-[#1F1B16]">Admin Pramu</div>
+                        <div class="text-[11px] text-[#5A5146]">Super Admin</div>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <!-- Flash Message -->
+        <!-- Flash Alert -->
         @if(session('success'))
-            <div class="mx-6 mt-6 p-4 bg-[#E3F2EA] border border-[#1B6E45]/20 text-[#1B6E45] rounded-lg text-sm flex items-center gap-3">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>{{ session('success') }}</span>
+            <div class="mx-6 mt-4 p-3.5 bg-[#E3F2EA] border border-[#1B6E45]/20 text-[#1B6E45] rounded-xl text-xs flex items-center gap-3 shadow-xs">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span class="font-medium">{{ session('success') }}</span>
             </div>
         @endif
 
         @if($errors->any())
-            <div class="mx-6 mt-6 p-4 bg-[#FBE5E3] border border-[#B3261E]/20 text-[#B3261E] rounded-lg text-sm">
+            <div class="mx-6 mt-4 p-3.5 bg-[#FBE5E3] border border-[#B3261E]/20 text-[#B3261E] rounded-xl text-xs shadow-xs">
                 <ul class="list-disc pl-5 space-y-1">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -117,10 +239,10 @@
             </div>
         @endif
 
-        <!-- View Body -->
-        <div class="p-6 flex-1">
+        <!-- Main Body -->
+        <main class="p-6 flex-1">
             @yield('content')
-        </div>
-    </main>
+        </main>
+    </div>
 </body>
 </html>

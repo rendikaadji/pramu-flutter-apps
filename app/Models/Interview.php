@@ -38,3 +38,4 @@ class Interview extends Model
         return $this->belongsTo(Application::class);
     }
 }
+

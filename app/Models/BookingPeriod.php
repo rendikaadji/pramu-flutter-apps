@@ -51,3 +51,4 @@ class BookingPeriod extends Model
         return $this->belongsTo(Booking::class);
     }
 }
+

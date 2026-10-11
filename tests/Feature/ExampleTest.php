@@ -24,7 +24,8 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/admin');
         $response->assertStatus(200);
-        $response->assertSee('Pramu Backend');
+        $response->assertSee('Pramu');
+        $response->assertSee('Escrow');
     }
 
     /**

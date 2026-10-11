@@ -26,3 +26,4 @@ class Otp extends Model
         ];
     }
 }
+

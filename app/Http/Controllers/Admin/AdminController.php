@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingPeriod;
+use App\Models\Category;
+use App\Models\Interview;
 use App\Models\Listing;
 use App\Models\Report;
 use App\Models\User;
@@ -16,31 +18,82 @@ use Illuminate\View\View;
 class AdminController extends Controller
 {
     /**
-     * Admin Dashboard Overview
+     * Admin Dashboard Overview matching the enterprise reference layout
      */
     public function dashboard(): View
     {
-        $stats = [
-            'total_users' => User::count(),
-            'pending_verifications' => Verification::where('status', 'pending')->count(),
-            'open_listings' => Listing::where('status', 'open')->count(),
-            'active_bookings' => Booking::where('status', 'active')->count(),
-            'escrow_held' => BookingPeriod::whereIn('status', ['paid', 'in_progress', 'awaiting_confirmation'])->sum('amount'),
-            'open_disputes' => Report::whereIn('status', ['submitted', 'under_review'])->count(),
-        ];
+        // 1. User metrics
+        $totalUsers = User::count();
+        $totalSeekers = User::where('active_role', 'seeker')->count();
+        $totalAssistants = User::where('active_role', 'assistant')->count();
+        $pendingVerificationsCount = Verification::where('status', 'pending')->count();
+        $verifiedUsersCount = User::where('is_verified', true)->count();
 
-        $recentVerifications = Verification::with('user')
+        // 2. Financial / Escrow metrics
+        $escrowHeld = BookingPeriod::whereIn('status', ['paid', 'in_progress', 'awaiting_confirmation'])->sum('amount');
+        $escrowSettled = BookingPeriod::where('status', 'settled')->sum('total_payout');
+        $platformFees = BookingPeriod::where('status', 'settled')->sum('seeker_fee') 
+                      + BookingPeriod::where('status', 'settled')->sum('assistant_fee');
+        $listingFees = Listing::whereNotNull('paid_at')->count() * 25000;
+
+        // 3. Operational queues
+        $pendingVerifications = Verification::with(['user.assistantProfile'])
             ->where('status', 'pending')
             ->latest()
             ->take(5)
             ->get();
 
-        $recentBookings = Booking::with(['seeker', 'assistant', 'listing'])
+        $upcomingInterviews = Interview::with(['application.user', 'application.listing.user', 'application.listing'])
+            ->whereIn('status', ['proposed', 'confirmed'])
+            ->latest()
+            ->take(4)
+            ->get();
+
+        $activeBookings = Booking::with(['seeker', 'assistant', 'periods', 'listing'])
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $recentReports = Report::with(['reporter', 'reported', 'booking'])
+            ->latest()
+            ->take(4)
+            ->get();
+
+        $recentUsers = User::with('verification')
             ->latest()
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentVerifications', 'recentBookings'));
+        $categories = Category::withCount('listings')->get();
+
+        $stats = [
+            'total_users' => $totalUsers,
+            'total_seekers' => $totalSeekers,
+            'total_assistants' => $totalAssistants,
+            'pending_verifications' => $pendingVerificationsCount,
+            'verified_users' => $verifiedUsersCount,
+            'escrow_held' => $escrowHeld,
+            'escrow_settled' => $escrowSettled,
+            'platform_fees' => $platformFees,
+            'listing_fees' => $listingFees,
+            'open_listings' => Listing::where('status', 'open')->count(),
+            'active_bookings' => Booking::where('status', 'active')->count(),
+            'open_disputes' => Report::whereIn('status', ['submitted', 'under_review'])->count(),
+            'total_applications' => \App\Models\Application::count(),
+            'shortlisted_applications' => \App\Models\Application::whereIn('status', ['shortlisted', 'interviewing'])->count(),
+            'interview_count' => Interview::count(),
+            'accepted_applications' => \App\Models\Application::where('status', 'accepted')->count(),
+        ];
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'pendingVerifications',
+            'upcomingInterviews',
+            'activeBookings',
+            'recentReports',
+            'recentUsers',
+            'categories'
+        ));
     }
 
     /**
@@ -50,7 +103,7 @@ class AdminController extends Controller
     {
         $status = $request->query('status', 'pending');
 
-        $query = Verification::with('user');
+        $query = Verification::with(['user.assistantProfile']);
         if ($status !== 'all') {
             $query->where('status', $status);
         }
@@ -85,8 +138,8 @@ class AdminController extends Controller
 
         $verification->user->update(['is_verified' => true]);
 
-        return redirect()->route('admin.verifications.index')
-            ->with('success', "Verifikasi pengguna {$verification->user->name} berhasil disetujui.");
+        return redirect()->back()
+            ->with('success', "Verifikasi identitas {$verification->user->name} (NIK {$verification->nik}) berhasil disetujui.");
     }
 
     /**
@@ -108,8 +161,8 @@ class AdminController extends Controller
 
         $verification->user->update(['is_verified' => false]);
 
-        return redirect()->route('admin.verifications.index')
-            ->with('success', "Verifikasi pengguna {$verification->user->name} telah ditolak dengan alasan yang tercatat.");
+        return redirect()->back()
+            ->with('success', "Verifikasi identitas {$verification->user->name} telah ditolak dengan alasan yang tercatat.");
     }
 
     /**
@@ -152,6 +205,6 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.reports.index')
-            ->with('success', "Laporan #{$report->id} berhasil diselesaikan.");
+            ->with('success', "Laporan sengketa #{$report->id} berhasil diselesaikan.");
     }
 }

@@ -32,3 +32,4 @@ class WalletTransaction extends Model
         return $this->belongsTo(Wallet::class);
     }
 }
+

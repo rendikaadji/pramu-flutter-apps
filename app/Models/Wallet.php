@@ -40,3 +40,4 @@ class Wallet extends Model
         return $this->hasMany(Payout::class);
     }
 }
+
