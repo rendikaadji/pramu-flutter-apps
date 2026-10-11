@@ -12,6 +12,10 @@ Route::get('/', function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
 
+    // Redirects for legacy/removed sections to prevent 404 when browser refreshes
+    Route::redirect('/system', '/admin', 301);
+    Route::redirect('/settings', '/admin', 301);
+
     // Verifications Review
     Route::get('/verifications', [AdminController::class, 'verifications'])->name('verifications.index');
     Route::get('/verifications/{id}', [AdminController::class, 'showVerification'])->name('verifications.show');
@@ -40,9 +44,19 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Secure Internal File Preview (Only via local app storage)
     Route::get('/files/preview', function () {
         $path = request()->query('path');
-        if (!$path || !Storage::disk('local')->exists($path)) {
+        if (!$path) {
             abort(404);
         }
-        return response()->file(Storage::disk('local')->path($path));
+        if (Storage::disk('local')->exists($path)) {
+            return response()->file(Storage::disk('local')->path($path));
+        }
+        if (file_exists(storage_path('app/' . $path))) {
+            return response()->file(storage_path('app/' . $path));
+        }
+        abort(404);
     })->name('file.preview');
 });
+
+// Root level redirects for removed sections
+Route::redirect('/system', '/admin', 301);
+Route::redirect('/settings', '/admin', 301);

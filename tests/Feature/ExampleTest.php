@@ -93,4 +93,16 @@ class ExampleTest extends TestCase
             $response->assertSee('Pramu');
         }
     }
+
+    /**
+     * Test removed system route redirects safely to /admin instead of returning 404
+     */
+    public function test_removed_system_route_redirects_to_admin(): void
+    {
+        $response = $this->get('/admin/system');
+        $response->assertRedirect('/admin');
+
+        $responseRoot = $this->get('/system');
+        $responseRoot->assertRedirect('/admin');
+    }
 }
