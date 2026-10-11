@@ -155,27 +155,13 @@
                 </div>
             </div>
 
-            <!-- Section 6: SISTEM & TEKNIS -->
-            <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Sistem & Pengaturan</div>
-                <div class="space-y-0.5">
-                    <a href="{{ route('admin.system.index') }}" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-xl font-medium transition-colors {{ request()->routeIs('admin.system.*') ? 'bg-[#244C7C] text-white shadow-xs' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
-                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span>Status Sistem & Bantuan</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
         <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-[#E2D9CC] bg-[#FAF7F2]/60 text-xs text-[#5A5146] space-y-1.5 flex-shrink-0">
-            <div class="flex items-center justify-between">
-                <span>Status Sistem:</span>
-                <span class="inline-flex items-center gap-1 font-semibold text-[#1B6E45]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#1B6E45]"></span>
-                    Aktif & Aman
-                </span>
+        <div class="p-4 border-t border-[#E2D9CC] bg-[#FAF7F2]/60 text-xs text-[#5A5146] space-y-1 flex-shrink-0">
+            <div class="flex items-center justify-between text-[11px]">
+                <span class="font-medium text-[#1F1B16]">Pramu Platform</span>
+                <span class="text-[#8C8070]">Indonesia</span>
             </div>
             <div class="flex items-center justify-between text-[11px] text-[#8C8070]">
                 <span>Zona Waktu:</span>

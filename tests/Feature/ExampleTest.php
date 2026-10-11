@@ -85,7 +85,6 @@ class ExampleTest extends TestCase
             '/admin/bookings',
             '/admin/finances',
             '/admin/reports',
-            '/admin/system',
         ];
 
         foreach ($routes as $route) {

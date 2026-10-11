@@ -37,9 +37,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports.index');
     Route::post('/reports/{id}/resolve', [AdminController::class, 'resolveReport'])->name('reports.resolve');
 
-    // System Status & Integrations
-    Route::get('/system', [AdminController::class, 'system'])->name('system.index');
-
     // Secure Internal File Preview (Only via local app storage)
     Route::get('/files/preview', function () {
         $path = request()->query('path');

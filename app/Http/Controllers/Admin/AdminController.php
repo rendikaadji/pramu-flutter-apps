@@ -307,24 +307,5 @@ class AdminController extends Controller
 
         return view('admin.finances.index', compact('escrowHeld', 'escrowSettled', 'platformFees', 'listingFees', 'recentPeriods'));
     }
-
-    /**
-     * System Status & Technical Integrations
-     */
-    public function system(): View
-    {
-        $systemInfo = [
-            'php_version' => PHP_VERSION,
-            'laravel_version' => app()->version(),
-            'server_os' => PHP_OS,
-            'environment' => config('app.env'),
-            'database' => config('database.default'),
-            'xendit_status' => 'Terkoneksi (Sandbox API v2)',
-            'google_meet_status' => 'Aktif (OAuthed)',
-            'webhook_count' => \App\Models\WebhookEvent::count(),
-        ];
-
-        return view('admin.system.index', compact('systemInfo'));
-    }
 }
 
