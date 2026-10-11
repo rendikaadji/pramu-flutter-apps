@@ -190,12 +190,12 @@
         <header class="h-16 bg-white border-b border-[#E2D9CC] px-6 lg:px-8 flex items-center justify-between flex-shrink-0 z-10 shadow-2xs">
             <!-- Search Bar -->
             <div class="flex items-center gap-3 w-72 sm:w-96">
-                <div class="relative w-full">
+                <form method="GET" action="{{ route('admin.users.index') }}" class="relative w-full">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C8070]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" placeholder="Cari nama, NIK, lowongan, atau nomor kontrak..." 
+                    <input id="topbar-search-input" type="text" name="search" placeholder="Cari nama, NIK, lowongan, atau nomor kontrak..." 
                            class="w-full text-xs pl-9 pr-14 py-2 bg-[#FAF7F2] rounded-xl border border-[#E2D9CC] focus:bg-white focus:border-[#244C7C] focus:ring-1 focus:ring-[#244C7C] outline-none transition-all">
-                    <kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#8C8070] bg-white px-1.5 py-0.5 rounded border border-[#E2D9CC]">CTRL + /</kbd>
-                </div>
+                    <kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#8C8070] bg-white px-1.5 py-0.5 rounded border border-[#E2D9CC] pointer-events-none">CTRL + /</kbd>
+                </form>
             </div>
 
             <!-- Topbar Right Actions -->
@@ -260,5 +260,19 @@
         </main>
     </div>
 
+    <!-- Keyboard Shortcut Listener for Quick Search -->
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                const searchInput = document.getElementById('topbar-search-input');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
+

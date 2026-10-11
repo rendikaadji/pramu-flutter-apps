@@ -49,7 +49,7 @@ class AdminController extends Controller
             ->take(4)
             ->get();
 
-        $activeBookings = Booking::with(['seeker', 'assistant', 'periods', 'listing'])
+        $activeBookings = Booking::with(['seeker', 'assistant', 'periods', 'listing.category'])
             ->latest()
             ->take(6)
             ->get();
