@@ -70,4 +70,28 @@ class ExampleTest extends TestCase
             ],
         ]);
     }
+
+    /**
+     * Test all admin sidebar navigation routes load successfully (200 OK)
+     */
+    public function test_all_admin_sidebar_routes_load_successfully(): void
+    {
+        $routes = [
+            '/admin',
+            '/admin/verifications',
+            '/admin/users',
+            '/admin/listings',
+            '/admin/interviews',
+            '/admin/bookings',
+            '/admin/finances',
+            '/admin/reports',
+            '/admin/system',
+        ];
+
+        foreach ($routes as $route) {
+            $response = $this->get($route);
+            $response->assertStatus(200);
+            $response->assertSee('Pramu');
+        }
+    }
 }

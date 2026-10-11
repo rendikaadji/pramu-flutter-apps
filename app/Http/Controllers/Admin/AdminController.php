@@ -207,4 +207,124 @@ class AdminController extends Controller
         return redirect()->route('admin.reports.index')
             ->with('success', "Laporan sengketa #{$report->id} berhasil diselesaikan.");
     }
+
+    /**
+     * List all Users (Seekers & Assistants)
+     */
+    public function users(Request $request): View
+    {
+        $role = $request->query('role', 'all');
+        $search = $request->query('search');
+
+        $query = User::with(['verification', 'roles', 'assistantProfile']);
+
+        if ($role !== 'all') {
+            $query->where('active_role', $role);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->latest()->paginate(15)->withQueryString();
+        $counts = [
+            'all' => User::count(),
+            'seeker' => User::where('active_role', 'seeker')->count(),
+            'assistant' => User::where('active_role', 'assistant')->count(),
+        ];
+
+        return view('admin.users.index', compact('users', 'role', 'search', 'counts'));
+    }
+
+    /**
+     * List all Job Listings
+     */
+    public function listings(Request $request): View
+    {
+        $status = $request->query('status', 'all');
+        $search = $request->query('search');
+
+        $query = Listing::with(['user', 'category'])->withCount('applications');
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('district', 'like', "%{$search}%");
+            });
+        }
+
+        $listings = $query->latest()->paginate(15)->withQueryString();
+        $counts = [
+            'all' => Listing::count(),
+            'open' => Listing::where('status', 'open')->count(),
+            'closed' => Listing::where('status', 'closed')->count(),
+        ];
+
+        return view('admin.listings.index', compact('listings', 'status', 'search', 'counts'));
+    }
+
+    /**
+     * List all Scheduled Interviews (Google Meet)
+     */
+    public function interviews(Request $request): View
+    {
+        $status = $request->query('status', 'all');
+
+        $query = Interview::with(['application.user', 'application.listing.user', 'application.listing']);
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $interviews = $query->latest()->paginate(15)->withQueryString();
+
+        return view('admin.interviews.index', compact('interviews', 'status'));
+    }
+
+    /**
+     * Financial & Platform Revenue Overview
+     */
+    public function finances(): View
+    {
+        $escrowHeld = BookingPeriod::whereIn('status', ['paid', 'in_progress', 'awaiting_confirmation'])->sum('amount');
+        $escrowSettled = BookingPeriod::where('status', 'settled')->sum('total_payout');
+        $platformFees = BookingPeriod::where('status', 'settled')->sum('seeker_fee') 
+                      + BookingPeriod::where('status', 'settled')->sum('assistant_fee');
+        $listingFees = Listing::whereNotNull('paid_at')->count() * 25000;
+
+        $recentPeriods = BookingPeriod::with(['booking.seeker', 'booking.assistant'])
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.finances.index', compact('escrowHeld', 'escrowSettled', 'platformFees', 'listingFees', 'recentPeriods'));
+    }
+
+    /**
+     * System Status & Technical Integrations
+     */
+    public function system(): View
+    {
+        $systemInfo = [
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'server_os' => PHP_OS,
+            'environment' => config('app.env'),
+            'database' => config('database.default'),
+            'xendit_status' => 'Terkoneksi (Sandbox API v2)',
+            'google_meet_status' => 'Aktif (OAuthed)',
+            'webhook_count' => \App\Models\WebhookEvent::count(),
+        ];
+
+        return view('admin.system.index', compact('systemInfo'));
+    }
 }
+

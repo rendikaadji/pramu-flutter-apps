@@ -44,28 +44,28 @@
         </div>
 
         <!-- Sidebar Navigation Sections -->
-        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-6 text-xs">
-            <!-- Section 1: MAIN MENU -->
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-5 text-xs">
+            <!-- Section 1: MENU UTAMA -->
             <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Main Menu</div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Menu Utama</div>
                 <div class="space-y-0.5">
                     <a href="{{ route('admin.dashboard') }}" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                        <span>Executive Dashboard</span>
+                        <span>Beranda Utama</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Section 2: PENGGUNA & VERIFIKASI -->
+            <!-- Section 2: KELOLA PENGGUNA -->
             <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Pengguna & Verifikasi</div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Kelola Pengguna</div>
                 <div class="space-y-0.5">
                     <a href="{{ route('admin.verifications.index') }}" 
-                       class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.verifications.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                       class="flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.verifications.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            <span>Verifikasi KTP & Wajah</span>
+                            <span>Pemeriksaan KTP & Foto</span>
                         </div>
                         @php $pendingVerifCount = \App\Models\Verification::where('status', 'pending')->count(); @endphp
                         @if($pendingVerifCount > 0)
@@ -75,62 +75,59 @@
                         @endif
                     </a>
 
-                    <a href="{{ route('admin.verifications.index', ['status' => 'all']) }}" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                    <a href="{{ route('admin.users.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.users.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                        <span>Data Pengguna (Role)</span>
+                        <span>Daftar Majikan & Asisten</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Section 3: MARKETPLACE & SELEKSI -->
+            <!-- Section 3: LOWONGAN & WAWANCARA -->
             <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Marketplace & Seleksi</div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Lowongan & Wawancara</div>
                 <div class="space-y-0.5">
-                    <a href="/api/v1/listings" target="_blank"
-                       class="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                            <span>Lowongan Kerja (Listing)</span>
-                        </div>
-                        <span class="text-[10px] text-[#8C8070]">API &rarr;</span>
+                    <a href="{{ route('admin.listings.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.listings.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                        <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        <span>Lowongan Kerja Aktif</span>
                     </a>
 
-                    <a href="#interview-queue" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                    <a href="{{ route('admin.interviews.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.interviews.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                        <span>Jadwal Wawancara Meet</span>
+                        <span>Jadwal Wawancara Online</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Section 4: ESCROW & KEUANGAN -->
+            <!-- Section 4: KONTRAK & KEUANGAN -->
             <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Escrow & Keuangan</div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Kontrak & Keuangan</div>
                 <div class="space-y-0.5">
                     <a href="{{ route('admin.bookings.index') }}" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.bookings.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.bookings.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                        <span>Kontrak & Termin Escrow</span>
+                        <span>Kontrak Kerja & Titip Gaji</span>
                     </a>
 
-                    <a href="#financial-overview" 
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                    <a href="{{ route('admin.finances.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.finances.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>Fee Platform (5%+5%)</span>
+                        <span>Keuangan & Bagi Hasil (10%)</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Section 5: KEAMANAN & SENGKETA -->
+            <!-- Section 5: BANTUAN & PENGADUAN -->
             <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Keamanan & Mediasi</div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Bantuan & Pengaduan</div>
                 <div class="space-y-0.5">
                     <a href="{{ route('admin.reports.index') }}" 
-                       class="flex items-center justify-between px-3 py-2 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
+                       class="flex items-center justify-between px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.reports.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                            <span>Laporan & Sengketa</span>
+                            <span>Laporan Keluhan & Mediasi</span>
                         </div>
                         @php $openReportsCount = \App\Models\Report::whereIn('status', ['submitted', 'under_review'])->count(); @endphp
                         @if($openReportsCount > 0)
@@ -142,22 +139,14 @@
                 </div>
             </div>
 
-            <!-- Section 6: INTEGRASI & SISTEM -->
+            <!-- Section 6: SISTEM & TEKNIS -->
             <div>
-                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Sistem & Integrasi</div>
+                <div class="px-3 pb-2 text-[10px] font-bold text-[#8C8070] uppercase tracking-wider">Sistem & Teknis</div>
                 <div class="space-y-0.5">
-                    <div class="px-3 py-2 text-[#5A5146] flex items-center justify-between">
-                        <span class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[#1B6E45]"></span>
-                            <span>Xendit Gateway</span>
-                        </span>
-                        <span class="text-[10px] text-[#1B6E45] font-semibold">Sandbox</span>
-                    </div>
-
-                    <a href="/api/v1/listings" target="_blank"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16] transition-colors">
+                    <a href="{{ route('admin.system.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.system.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span>OpenAPI / REST v1</span>
+                        <span>Status Sistem & Panduan API</span>
                     </a>
                 </div>
             </div>
@@ -246,3 +235,4 @@
     </div>
 </body>
 </html>
+

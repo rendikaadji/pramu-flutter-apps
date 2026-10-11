@@ -18,12 +18,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/verifications/{id}/approve', [AdminController::class, 'approveVerification'])->name('verifications.approve');
     Route::post('/verifications/{id}/reject', [AdminController::class, 'rejectVerification'])->name('verifications.reject');
 
+    // Users Management
+    Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+
+    // Job Listings
+    Route::get('/listings', [AdminController::class, 'listings'])->name('listings.index');
+
+    // Interviews (Google Meet)
+    Route::get('/interviews', [AdminController::class, 'interviews'])->name('interviews.index');
+
     // Escrow & Bookings
     Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings.index');
+
+    // Platform Finances & Escrow Settlement
+    Route::get('/finances', [AdminController::class, 'finances'])->name('finances.index');
 
     // Reports & Disputes
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports.index');
     Route::post('/reports/{id}/resolve', [AdminController::class, 'resolveReport'])->name('reports.resolve');
+
+    // System Status & Integrations
+    Route::get('/system', [AdminController::class, 'system'])->name('system.index');
 
     // Secure Internal File Preview (Only via local app storage)
     Route::get('/files/preview', function () {
