@@ -38,7 +38,7 @@
                 </div>
                 <div>
                     <h1 class="text-sm font-bold text-[#1F1B16] tracking-tight">Pramu<span class="text-[#9A4E1C]">Admin</span></h1>
-                    <p class="text-[11px] text-[#5A5146]">Marketplace Backend</p>
+                    <p class="text-[11px] text-[#5A5146]">Portal Operasional</p>
                 </div>
             </div>
         </div>
@@ -146,7 +146,7 @@
                     <a href="{{ route('admin.system.index') }}" 
                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {{ request()->routeIs('admin.system.*') ? 'bg-[#244C7C] text-white' : 'text-[#5A5146] hover:bg-[#F3EEE6] hover:text-[#1F1B16]' }}">
                         <svg class="w-4 h-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span>Status Sistem & Panduan API</span>
+                        <span>Status Sistem & Bantuan</span>
                     </a>
                 </div>
             </div>
@@ -155,8 +155,8 @@
         <!-- Sidebar Footer -->
         <div class="p-4 border-t border-[#E2D9CC] bg-[#FAF7F2]/50 text-[11px] text-[#5A5146] space-y-1">
             <div class="flex items-center justify-between">
-                <span>Versi API:</span>
-                <span class="font-mono font-semibold text-[#1F1B16]">v1.0.0</span>
+                <span>Status Sistem:</span>
+                <span class="font-semibold text-[#1B6E45]">Aktif & Aman</span>
             </div>
             <div class="flex items-center justify-between">
                 <span>Zona Waktu:</span>
