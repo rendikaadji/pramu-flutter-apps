@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
+import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/report/data/mock_report_repository.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/report/presentation/report_routes.dart';
@@ -79,6 +80,47 @@ void main() {
     expect(rig.backend.reports, hasLength(1));
     expect(rig.backend.reports.values.first.$2.type, ReportType.fraud);
     expect(find.text('Status laporan'), findsOneWidget);
+  });
+
+  testWidgets('M-95: ?user= tampil sebagai konteks dan terkirim', (t) async {
+    final yuni = rig.backend.userByName('Yuni');
+    await t.pumpWidget(
+      rig.app(router: _router('${Routes.reportNew}?user=${yuni.id}')),
+    );
+    await t.pumpAndSettle();
+    expect(find.byKey(K.reportUser), findsOneWidget);
+    expect(find.textContaining('Melaporkan:'), findsOneWidget);
+
+    await t.enterText(
+      find.descendant(
+        of: find.byKey(K.reportDescription),
+        matching: find.byType(TextField),
+      ),
+      'Pengguna ini meminta transfer di luar aplikasi.',
+    );
+    await t.ensureVisible(find.byKey(K.reportSubmit));
+    await t.tap(find.byKey(K.reportSubmit));
+    await t.pumpAndSettle();
+    expect(rig.backend.reports, hasLength(1));
+    expect(find.text('Status laporan'), findsOneWidget);
+  });
+
+  testWidgets('M-95: Pelamar boleh melapor periode awaitingPayment', (t) async {
+    final per = rig.backend.periods.values.firstWhere(
+      (p) =>
+          p.status == PeriodStatus.awaitingPayment &&
+          rig.backend.booking(p.bookingId).assistant.id == rig.meId,
+    );
+    final r = await MockReportRepository(rig.backend).submit(
+      ReportInput(
+        type: ReportType.payment,
+        description: 'Pencari belum membayar periode ini.',
+        bookingId: per.bookingId,
+        periodId: per.id,
+      ),
+    );
+    expect(r.periodId, per.id);
+    expect(rig.backend.periods[per.id]!.status, PeriodStatus.disputed);
   });
 
   testWidgets('M-95: periode tidak dikenal -> pesan server, tanpa crash', (

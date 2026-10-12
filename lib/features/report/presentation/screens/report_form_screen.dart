@@ -7,6 +7,7 @@ import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/validators.dart';
 import 'package:pramu_apps/features/booking/data/booking_providers.dart';
+import 'package:pramu_apps/features/profile/presentation/screens/assistant_profile_screen.dart';
 import 'package:pramu_apps/features/report/data/report_providers.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/report/presentation/state/report_state.dart';
@@ -26,9 +27,15 @@ const _types = [
 
 /// M-95 Laporkan / ajukan sengketa. [bookingId]/[periodId] dari query (sudah divalidasi ULID).
 class ReportFormScreen extends ConsumerStatefulWidget {
-  const ReportFormScreen({super.key, this.bookingId, this.periodId});
+  const ReportFormScreen({
+    super.key,
+    this.bookingId,
+    this.periodId,
+    this.userId,
+  });
   final String? bookingId;
   final String? periodId;
+  final String? userId; // pengguna terlapor (ULID)
 
   @override
   ConsumerState<ReportFormScreen> createState() => _ReportFormScreenState();
@@ -44,6 +51,7 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
 
   String? get _booking => isUlid(widget.bookingId) ? widget.bookingId : null;
   String? get _period => isUlid(widget.periodId) ? widget.periodId : null;
+  String? get _user => isUlid(widget.userId) ? widget.userId : null;
 
   @override
   void initState() {
@@ -92,6 +100,7 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
               description: _desc.text.trim(),
               bookingId: _booking,
               periodId: _period,
+              userId: _user,
               evidencePaths: List.of(_paths),
             ),
           );
@@ -150,6 +159,10 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
     final booking = _booking == null
         ? null
         : ref.watch(_bookingTitleProvider(_booking!)).value;
+    // Nama dari profil publik; null bila tak tersedia (mis. pengguna bukan asisten).
+    final reported = _user == null
+        ? null
+        : ref.watch(assistantProfileProvider(_user!)).value?.name;
     return AppScaffold(
       title: 'Laporkan masalah',
       scrollable: true,
@@ -173,6 +186,26 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
             style: context.text.body.copyWith(color: t.textMuted),
           ),
           const SizedBox(height: AppSpace.s16),
+          if (_user != null) ...[
+            AppCard(
+              key: K.reportUser,
+              child: Row(
+                children: [
+                  ExcludeSemantics(
+                    child: Icon(LucideIcons.flag, color: t.primary),
+                  ),
+                  const SizedBox(width: AppSpace.s12),
+                  Expanded(
+                    child: Text(
+                      'Melaporkan: ${reported ?? 'pengguna ini'}',
+                      style: context.text.label,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpace.s16),
+          ],
           if (booking != null) ...[
             AppCard(
               child: Row(

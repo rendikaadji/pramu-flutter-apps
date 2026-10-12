@@ -39,7 +39,10 @@ void main() {
     expect(PeriodStatus.awaitingPayment.actionsFor(Role.seeker), {
       PeriodAction.pay,
     });
-    expect(PeriodStatus.awaitingPayment.actionsFor(Role.assistant), isEmpty);
+    expect(PeriodStatus.awaitingPayment.actionsFor(Role.assistant), {
+      PeriodAction.report,
+    });
+    expect(PeriodStatus.settled.actionsFor(Role.assistant), isEmpty);
     expect(PeriodStatus.inProgress.actionsFor(Role.seeker), {
       PeriodAction.cancel,
       PeriodAction.report,

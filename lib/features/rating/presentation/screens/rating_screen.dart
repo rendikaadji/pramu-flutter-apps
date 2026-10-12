@@ -10,6 +10,7 @@ import 'package:pramu_apps/features/rating/presentation/state/rating_state.dart'
 import 'package:pramu_apps/features/rating/presentation/widgets/review_tile.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/report_path.dart';
 
 const _info =
     'Ulasan Anda terlihat setelah kedua pihak mengirim, atau setelah 7 hari.';
@@ -77,6 +78,20 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
     }
   }
 
+  /// Tawaran lapor untuk bintang rendah; tidak memblokir pengiriman ulasan.
+  Widget _reportOffer() => Padding(
+    padding: const EdgeInsets.only(top: AppSpace.s8),
+    child: AppButton(
+      key: K.ratingReport,
+      label: 'Ada masalah serius? Laporkan ke tim Pramu',
+      icon: LucideIcons.flag,
+      variant: AppButtonVariant.text,
+      onPressed: _busy
+          ? null
+          : () => context.push(reportNewPath(booking: widget.bookingId)),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final view = ref.watch(ratingProvider(widget.bookingId));
@@ -133,6 +148,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                     const PrivacyNote(
                       'Ulasan dari pihak lain baru terlihat setelah ia mengirim, atau setelah 7 hari.',
                     ),
+                if (r.mine!.stars <= 2) _reportOffer(),
                 const SizedBox(height: AppSpace.s24),
                 AppButton(
                   label: 'Selesai',
@@ -192,6 +208,7 @@ class _RatingScreenState extends ConsumerState<RatingScreen> {
                   ),
                 ),
                 if (_starsError != null) FieldErrorText(_starsError!),
+                if (_stars >= 1 && _stars <= 2) _reportOffer(),
                 const SizedBox(height: AppSpace.s16),
                 AppTextField(
                   label: 'Komentar (opsional)',
