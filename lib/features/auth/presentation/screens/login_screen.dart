@@ -79,7 +79,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with ApiActionMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const AuthHeader(
-            icon: LucideIcons.logIn,
             title: 'Selamat datang kembali',
             subtitle: 'Masuk dengan nomor HP atau email Anda.',
           ),

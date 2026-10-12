@@ -103,7 +103,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const AuthHeader(
-            icon: LucideIcons.userPlus,
             title: 'Buat akun Pramu',
             subtitle: 'Isi beberapa data dulu. Verifikasi identitas menyusul.',
           ),

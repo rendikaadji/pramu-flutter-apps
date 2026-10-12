@@ -31,6 +31,7 @@ export 'offline_banner.dart';
 export 'onboarding_pager.dart';
 export 'otp_input.dart';
 export 'permission_rationale_card.dart';
+export 'pramu_mark.dart';
 export 'privacy_note.dart';
 export 'rating_stars.dart';
 export 'role_chip.dart';

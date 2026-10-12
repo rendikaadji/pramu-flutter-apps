@@ -85,7 +85,6 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AuthHeader(
-            icon: LucideIcons.messageSquare,
             title: 'Masukkan kode',
             subtitle: 'Kami mengirim kode 6 digit ke ${maskPhone(phone)}.',
           ),
