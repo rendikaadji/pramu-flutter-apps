@@ -106,7 +106,7 @@ void main() {
   testWidgets('Nanti dulu -> beranda tanpa gerbang lagi', (t) async {
     await bootApp(t, user: 'Dewi');
     await tapKey(t, K.verificationLater);
-    expect(find.byKey(K.roleSwitchChip), findsOneWidget);
+    expect(find.byKey(K.notificationBell), findsOneWidget);
   });
 
   testWidgets('SKCK: unggah dari galeri, berkas lokal dihapus', (t) async {

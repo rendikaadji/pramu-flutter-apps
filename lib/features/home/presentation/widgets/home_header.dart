@@ -7,18 +7,20 @@ import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
-import 'package:pramu_apps/shared/app_ui/shell_app_bar.dart';
 
-/// Kepala beranda di atas glow: avatar (ke Akun), sapaan, chip peran (M-22), lonceng (M-23).
+/// Kepala beranda di atas glow: avatar (ke Akun), sapaan, lonceng (M-23).
 class HomeHeader extends ConsumerWidget {
-  const HomeHeader({super.key, required this.subtitle});
+  const HomeHeader({super.key, required this.subtitle, this.loading = false});
 
   final String subtitle;
 
+  /// Data beranda belum tiba: tampilkan skeleton agar seragam dengan isi di bawahnya.
+  final bool loading;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (loading) return const HomeHeaderSkeleton();
     final user = ref.watch(sessionProvider.select((s) => s.user));
-    final role = user?.activeRole;
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -73,12 +75,6 @@ class HomeHeader extends ConsumerWidget {
               ],
             ),
           ),
-          if (role != null)
-            RoleChip(
-              key: K.roleSwitchChip,
-              role: appRoleOf(role),
-              onTap: () => showRoleSwitch(context, ref),
-            ),
           AppIconButton(
             key: K.notificationBell,
             icon: LucideIcons.bell,

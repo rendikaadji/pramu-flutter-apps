@@ -354,6 +354,47 @@ class _SectionHeaderSkeleton extends StatelessWidget {
   );
 }
 
+/// Kepala beranda (`HomeHeader`): avatar 44 di kotak tap 48, dua baris teks, lonceng.
+/// Scope sendiri tanpa label (label "Memuat" sudah dari [HomeSkeleton]).
+class HomeHeaderSkeleton extends StatelessWidget {
+  const HomeHeaderSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SkeletonScope(
+    semantics: false,
+    child: Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpace.s16,
+        AppSpace.s8,
+        AppSpace.s8,
+        AppSpace.s4,
+      ),
+      child: Row(
+        children: [
+          SizedBox.square(
+            dimension: AppSpace.tap,
+            child: Center(child: SkeletonAvatar(44)),
+          ),
+          SizedBox(width: AppSpace.s8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonText(width: 140, lineHeight: 28),
+                SkeletonText(width: 200, lineHeight: 20),
+              ],
+            ),
+          ),
+          SizedBox.square(
+            dimension: AppSpace.tap,
+            child: Center(child: SkeletonAvatar(28)),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 /// Beranda: SearchField, 4 CategoryTile, HeroBannerCard, judul seksi, 2 kartu.
 /// Padding 16 (ListView beranda); letakkan di body `padded: false`.
 class HomeSkeleton extends StatelessWidget {
