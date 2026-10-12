@@ -43,7 +43,7 @@ Future<void> showRoleSwitch(BuildContext context, WidgetRef ref) async {
   );
 }
 
-/// App bar tab root: judul, chip peran (M-22), lonceng (M-23), avatar -> Akun (M-24).
+/// App bar tab root: judul, lonceng (M-23), avatar -> Akun (M-24).
 class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ShellAppBar({super.key, required this.title});
   final String title;
@@ -54,16 +54,9 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(sessionProvider.select((s) => s.user));
-    final role = user?.activeRole;
     return AppBar(
       title: Text(title),
       actions: [
-        if (role != null)
-          RoleChip(
-            key: K.roleSwitchChip,
-            role: appRoleOf(role),
-            onTap: () => showRoleSwitch(context, ref),
-          ),
         AppIconButton(
           key: K.notificationBell,
           icon: LucideIcons.bell,
@@ -84,7 +77,13 @@ class ShellAppBar extends ConsumerWidget implements PreferredSizeWidget {
               customBorder: const CircleBorder(),
               child: SizedBox.square(
                 dimension: AppSpace.tap,
-                child: Center(child: AvatarImage(name: user.name, url: user.photoUrl, size: 32)),
+                child: Center(
+                  child: AvatarImage(
+                    name: user.name,
+                    url: user.photoUrl,
+                    size: 32,
+                  ),
+                ),
               ),
             ),
           ),

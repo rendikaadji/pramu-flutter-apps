@@ -69,6 +69,25 @@ void main() {
     expect(find.byKey(K.profileInvite), findsOneWidget);
   });
 
+  testWidgets(
+    'M-31: tombol laporkan di profil orang lain, bukan milik sendiri',
+    (t) async {
+      final env = await bootApp(t, user: 'Bu Rina');
+      env.go('/assistants/${env.backend.userByName('Yuni').id}');
+      await t.pumpAndSettle();
+      await t.scrollUntilVisible(find.byKey(K.profileReport), 200);
+      expect(find.text('Laporkan pengguna ini'), findsOneWidget);
+    },
+  );
+
+  testWidgets('M-31: profil milik sendiri tanpa tombol laporkan', (t) async {
+    final env = await bootApp(t, user: 'Yuni');
+    env.go('/assistants/${env.backend.userByName('Yuni').id}');
+    await t.pumpAndSettle();
+    await t.scrollUntilVisible(find.byKey(K.profileEdit), 200);
+    expect(find.byKey(K.profileReport), findsNothing);
+  });
+
   testWidgets('M-31: tidak ditemukan -> pesan + Coba lagi', (t) async {
     final env = await bootApp(t, user: 'Bu Rina');
     env.go('/assistants/${ulid()}');

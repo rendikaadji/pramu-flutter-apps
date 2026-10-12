@@ -223,7 +223,10 @@ class SeekerHomeScreen extends ConsumerWidget {
       padded: false,
       body: Column(
         children: [
-          const HomeHeader(subtitle: 'Temukan asisten tepercaya'),
+          HomeHeader(
+            subtitle: 'Temukan asisten tepercaya',
+            loading: value.isLoading && !value.hasValue,
+          ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => ref.refresh(seekerHomeProvider.future),
@@ -365,7 +368,10 @@ class AssistantHomeScreen extends ConsumerWidget {
       padded: false,
       body: Column(
         children: [
-          const HomeHeader(subtitle: 'Temukan pekerjaan yang cocok'),
+          HomeHeader(
+            subtitle: 'Temukan pekerjaan yang cocok',
+            loading: value.isLoading && !value.hasValue,
+          ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => ref.refresh(assistantHomeProvider.future),
