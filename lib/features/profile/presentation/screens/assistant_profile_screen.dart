@@ -13,6 +13,7 @@ import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/icon_info_row.dart';
 import 'package:pramu_apps/shared/app_ui/rate_text.dart';
+import 'package:pramu_apps/shared/app_ui/report_path.dart';
 
 final assistantProfileProvider = FutureProvider.autoDispose
     .family<AssistantProfile, String>((ref, id) {
@@ -201,6 +202,17 @@ class AssistantProfileScreen extends ConsumerWidget {
           variant: AppButtonVariant.secondary,
           onPressed: () => context.push(Routes.userReviews(p.userId)),
         ),
+        if (!own) ...[
+          const SizedBox(height: AppSpace.s4),
+          Center(
+            child: TextButton.icon(
+              key: K.profileReport,
+              icon: const Icon(LucideIcons.flag, size: 16),
+              label: const Text('Laporkan pengguna ini'),
+              onPressed: () => context.push(reportNewPath(user: p.userId)),
+            ),
+          ),
+        ],
       ],
     );
   }

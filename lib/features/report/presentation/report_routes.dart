@@ -12,6 +12,7 @@ final List<RouteBase> reportRoutes = [
     builder: (_, state) => ReportFormScreen(
       bookingId: state.uri.queryParameters['booking'],
       periodId: state.uri.queryParameters['period'],
+      userId: state.uri.queryParameters['user'],
     ),
   ),
   GoRoute(

@@ -70,7 +70,7 @@ abstract final class Routes {
   static const walletHistory = '/wallet/history'; // M-83
   static const ratingT = '/bookings/:id/rating'; // M-90
   static const userReviewsT = '/users/:id/reviews'; // M-91
-  static const reportNew = '/report/new'; // M-95 (?booking=&period=)
+  static const reportNew = '/report/new'; // M-95 (?booking=&period=&user=)
   static const reportShareT = '/reports/:id/share'; // M-96
   static const reportStatusT = '/reports/:id'; // M-97
 

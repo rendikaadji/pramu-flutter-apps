@@ -220,6 +220,19 @@ class _State extends ConsumerState<BookingDetailScreen>
           icon: LucideIcons.messageCircle,
           onPressed: () => context.push(Routes.chatRoom(b.conversationId!)),
         ),
+      // Jalan lapor cadangan dari kontrak bila tombol di kartu periode tidak tampil.
+      if (!(next != null &&
+          !frozen &&
+          actions.contains(PeriodAction.report))) ...[
+        const SizedBox(height: AppSpace.s8),
+        AppButton(
+          key: K.bookingReport,
+          label: 'Laporkan masalah',
+          variant: AppButtonVariant.secondary,
+          icon: LucideIcons.flag,
+          onPressed: () => _go(reportNewPath(booking: b.id)),
+        ),
+      ],
       if (b.status.canRate) ...[
         const SizedBox(height: AppSpace.s8),
         AppButton(

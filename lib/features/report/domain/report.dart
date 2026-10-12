@@ -110,6 +110,7 @@ class ReportInput {
     required this.description,
     this.bookingId,
     this.periodId,
+    this.userId,
     this.evidencePaths = const [],
   });
 
@@ -117,5 +118,7 @@ class ReportInput {
   final String description;
   final String? bookingId;
   final String? periodId; // bila ada: period & booking jadi `disputed`
+  final String?
+  userId; // pengguna terlapor (dari profil), wire `reported_user_id`
   final List<String> evidencePaths; // foto bukti pilihan sendiri
 }

@@ -32,7 +32,8 @@ class MockReportRepository implements ReportRepository {
       });
     }
     if ((i.bookingId != null && !isUlid(i.bookingId)) ||
-        (i.periodId != null && !isUlid(i.periodId))) {
+        (i.periodId != null && !isUlid(i.periodId)) ||
+        (i.userId != null && !isUlid(i.userId))) {
       apiFail(422, 'VALIDATION_FAILED', 'Data tidak valid.');
     }
     final pid = i.periodId;
@@ -41,7 +42,11 @@ class MockReportRepository implements ReportRepository {
           _b.periods[pid] ??
           apiFail(404, 'NOT_FOUND', 'Periode tidak ditemukan.');
       final b = _b.booking(p.bookingId);
-      if (!p.status.canDispute) {
+      // Pelamar boleh melapor saat periode menunggu pembayaran (Pencari belum bayar).
+      final assistantUnpaid =
+          p.status == PeriodStatus.awaitingPayment &&
+          b.assistant.id == _b.me.id;
+      if (!p.status.canDispute && !assistantUnpaid) {
         apiFail(409, 'PERIOD_INVALID_STATE', 'Status periode sudah berubah.');
       }
       _b.periods[pid] = p.copyWith(status: PeriodStatus.disputed);

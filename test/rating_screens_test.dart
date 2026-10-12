@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/rating/presentation/screens/rating_screen.dart';
 import 'package:pramu_apps/features/rating/presentation/screens/user_reviews_screen.dart';
+import 'package:pramu_apps/features/report/presentation/report_routes.dart';
 
 import 'helpers/rnr_harness.dart';
 
@@ -52,6 +54,39 @@ void main() {
       hasLength(1),
     );
     expect(find.byKey(K.ratingSubmit), findsNothing);
+  });
+
+  testWidgets('M-90: bintang 1 -> tawaran lapor, ketuk membuka form', (
+    t,
+  ) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => RatingScreen(bookingId: bookingId),
+        ),
+        ...reportRoutes,
+      ],
+    );
+    await t.pumpWidget(rig.app(router: router));
+    await t.pumpAndSettle();
+    expect(find.byKey(K.ratingReport), findsNothing);
+
+    await t.tap(_star(0));
+    await t.pump();
+    expect(find.byKey(K.ratingReport), findsOneWidget);
+    await t.ensureVisible(find.byKey(K.ratingReport));
+    await t.tap(find.byKey(K.ratingReport));
+    await t.pumpAndSettle();
+    expect(find.byKey(K.reportDescription), findsOneWidget);
+  });
+
+  testWidgets('M-90: bintang 5 -> tanpa tawaran lapor', (t) async {
+    await t.pumpWidget(rig.app(home: RatingScreen(bookingId: bookingId)));
+    await t.pumpAndSettle();
+    await t.tap(_star(4));
+    await t.pump();
+    expect(find.byKey(K.ratingReport), findsNothing);
   });
 
   testWidgets('M-90: tanpa bintang -> error field, tidak mengirim', (t) async {
