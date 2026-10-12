@@ -134,7 +134,6 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const AuthHeader(
-            icon: LucideIcons.users,
             title: 'Apa peran Anda di Pramu?',
             subtitle:
                 'Pilih satu peran, atau keduanya. Anda bisa menggantinya '

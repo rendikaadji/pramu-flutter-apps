@@ -97,7 +97,6 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AuthHeader(
-            icon: _step == 2 ? LucideIcons.keyRound : LucideIcons.shieldCheck,
             title: 'Pulihkan akun',
             subtitle: 'Atur ulang kata sandi dalam tiga langkah singkat.',
           ),

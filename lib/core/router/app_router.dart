@@ -21,6 +21,7 @@ import 'package:pramu_apps/features/report/presentation/report_routes.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/features/verification/presentation/verification_routes.dart';
 import 'package:pramu_apps/features/wallet/presentation/wallet_routes.dart';
+import 'package:pramu_apps/shared/app_ui/pramu_mark.dart';
 
 const _splash = '/splash';
 const _ulidQueryKeys = ['listing', 'booking', 'period', 'draft'];
@@ -176,6 +177,8 @@ class _Splash extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const PramuMark(size: 72),
+                const SizedBox(height: AppSpace.s16),
                 Text(
                   'Pramu',
                   style: AppText.wordmark(size: 36, color: t.textPrimary),

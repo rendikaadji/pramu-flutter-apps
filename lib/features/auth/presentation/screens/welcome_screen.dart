@@ -80,13 +80,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const ExcludeSemantics(
-                child: VerificationSeal(
-                  state: SealState.verified,
-                  size: SealSize.lg,
-                  showLabel: false,
-                ),
-              ),
+              const PramuMark(size: 40),
               const SizedBox(width: AppSpace.s8),
               Semantics(
                 header: true,

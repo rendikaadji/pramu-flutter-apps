@@ -20,7 +20,6 @@ abstract final class K {
   static const roleSeeker = Key('role_seeker');
   static const roleAssistant = Key('role_assistant');
   static const roleContinue = Key('role_continue');
-  static const roleSwitchChip = Key('role_switch_chip');
   static const logout = Key('logout');
 
   // shell
@@ -106,8 +105,11 @@ abstract final class K {
   // rating / report
   static const ratingStars = Key('rating_stars');
   static const ratingSubmit = Key('rating_submit');
+  static const ratingReport = Key('rating_report');
   static const reportDescription = Key('report_description');
   static const reportSubmit = Key('report_submit');
+  static const profileReport = Key('profile_report');
+  static const reportUser = Key('report_user');
   static const shareConsent = Key('share_consent');
   static const shareDecline = Key('share_decline');
   static const reportRevokeShare = Key('report_revoke_share');

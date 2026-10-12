@@ -58,16 +58,10 @@ class _CountdownBuilderState extends State<CountdownBuilder> {
 Widget? offlineBannerFor(ApiException? e) =>
     e != null && e.isNetwork ? const OfflineBanner() : null;
 
-/// Kepala layar auth di atas glow: ikon di kotak lembut, judul, penjelasan singkat.
+/// Kepala layar auth di atas glow: logo Pramu, judul, penjelasan singkat.
 class AuthHeader extends StatelessWidget {
-  const AuthHeader({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+  const AuthHeader({super.key, required this.title, required this.subtitle});
 
-  final IconData icon;
   final String title;
   final String subtitle;
 
@@ -79,20 +73,7 @@ class AuthHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ExcludeSemantics(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: t.surface,
-                borderRadius: AppRadius.brCard,
-                border: Border.all(color: t.borderSubtle),
-                boxShadow: t.e1,
-              ),
-              child: SizedBox.square(
-                dimension: 56,
-                child: Icon(icon, size: 28, color: t.primary),
-              ),
-            ),
-          ),
+          const PramuMark(size: 56),
           const SizedBox(height: AppSpace.s16),
           Semantics(header: true, child: Text(title, style: context.text.h1)),
           const SizedBox(height: AppSpace.s4),
