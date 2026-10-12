@@ -24,6 +24,7 @@ class AuthUser {
     this.roles = const {},
     this.activeRole,
     this.verification = VerificationStatus.none,
+    this.photoUrl,
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> j) => AuthUser(
@@ -37,6 +38,7 @@ class AuthUser {
     },
     activeRole: Role.from(j['active_role'] as String?),
     verification: VerificationStatus.from(j['verification_status'] as String?),
+    photoUrl: j['photo_url'] as String?,
   );
 
   final String id;
@@ -47,10 +49,14 @@ class AuthUser {
   final Role? activeRole;
   final VerificationStatus verification;
 
+  /// Foto profil (URL, atau `file://` di mode mock). null = tampil inisial.
+  final String? photoUrl;
+
   AuthUser copyWith({
     Set<Role>? roles,
     Role? activeRole,
     VerificationStatus? verification,
+    String? photoUrl,
   }) => AuthUser(
     id: id,
     name: name,
@@ -59,6 +65,7 @@ class AuthUser {
     roles: roles ?? this.roles,
     activeRole: activeRole ?? this.activeRole,
     verification: verification ?? this.verification,
+    photoUrl: photoUrl ?? this.photoUrl,
   );
 }
 

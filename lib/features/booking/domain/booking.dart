@@ -191,9 +191,7 @@ enum PeriodStatus {
       if (seeker && canPay) PeriodAction.pay,
       if (seeker && canConfirmComplete) PeriodAction.confirmComplete,
       if (seeker && this == inProgress) PeriodAction.cancel,
-      // Pelamar boleh melapor saat Pencari belum membayar.
-      if (canDispute || (!seeker && this == awaitingPayment))
-        PeriodAction.report,
+      if (canDispute) PeriodAction.report,
       if (this == disputed) PeriodAction.addEvidence,
     };
   }

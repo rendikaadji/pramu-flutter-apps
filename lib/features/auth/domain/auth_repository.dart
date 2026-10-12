@@ -27,6 +27,10 @@ abstract interface class AuthRepository {
   Future<AuthUser> setRoles(Set<Role> roles);
   Future<AuthUser> switchRole(Role role);
 
+  /// Foto profil (kedua peran), JPEG terkompres. 422 bila berkas ditolak.
+  Future<AuthUser> uploadPhoto(String path);
+  Future<AuthUser> removePhoto();
+
   Future<void> requestPasswordReset(String identifier);
   Future<void> resetPassword({
     required String identifier,

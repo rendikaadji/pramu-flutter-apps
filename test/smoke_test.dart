@@ -43,14 +43,17 @@ void main() {
   });
 
   testWidgets(
-    'sesi tersimpan Pencari verified -> Beranda Pencari dengan 4 tab',
+    'sesi tersimpan Pencari verified -> Beranda Pencari dengan 5 tab',
     (tester) async {
       await boot(tester, userName: 'Bu Rina');
-      expect(find.byKey(K.roleSwitchChip), findsOneWidget);
-      expect(find.byType(NavigationDestination), findsNWidgets(4));
+      expect(find.byKey(K.notificationBell), findsOneWidget);
+      expect(find.byType(NavigationDestination), findsNWidgets(5));
       await tester.tap(find.byKey(K.tab('search')));
       await tester.pumpAndSettle();
       expect(find.text('Cari asisten'), findsWidgets);
+      await tester.tap(find.byKey(K.tab('profile')));
+      await tester.pumpAndSettle();
+      expect(find.text('Peran aktif'), findsOneWidget);
     },
   );
 

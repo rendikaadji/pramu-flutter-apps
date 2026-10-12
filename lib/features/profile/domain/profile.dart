@@ -109,6 +109,24 @@ class AssistantProfile {
 
   bool get isValid => categories.isNotEmpty && city.isNotEmpty;
 
+  AssistantProfile withPhoto(String? url) => AssistantProfile(
+    userId: userId,
+    name: name,
+    photoUrl: url,
+    categories: categories,
+    experienceYears: experienceYears,
+    skills: skills,
+    rate: rate,
+    unit: unit,
+    city: city,
+    available: available,
+    verified: verified,
+    ratingAvg: ratingAvg,
+    ratingCount: ratingCount,
+    completedJobs: completedJobs,
+    bio: bio,
+  );
+
   UserCard get card => UserCard(
     id: userId,
     name: name,

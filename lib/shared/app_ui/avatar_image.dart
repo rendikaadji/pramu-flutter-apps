@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
@@ -41,6 +43,13 @@ class AvatarImage extends StatelessWidget {
         child: ClipOval(
           child: (url == null || url!.isEmpty)
               ? fallback
+              : url!.startsWith('file:')
+              ? Image.file(
+                  File.fromUri(Uri.parse(url!)),
+                  fit: BoxFit.cover,
+                  cacheWidth: (size * dpr).round(),
+                  errorBuilder: (_, _, _) => fallback,
+                )
               : Image.network(
                   url!,
                   fit: BoxFit.cover,

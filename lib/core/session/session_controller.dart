@@ -102,6 +102,12 @@ class SessionController extends Notifier<SessionState> {
   Future<void> switchRole(Role role) async =>
       _update(await ref.read(authRepositoryProvider).switchRole(role));
 
+  Future<void> uploadPhoto(String path) async =>
+      _update(await ref.read(authRepositoryProvider).uploadPhoto(path));
+
+  Future<void> removePhoto() async =>
+      _update(await ref.read(authRepositoryProvider).removePhoto());
+
   void _update(AuthUser user) => _set(
     SessionState(
       status: SessionStatus.authenticated,

@@ -17,6 +17,7 @@ class MockAuthRepository implements AuthRepository {
     roles: {...u.roles},
     activeRole: u.activeRole,
     verification: u.verification,
+    photoUrl: u.photoUrl,
   );
 
   AuthSession _session(MockUser u) =>
@@ -154,6 +155,27 @@ class MockAuthRepository implements AuthRepository {
     u.activeRole = role;
     return _dto(u);
   });
+
+  @override
+  Future<AuthUser> uploadPhoto(String path) => _b.run(() {
+    final u = _b.me;
+    _setPhoto(u, Uri.file(path).toString());
+    return _dto(u);
+  });
+
+  @override
+  Future<AuthUser> removePhoto() => _b.run(() {
+    final u = _b.me;
+    _setPhoto(u, null);
+    return _dto(u);
+  });
+
+  /// Server menyinkronkan foto akun ke profil asisten (satu sumber foto).
+  void _setPhoto(MockUser u, String? url) {
+    u.photoUrl = url;
+    final p = _b.profiles[u.id];
+    if (p != null) _b.profiles[u.id] = p.withPhoto(url);
+  }
 
   @override
   Future<void> requestPasswordReset(String identifier) => _b.run(() {});

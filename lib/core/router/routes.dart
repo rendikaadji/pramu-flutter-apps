@@ -27,6 +27,7 @@ abstract final class Routes {
   static const seekerSearch = '/s/search'; // M-30
   static const seekerJobs = '/s/jobs'; // M-35
   static const seekerChat = '/s/chat'; // M-60
+  static const seekerAccount = '/s/profile'; // M-24 (tab Profil Pencari)
   static const assistantHome = '/a/home'; // M-21
   static const assistantListings = '/a/listings'; // M-41
   static const assistantJobs = '/a/jobs'; // M-44

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/auth/domain/auth_repository.dart';
@@ -69,6 +70,23 @@ class ApiAuthRepository implements AuthRepository {
   Future<AuthUser> switchRole(Role role) async => AuthUser.fromJson(
     await _api.post('/me/switch-role', data: {'role': role.name}) as Json,
   );
+
+  @override
+  Future<AuthUser> uploadPhoto(String path) async => AuthUser.fromJson(
+    await _api.post(
+      '/me/photo',
+      data: FormData.fromMap({
+        'file': await MultipartFile.fromFile(path, filename: 'photo.jpg'),
+      }),
+      options: ApiClient.upload,
+    ) as Json,
+  );
+
+  @override
+  Future<AuthUser> removePhoto() async {
+    await _api.delete('/me/photo');
+    return me();
+  }
 
   @override
   Future<void> requestPasswordReset(String identifier) =>
