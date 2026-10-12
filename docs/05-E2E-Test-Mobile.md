@@ -320,11 +320,11 @@ test.describe.serial('alur penuh: lowongan -> bayar -> settlement', () => {
     periodId = (await (await request.get(`bookings/${bookingId}`, { headers: seeker })).json()).data.periods[0].id;
   });
 
-  test('fee 10% (5%+5%) benar & uang integer', async ({ request }) => {
+  test('fee 10% di sisi asisten benar & uang integer', async ({ request }) => {
     const pay = await request.post(`booking-periods/${periodId}/pay`, { headers: { ...seeker, 'Idempotency-Key': randomUUID() } });
     const d = (await pay.json()).data;
     expect(rupiah(d.amount)).toBe(2_500_000);
-    expect(rupiah(d.total)).toBe(2_500_000 + 125_000);          // A + fee pencari 5% (nama field 🟡)
+    expect(rupiah(d.total)).toBe(2_500_000);                    // pencari bayar sesuai nominal; asisten terima 90% (nama field 🟡)
   });
   // lanjut: simulate webhook paid -> period 'paid' -> (staging) majukan waktu / panggil job -> settled -> wallet naik A-fa
 });

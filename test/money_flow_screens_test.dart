@@ -236,6 +236,30 @@ void main() {
       expect(find.text('Data sudah berubah'), findsOneWidget);
     });
 
+    for (final who in ['Bu Rina', 'Siti']) {
+      testWidgets('kontrak selesai: $who tetap bisa melaporkan', (
+        tester,
+      ) async {
+        final env = await boot(tester, who);
+        final b = sitiBooking(env.backend);
+        env.backend.bookings[b.id] = env.backend.bookings[b.id]!.copyWith(
+          status: BookingStatus.completed,
+        );
+        env.go('/bookings/${b.id}');
+        await settle(tester);
+        final f = find.byKey(K.bookingReport);
+        await tester.scrollUntilVisible(
+          f,
+          300,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(f, findsOneWidget);
+        await tap(tester, f);
+        await settle(tester);
+        expect(find.byKey(K.reportDescription), findsOneWidget);
+      });
+    }
+
     testWidgets('kesepakatan: setuju versi usang -> 409 muat ulang', (
       tester,
     ) async {
@@ -294,7 +318,7 @@ void main() {
       env.go('/a/wallet');
       await settle(tester);
       expect(find.byKey(K.walletBalance), findsOneWidget);
-      expect(find.text('Rp1.425.000'), findsOneWidget);
+      expect(find.text('Rp1.350.000'), findsOneWidget);
 
       await tap(tester, find.byKey(K.walletPayoutOpen));
       await settle(tester);

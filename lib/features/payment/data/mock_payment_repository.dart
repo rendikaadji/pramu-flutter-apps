@@ -98,7 +98,7 @@ class MockPaymentRepository implements PaymentRepository {
     final entitlement = held.fold<int>(0, (s, p) => s + p.amount * 20 ~/ 100);
     return RefundPreview(
       assistantEntitlement: entitlement,
-      fee: entitlement * 5 ~/ 100,
+      fee: entitlement * 10 ~/ 100,
       refundToSeeker: paid - entitlement,
     );
   }
@@ -168,6 +168,9 @@ class MockPaymentRepository implements PaymentRepository {
           status: BookingStatus.cancelled,
           clearPausedUntil: true,
         );
-        return _b.booking(bookingId);
+        return _b.bookingFor(
+          _b.booking(bookingId),
+          asAssistant: b.assistant.id == _b.me.id,
+        );
       });
 }

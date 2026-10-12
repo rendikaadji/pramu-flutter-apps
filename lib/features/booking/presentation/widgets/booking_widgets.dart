@@ -10,26 +10,15 @@ import 'package:pramu_apps/shared/app_ui/status_presets.dart';
 AppRole appRoleOf(Role r) =>
     r == Role.seeker ? AppRole.seeker : AppRole.assistant;
 
-/// Rincian biaya per peran. Semua angka dari server; klien hanya memformat.
-List<FeeRow> contractFeeRows(Fees f, Role role) => role == Role.seeker
-    ? [
-        FeeRow('Total gaji kontrak', formatRupiah(f.amount)),
-        FeeRow('Biaya layanan', formatRupiah(f.seekerFee)),
-        FeeRow(
-          'Total yang Anda bayar',
-          formatRupiah(f.seekerTotal),
-          total: true,
-        ),
-      ]
-    : [
-        FeeRow('Total gaji kontrak', formatRupiah(f.amount)),
-        FeeRow('Biaya layanan', '-${formatRupiah(f.assistantFee)}'),
-        FeeRow(
-          'Dana yang Anda terima',
-          formatRupiah(f.assistantReceives),
-          total: true,
-        ),
-      ];
+/// Rincian nominal per peran. Angka dari server (sudah bersih per peran);
+/// potongan layanan tidak ditampilkan ke pengguna.
+List<FeeRow> contractFeeRows(Fees f, Role role) => [
+  FeeRow(
+    role == Role.seeker ? 'Total yang Anda bayar' : 'Dana yang Anda terima',
+    formatRupiah(role == Role.seeker ? f.seekerTotal : f.assistantReceives),
+    total: true,
+  ),
+];
 
 StatusTone periodTone(PeriodStatus s, Role role) =>
     statusPreset(StatusDomain.period, wire(s), appRoleOf(role)).tone;

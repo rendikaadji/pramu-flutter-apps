@@ -46,7 +46,10 @@ class MockListingRepository implements ListingRepository {
     final applied = _b.applications.values.any(
       (a) => a.listingId == l.id && a.assistant.id == me && a.status.isActive,
     );
-    return l.withApplied(applied);
+    return _b.listingFor(
+      l.withApplied(applied),
+      asAssistant: _b.viewerIsAssistant && l.owner.id != me,
+    );
   }
 
   @override
