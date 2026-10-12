@@ -18,6 +18,7 @@ final List<RouteBase> authRoutes = [
   GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
   GoRoute(path: Routes.forgot, builder: (_, _) => const ForgotScreen()),
   GoRoute(path: Routes.account, builder: (_, _) => const AccountScreen()),
+  GoRoute(path: Routes.seekerAccount, builder: (_, _) => const AccountScreen()),
   GoRoute(
     path: Routes.assistantAccount,
     builder: (_, _) => const AccountScreen(),

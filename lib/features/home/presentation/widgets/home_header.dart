@@ -35,13 +35,21 @@ class HomeHeader extends ConsumerWidget {
               label: 'Akun dan pengaturan',
               excludeSemantics: true,
               child: InkWell(
-                onTap: () => user.activeRole == Role.assistant
-                    ? context.go(Routes.assistantAccount)
-                    : context.push(Routes.account),
+                onTap: () => context.go(
+                  user.activeRole == Role.assistant
+                      ? Routes.assistantAccount
+                      : Routes.seekerAccount,
+                ),
                 customBorder: const CircleBorder(),
                 child: SizedBox.square(
                   dimension: AppSpace.tap,
-                  child: Center(child: AvatarImage(name: user.name, size: 44)),
+                  child: Center(
+                    child: AvatarImage(
+                      name: user.name,
+                      url: user.photoUrl,
+                      size: 44,
+                    ),
+                  ),
                 ),
               ),
             ),

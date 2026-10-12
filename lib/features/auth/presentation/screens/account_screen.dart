@@ -10,6 +10,7 @@ import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/theme_mode_controller.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/auth/presentation/widgets/auth_widgets.dart';
+import 'package:pramu_apps/features/auth/presentation/widgets/profile_photo.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/home/presentation/state/home_state.dart';
 import 'package:pramu_apps/features/listing/domain/listing.dart';
@@ -106,7 +107,7 @@ class AccountScreen extends ConsumerWidget {
     };
     final stats = _stats(ref, isAssistant);
     return AppScaffold(
-      title: isAssistant ? 'Profil' : 'Akun',
+      title: 'Profil',
       glow: true,
       scrollable: true,
       body: Column(
@@ -115,7 +116,7 @@ class AccountScreen extends ConsumerWidget {
           AppCard(
             child: Row(
               children: [
-                AvatarImage(name: user.name, size: 64),
+                ProfilePhoto(user: user),
                 const SizedBox(width: AppSpace.s16),
                 Expanded(
                   child: Column(
@@ -270,6 +271,13 @@ class AccountScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpace.s16),
+          Text(
+            'Dengan memakai Pramu, Anda menyetujui ketentuan layanan, termasuk '
+            'biaya layanan platform yang sudah diperhitungkan pada nominal transaksi.',
+            textAlign: TextAlign.center,
+            style: context.text.caption.copyWith(color: t.textSubtle),
+          ),
+          const SizedBox(height: AppSpace.s8),
           Center(
             child: Text(
               'Pramu ${Env.appVersion}',

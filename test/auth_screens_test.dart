@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
+import 'package:pramu_apps/features/verification/data/photo_service.dart';
 
 import 'helpers/core_boot.dart';
 
@@ -98,7 +99,7 @@ void main() {
     expect(find.text('Nomor HP/email atau kata sandi salah.'), findsOneWidget);
     await typeInto(t, K.loginPassword, kMockPassword);
     await tapKey(t, K.loginSubmit);
-    expect(find.byKey(K.roleSwitchChip), findsOneWidget);
+    expect(find.byKey(K.notificationBell), findsOneWidget);
   });
 
   testWidgets('masuk: akun ditangguhkan -> kartu penjelas', (t) async {
@@ -126,7 +127,7 @@ void main() {
       await typeInto(t, K.loginPhone, '081234567890');
       await typeInto(t, K.loginPassword, 'SandiBaru999');
       await tapKey(t, K.loginSubmit);
-      expect(find.byKey(K.roleSwitchChip), findsOneWidget);
+      expect(find.byKey(K.notificationBell), findsOneWidget);
     },
   );
 
@@ -134,7 +135,9 @@ void main() {
     t,
   ) async {
     final env = await bootApp(t, user: 'Bu Maya');
-    await tapKey(t, K.roleSwitchChip);
+    env.go('/account');
+    await t.pumpAndSettle();
+    await tapKey(t, K.accountRoleRow);
     expect(find.text('Gunakan Pramu sebagai'), findsOneWidget);
     await t.tap(find.text('Cari pekerjaan sebagai asisten'));
     await t.pumpAndSettle();
@@ -155,6 +158,36 @@ void main() {
     expect(find.byKey(K.welcomeLogin), findsOneWidget);
     expect(await env.container.read(tokenStoreProvider).read(), isNull);
   });
+
+  for (final (who, path) in [
+    ('Bu Rina', '/s/profile'),
+    ('Siti', '/a/profile'),
+  ]) {
+    testWidgets('foto profil $who: unggah, file sementara dihapus, hapus', (
+      t,
+    ) async {
+      final env = await bootApp(t, user: who);
+      env.go(path);
+      await t.pumpAndSettle();
+      String? photo() => env.container.read(sessionProvider).user?.photoUrl;
+      expect(photo(), isNull);
+
+      await t.tap(find.byKey(const Key('profilePhoto')));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Pilih dari galeri'));
+      await t.pumpAndSettle();
+      expect(photo(), isNotNull);
+      expect(env.photos.lastSource, PhotoSource.gallery);
+      expect(env.photos.deleted, env.photos.created);
+
+      await t.pump(const Duration(seconds: 5));
+      await t.tap(find.byKey(const Key('profilePhoto')));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Hapus foto'));
+      await t.pumpAndSettle();
+      expect(photo(), isNull);
+    });
+  }
 
   testWidgets('perangkat: cabut perangkat ini = keluar', (t) async {
     final env = await bootApp(t, user: 'Bu Rina');

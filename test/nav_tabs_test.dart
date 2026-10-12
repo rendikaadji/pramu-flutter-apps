@@ -9,12 +9,14 @@ void main() {
     expect(assistantTabs.last.path, Routes.assistantAccount);
   });
 
-  test('tab Pencari tetap 4 tab', () {
+  test('tab Pencari: 5 tab dengan Profil di akhir', () {
     expect(seekerTabs.map((t) => t.label), [
       'Beranda',
       'Cari',
       'Pekerjaan',
       'Pesan',
+      'Profil',
     ]);
+    expect(seekerTabs.last.path, Routes.seekerAccount);
   });
 }
