@@ -14,6 +14,7 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   await initLocale();
   await sweepSensitiveFiles();
   final prefs = await SharedPreferences.getInstance();
