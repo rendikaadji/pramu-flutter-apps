@@ -201,7 +201,7 @@ class _ContractSummary extends ConsumerWidget {
   }
 }
 
-/// Rincian nominal + biaya layanan (total ada di kartu hero di bawahnya).
+/// Rincian nominal (total ada di kartu hero di bawahnya).
 class _Breakdown extends StatelessWidget {
   const _Breakdown({required this.p});
   final BookingPeriod p;
@@ -215,10 +215,7 @@ class _Breakdown extends StatelessWidget {
           Text('Rincian pembayaran', style: context.text.label),
           const SizedBox(height: AppSpace.s8),
           FeeBreakdown(
-            rows: [
-              FeeRow('Gaji periode ${p.index}', formatRupiah(p.amount)),
-              FeeRow('Biaya layanan', formatRupiah(p.serviceFee)),
-            ],
+            rows: [FeeRow('Gaji periode ${p.index}', formatRupiah(p.amount))],
           ),
         ],
       ),

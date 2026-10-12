@@ -24,7 +24,7 @@ versi: 1.0
 
 1. **Satu langkah, satu tujuan.** Wizard pendek; layar tidak meminta lebih dari satu keputusan.
 2. **Status selalu terlihat.** Dari lamaran hingga dana, pengguna selalu tahu "ada di mana, apa berikutnya, siapa yang bergerak" (kartu *Langkah berikutnya*).
-3. **Uang transparan.** Setiap nominal diperinci (nominal, fee, total) sebelum dan sesudah bayar; istilah awam ("Dana ditahan aman").
+3. **Uang jelas.** Pencari melihat total yang dibayar, asisten melihat dana yang diterima (nominal bersih) sebelum dan sesudah bayar; potongan layanan 10% dihitung server di sisi asisten dan tidak ditampilkan sebagai baris biaya; istilah awam ("Dana ditahan aman").
 4. **Privasi sebagai fitur.** Penyamaran kontak, persetujuan berbagi chat, dan layar KTP aman dijelaskan *di tempatnya*, bukan di kebijakan.
 5. **Role tidak membingungkan.** Role aktif terlihat permanen; pindah role = 1 ketukan, tanpa logout.
 6. **Bahasa sederhana + ikon berlabel.** Tidak ada ikon tanpa teks pada aksi penting.
@@ -180,11 +180,11 @@ flowchart TD
   B --> C[Salah satu usul: tarif, jumlah periode, siklus bayar, tanggal mulai]
   C --> D[Pihak lain: Setuju / Ajukan balik]
   D -->|keduanya setuju versi sama| E[Booking + period dibuat; terkunci]
-  E --> F[Pencari bayar period 1: nominal + fee 5%]
+  E --> F[Pencari bayar period 1: sesuai nominal yang diinput]
   F -->|webhook| G[Dana ditahan aman]
   G --> H[Period berjalan]
   H --> I[Period berakhir: konfirmasi pencari atau otomatis 24 jam]
-  I --> J[Dicairkan ke Dompet asisten nominal - fee 5%]
+  I --> J[Dicairkan ke Dompet asisten nominal bersih 90%]
   J --> K[Tagihan period berikut H-3] --> F
   J --> L[Kontrak selesai: rating 7 hari]
   G -.masalah.-> M[Laporkan/Dispute -> tahan pencairan]
@@ -302,14 +302,14 @@ Singkatan di tabel layar: **L** loading · **E** empty · **X** error · **O** o
 
 | ID | Layar | Tujuan | Komponen | Data/API | Aksi | State khusus | Req |
 |---|---|---|---|---|---|---|---|
-| M-70 | Susun kesepakatan | Mengusulkan syarat | Stepper/form: tarif per periode, jenis & jumlah periode, siklus bayar, tanggal mulai; **kalkulator fee langsung** (total kontrak, fee Anda, yang diterima/dibayar), peringatan "Setelah disetujui dikunci" | `POST /applications/{id}/agreement` | Kirim usulan | Validasi; peran menentukan rincian fee yang terlihat (pencari: bayar; asisten: terima) | BKG-1, PAY-1 |
+| M-70 | Susun kesepakatan | Mengusulkan syarat | Stepper/form: tarif per periode, jenis & jumlah periode, siklus bayar, tanggal mulai; **kalkulator langsung** (pencari: total yang dibayar; asisten: dana yang diterima, nominal bersih), peringatan "Setelah disetujui dikunci" | `POST /applications/{id}/agreement` | Kirim usulan | Validasi; peran menentukan nominal yang terlihat (pencari: bayar; asisten: terima, nominal bersih) | BKG-1, PAY-1 |
 | M-71 | Tinjau kesepakatan | Setuju dua arah | Rincian versi saat ini, diff dari versi sebelumnya (tebal/ikon), status persetujuan masing-masing (centang waktu), tombol **Setuju** / **Ajukan balik** | `/agreements/{id}/approve`, `/counter` | Setuju (konfirmasi dengan ringkasan), Counter | Menunggu pihak lain; versi usang (409) -> muat ulang; keduanya setuju: layar sukses "Kontrak dibuat" -> M-73 | BKG-1/2 |
 | M-72 | Pekerjaan > Kontrak | Daftar kontrak | Kartu: pihak, periode berjalan, status, total, garis ledger mini | `/bookings` | Buka | E: "Belum ada kontrak." | BKG-2 |
 | M-73 | Detail booking | Pusat kontrak | Ringkasan, **garis ledger period** (chip status per period, tanggal, nominal), kartu Langkah berikutnya, aksi sesuai status & peran (Bayar, Konfirmasi selesai, Batalkan, Laporkan), rincian fee (snapshot), chat | `/bookings/{id}` | lihat tabel status §9 | `paused`: banner warning + batas; `disputed`: banner + aksi dibekukan; `cancelled`: ringkasan refund | BKG-2, PAY-3/8 |
-| M-74 | Bayar period | Membayar aman | Rincian: nominal period, fee layanan pencari, **total**; keterangan "Dana ditahan aman sampai pekerjaan selesai"; tombol Bayar Rp… -> halaman Xendit (VA/e-wallet/QRIS/kartu) | `POST /booking-periods/{id}/pay` (`Idempotency-Key`) | Bayar | Tombol dikunci saat proses (cegah ganda); kedaluwarsa jika lewat `period_start`; O: blok | PAY-1/2 |
+| M-74 | Bayar period | Membayar aman | Rincian: nominal period, **total** (sama dengan nominal, tanpa biaya tambahan); keterangan "Dana ditahan aman sampai pekerjaan selesai"; tombol Bayar Rp… -> halaman Xendit (VA/e-wallet/QRIS/kartu) | `POST /booking-periods/{id}/pay` (`Idempotency-Key`) | Bayar | Tombol dikunci saat proses (cegah ganda); kedaluwarsa jika lewat `period_start`; O: blok | PAY-1/2 |
 | M-75 | Status pembayaran | Kepastian setelah bayar | Satu dari: Menunggu pembayaran (VA, batas waktu, salin nomor) · Berhasil · Gagal · Kedaluwarsa; polling + push; tombol "Lihat kontrak" | webhook -> status | Salin VA, Cek status, Bayar ulang | "Pembayaran sudah diterima, sedang diproses" saat webhook tertunda (jangan beri bayar ulang) | PAY-2/3 |
 | M-76 | Konfirmasi selesai (pencari) | Mencairkan dana | Ringkasan period, pernyataan "Pekerjaan sudah sesuai?", tombol Konfirmasi selesai / Laporkan masalah, info "Tanpa konfirmasi, dana otomatis dicairkan 24 jam setelah period berakhir" + hitung mundur | `/booking-periods/{id}/confirm-complete` | Konfirmasi, Laporkan | Dispute dibuka: hitung mundur berhenti | PAY-4/5 |
-| M-77 | Batalkan booking | Keluar kontrak | Pilih alasan, **pratinjau refund** (hak asisten, fee, refund pencari per §5c 🟡), konsekuensi jelas | `POST /bookings/{id}/cancel` | Batalkan (konfirmasi ketik/tahan tekan 🟡) | Angka §5c belum final -> tombol aktif hanya dengan data server; X: tidak dapat dibatalkan dalam status ini | PAY-7 |
+| M-77 | Batalkan booking | Keluar kontrak | Pilih alasan, **pratinjau refund** (hak asisten, refund pencari per §5c 🟡), konsekuensi jelas | `POST /bookings/{id}/cancel` | Batalkan (konfirmasi ketik/tahan tekan 🟡) | Angka §5c belum final -> tombol aktif hanya dengan data server; X: tidak dapat dibatalkan dalam status ini | PAY-7 |
 
 ### 8.9 Dompet (asisten)
 
@@ -396,7 +396,7 @@ Kartu "Privasi Anda" di Akun (M-25): 3 ikon + 1 kalimat tiap butir: "Admin tidak
 | Form | AppTextField (label atas, bantuan/error bawah), PasswordField, PhoneField (+62), OtpField, RupiahField (`inputMode` numeric, pemisah titik), DropdownField, ChipSelect (kategori/keahlian), DateTimeField (adaptif), RatingBar, SwitchTile (adaptif), Checkbox/Radio, Stepper wizard | Label tidak hilang saat fokus; keyboard tipe sesuai; error disebut jelas |
 | Konten | ListingCard, AssistantCard, ApplicantCard, BookingCard, ConversationTile, NotificationTile, KpiTile (dompet), InfoRow | Satu bahasa kartu: border + `e1`, `r.md`, tidak ada kartu bersarang |
 | Status | **StatusChip**, **VerifiedSeal** (16/24/48), RolePill, CountBadge, ProgressDots | |
-| Uang | **MoneyText** (mono/tabular), **FeeBreakdown** (nominal · fee · total), **LedgerTimeline** (period) | |
+| Uang | **MoneyText** (mono/tabular), **FeeBreakdown** (nominal · total), **LedgerTimeline** (period) | |
 | Chat | MessageBubble (teks, tersamar, sistem), MaskedToken, ChatInputBar, DeliveryTicks, PrivacyBanner | |
 | Privasi | ConsentSheet, SecureCaptureFrame, PermissionPrimer, MaskedValue | |
 | Navigasi | BottomNav (4/5, role-tint), AppBar (judul, RolePill, bell, avatar), SegmentedTabs, Breadcrumb tidak dipakai | |
@@ -456,8 +456,8 @@ Nada: hangat, sopan, sederhana, kalimat <= 15 kata. "Anda". Tanpa jargon ("escro
 | Kontak tersamar | "Nomor disembunyikan sampai pembayaran dilakukan, demi keamanan Anda." |
 | Peringatan input kontak | "Nomor atau tautan akan disamarkan di percakapan ini." |
 | Dana aman | "Uang Anda ditahan aman dan baru dicairkan ke asisten setelah pekerjaan selesai." |
-| Rincian bayar | "Gaji periode 1: Rp1.000.000 · Biaya layanan (5%): Rp50.000 · Total: Rp1.050.000" |
-| Rincian terima | "Gaji periode 1: Rp1.000.000 · Biaya layanan (5%): -Rp50.000 · Anda terima: Rp950.000" |
+| Rincian bayar | "Gaji periode 1: Rp1.000.000 · Total: Rp1.000.000" |
+| Rincian terima | "Gaji periode 1: Rp900.000 · Anda terima: Rp900.000" |
 | Auto-release | "Jika tidak dikonfirmasi, dana otomatis dicairkan pada 14 Okt, 09.00 WIB." |
 | Pembayaran sukses | "Pembayaran diterima. Dana ditahan aman sampai periode selesai." |
 | Pembayaran tertunda | "Pembayaran sedang diproses. Jangan bayar lagi; kami kabari begitu selesai." |

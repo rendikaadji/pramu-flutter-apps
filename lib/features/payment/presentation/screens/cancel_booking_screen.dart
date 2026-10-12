@@ -35,7 +35,7 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
       title: 'Batalkan kontrak?',
       message:
           'Dana yang kembali ke Anda: ${formatRupiah(pv.refundToSeeker)}. '
-          'Biaya layanan untuk pekerjaan yang sudah dijalani tidak dikembalikan.',
+          'Pembayaran untuk pekerjaan yang sudah dijalani tidak dikembalikan.',
       confirmLabel: 'Batalkan kontrak',
       cancelLabel: 'Tidak jadi',
       destructive: true,
@@ -93,7 +93,6 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
                     'Hak Pelamar untuk pekerjaan yang sudah dijalani',
                     formatRupiah(pv.assistantEntitlement),
                   ),
-                  FeeRow('Biaya layanan', formatRupiah(pv.fee)),
                   FeeRow(
                     'Kembali ke Anda',
                     formatRupiah(pv.refundToSeeker),

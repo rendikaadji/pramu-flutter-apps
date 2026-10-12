@@ -10,6 +10,8 @@ import 'package:pramu_apps/features/booking/data/mock_booking_repository.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/interview/data/mock_interview_repository.dart';
 import 'package:pramu_apps/features/interview/domain/interview.dart';
+import 'package:pramu_apps/features/listing/data/mock_listing_repository.dart';
+import 'package:pramu_apps/features/listing/domain/listing.dart';
 import 'package:pramu_apps/features/payment/data/mock_payment_repository.dart';
 import 'package:pramu_apps/features/wallet/data/mock_wallet_repository.dart';
 
@@ -95,7 +97,7 @@ void main() {
     final p1 = booking.periods.first;
     expect(
       (p1.status, p1.amount, p1.serviceFee, p1.total),
-      (PeriodStatus.awaitingPayment, 2000000, 100000, 2100000),
+      (PeriodStatus.awaitingPayment, 2000000, 0, 2000000),
     );
 
     // bayar: paid hanya setelah cek status ke-2; kunci idempoten menghasilkan invoice sama
@@ -105,7 +107,7 @@ void main() {
       (await payments.startPayment(p1.id, idempotencyKey: key)).id,
       inv.id,
     );
-    expect(inv.amount, 2100000);
+    expect(inv.amount, 2000000);
     expect(
       (await payments.checkStatus(p1.id)).status,
       PeriodStatus.awaitingPayment,
@@ -126,12 +128,39 @@ void main() {
       (await payments.confirmComplete(p1.id)).status,
       PeriodStatus.settled,
     );
-    expect(b.balances[b.userByName('Yuni').id], yuniBefore + 1900000);
+    expect(b.balances[b.userByName('Yuni').id], yuniBefore + 1800000);
     expect(
       (await failure(payments.confirmComplete(p1.id))).code,
       'PERIOD_INVALID_STATE',
     );
   });
+
+  test(
+    'potongan 10% di sisi Pelamar: Pencari 1.000.000 -> Pelamar 900.000',
+    () async {
+      expect(b.net(1000000), 900000);
+      expect(b.gross(900000), 1000000);
+
+      loginAs('Bu Rina');
+      final bookings = MockBookingRepository(b);
+      final seeker = await bookings.previewFees(rate: 1000000, periodCount: 1);
+      expect(
+        (seeker.amount, seeker.seekerFee, seeker.seekerTotal),
+        (1000000, 0, 1000000),
+      );
+
+      loginAs('Siti');
+      final asst = await bookings.previewFees(rate: 900000, periodCount: 1);
+      expect(
+        (asst.amount, asst.assistantFee, asst.assistantReceives),
+        (900000, 0, 900000),
+      );
+      final l = (await MockListingRepository(b).browse(const ListingFilter()))
+          .items;
+      final raw = b.listings[l.first.id]!;
+      expect(l.first.budgetMin, b.net(raw.budgetMin));
+    },
+  );
 
   test('versi kesepakatan usang -> 409, counter menaikkan versi dan mereset persetujuan', () async {
     loginAs('Bu Rina');
@@ -205,7 +234,7 @@ void main() {
     loginAs('Siti');
     final wallet = MockWalletRepository(b);
     final before = (await wallet.wallet()).balance;
-    expect(before, 1425000);
+    expect(before, 1350000);
     final tx = await wallet.requestPayout(100000, idempotencyKey: 'k1');
     expect(
       (await wallet.requestPayout(100000, idempotencyKey: 'k1')).id,

@@ -123,6 +123,7 @@ class Application {
     String? interviewId,
     String? agreementId,
     String? bookingId,
+    int? proposedRate,
   }) => Application(
     id: id,
     listingId: listingId,
@@ -130,7 +131,7 @@ class Application {
     seeker: seeker,
     assistant: assistant,
     message: message,
-    proposedRate: proposedRate,
+    proposedRate: proposedRate ?? this.proposedRate,
     status: status ?? this.status,
     createdAt: createdAt,
     answers: answers,

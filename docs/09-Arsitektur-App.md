@@ -45,7 +45,7 @@ Fitur: `auth verification profile listing application interview chat booking pay
 
 1. Fitur **tidak** mengimpor `presentation` fitur lain. Berbagi lewat `core/` atau `domain/` (+ provider `data/*_providers.dart`) fitur lain. `home` boleh membaca provider semua fitur.
 2. Tak ada `Dio(`/`http` di luar `core/api/`. Token hanya di `TokenStore`. Tak ada `print` (`avoid_print` aktif); `debugPrint` tanpa token/PII/body.
-3. Uang tampil lewat `formatRupiah`, input lewat `parseRupiah`; **jangan hitung fee untuk dikirim** (hanya tampilkan `Fees`/`BookingPeriod.total` dari repo).
+3. Uang tampil lewat `formatRupiah`, input lewat `parseRupiah`; **jangan hitung fee untuk dikirim** (hanya tampilkan `Fees`/`BookingPeriod.total` dari repo). Model fee: 10% dipotong dari sisi Pelamar; server mengirim nominal bersih (90%) ke Pelamar dan nominal asli ke Pencari, UI tidak menampilkan baris "Biaya layanan".
 4. Status → label/aksi hanya lewat extension di domain (`PeriodStatus.actionsFor(role)`, `ApplicationStatus.allowedActions(role)`, `InterviewStatus.allowedActions(role)`, `.label`). Jangan `if (status == 'paid')` di UI. Status tak dikenal → `unknown` (jangan crash).
 5. Notifier yang bergantung pengguna: `ref.watch(sessionProvider.select((s) => s.user?.id))` agar state reset saat ganti akun/logout.
 6. Buka URL eksternal hanya setelah `isAllowedMeetingUrl` / `isAllowedInvoiceUrl` (lalu `url_launcher`). Param deep link/return bayar = hanya pemicu refresh; status selalu dari API.
@@ -69,7 +69,7 @@ Fitur: `auth verification profile listing application interview chat booking pay
 
 Redirect (`appRedirect`, murni, teruji): booting → `/splash`; tamu hanya `Routes.publicPaths` (selain itu → `/welcome`, tujuan diingat); authenticated tanpa peran → `/onboarding/role`; path tak dikenal / param `:id` bukan ULID / query `listing|booking|period|draft` bukan ULID → beranda; `/s/*` hanya Pencari, `/a/*` hanya Asisten; akun `verification == none` yang belum menekan "Nanti dulu" diarahkan sekali ke M-10 saat membuka tab root. Allowlist deep link dibentuk dari pohon rute itu sendiri.
 
-Navigasi: gunakan `Routes.*` (builder, mis. `context.push(Routes.bookingDetail(id))`). Tab root berada di `StatefulShellRoute.indexedStack` per peran (Pencari 4 tab, Asisten 5 tab, `role_shell.dart`). **Keputusan:** layar detail (non-tab) adalah rute penuh di navigator root (bottom nav tersembunyi) agar satu rute dipakai kedua peran; kembalikan ke dalam cabang tab hanya bila desain mewajibkan. M-72 = `/contracts` (segmen "Kontrak" di dalam tab Pekerjaan boleh menautkan ke sini). M-22 (ganti peran) dan M-96 sebagai bottom sheet boleh dibuka dari rutenya masing-masing.
+Navigasi: gunakan `Routes.*` (builder, mis. `context.push(Routes.bookingDetail(id))`). Tab root berada di `StatefulShellRoute.indexedStack` per peran (Pencari 5 tab, Asisten 5 tab, `role_shell.dart`). **Keputusan:** layar detail (non-tab) adalah rute penuh di navigator root (bottom nav tersembunyi) agar satu rute dipakai kedua peran; kembalikan ke dalam cabang tab hanya bila desain mewajibkan. M-72 = `/contracts` (segmen "Kontrak" di dalam tab Pekerjaan boleh menautkan ke sini). M-22 (ganti peran) dan M-96 sebagai bottom sheet boleh dibuka dari rutenya masing-masing.
 
 ## 5. Mock vs API
 
@@ -169,3 +169,11 @@ flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://stag
 ```
 
 Dokumen terkait: [[06-Refactor-DeadCode-Mobile]] · [[05-E2E-Test-Mobile]] · [[07-Git-Commit-Mobile]]
+
+## Kontrak fee untuk backend (diterapkan di mock, wajib diikuti server)
+
+- Potongan platform 10% seluruhnya di sisi asisten. Pencari membayar tepat nominal yang diinput (`seeker_fee = 0`, `seeker_total = amount`); asisten menerima `amount - 10%`.
+- Respons per peran: untuk pemanggil berperan asisten, semua nominal yang berasal dari pencari (budget lowongan, `proposed_rate`, `rate`/`fees` kesepakatan, `rate`/`fees`/`amount` booking & periode) dikirim **sudah bersih (90%)**, `assistant_fee = 0`. Untuk pencari dikirim nominal asli.
+- Input asisten (tarif lamaran, tawaran balik kesepakatan) adalah nominal bersih; server mengonversi ke nominal pencari (dibulatkan ke atas: `ceil(net * 100 / 90)`).
+- Klien tidak menampilkan baris biaya layanan di mana pun; `Fees`/`BookingPeriod` hanya diformat.
+- Biaya pasang lowongan (Rp25.000) terpisah dan tetap ditampilkan.

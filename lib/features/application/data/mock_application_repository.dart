@@ -22,6 +22,9 @@ class MockApplicationRepository implements ApplicationRepository {
     return _b.applications[id]!;
   }
 
+  Application _out(Application a) =>
+      _b.applicationFor(a, asAssistant: a.assistant.id == _b.me.id);
+
   @override
   Future<Application> apply(String listingId, ApplyInput input) => _b.run(() {
     final me = _b.me;
@@ -59,7 +62,7 @@ class MockApplicationRepository implements ApplicationRepository {
       seeker: l.owner,
       assistant: _b.card(me.id),
       message: input.message.trim(),
-      proposedRate: input.proposedRate,
+      proposedRate: _b.gross(input.proposedRate),
       status: ApplicationStatus.pending,
       createdAt: _b.now(),
       answers: input.answers,
@@ -90,7 +93,7 @@ class MockApplicationRepository implements ApplicationRepository {
       '${me.name} melamar "${l.title}".',
       app.id,
     );
-    return app;
+    return _out(app);
   });
 
   @override
@@ -101,7 +104,7 @@ class MockApplicationRepository implements ApplicationRepository {
         if (a.assistant.id == uid) a.id,
     ];
     ids.forEach(_b.reactApplication);
-    return [for (final id in ids) _b.applications[id]!]
+    return [for (final id in ids) _out(_b.applications[id]!)]
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   });
 
@@ -121,7 +124,7 @@ class MockApplicationRepository implements ApplicationRepository {
   });
 
   @override
-  Future<Application> get(String id) => _b.run(() => _party(id));
+  Future<Application> get(String id) => _b.run(() => _out(_party(id)));
 
   @override
   Future<Application> act(
@@ -161,7 +164,7 @@ class MockApplicationRepository implements ApplicationRepository {
       app.listingTitle,
       id,
     );
-    return _b.applications[id] = app.copyWith(status: next);
+    return _out(_b.applications[id] = app.copyWith(status: next));
   });
 
   @override

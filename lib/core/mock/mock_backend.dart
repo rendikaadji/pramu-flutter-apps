@@ -58,6 +58,7 @@ class MockUser {
   Set<Role> roles;
   Role? activeRole;
   VerificationStatus verification;
+  String? photoUrl;
   String? rejectReason;
   bool phoneVerified = true;
   final bool
@@ -243,16 +244,79 @@ class MockBackend {
       .replaceAll(RegExp(r'(\+?62|0)8[\d\s-]{8,14}'), '[nomor disembunyikan]')
       .replaceAll(RegExp(r'[^@\s]+@[^@\s]+\.[^@\s]+'), '[email disembunyikan]');
 
+  /// Potongan platform: 10% penuh dari sisi Pelamar, Pencari membayar sesuai
+  /// nominal yang diinput (tanpa biaya tambahan). Angka tersimpan = nominal Pencari.
+  static const _feePercent = 10;
+
   Fees feesFor(int amount) {
-    final fee = amount * 5 ~/ 100;
+    final fee = amount * _feePercent ~/ 100;
     return Fees(
       amount: amount,
-      seekerFee: fee,
-      seekerTotal: amount + fee,
+      seekerFee: 0,
+      seekerTotal: amount,
       assistantFee: fee,
       assistantReceives: amount - fee,
     );
   }
+
+  // ---- tampilan per pihak (meniru server): Pelamar hanya melihat nominal
+  // bersih, tanpa tahu ada potongan. Data internal tetap nominal Pencari.
+
+  /// Nominal Pencari -> yang tampil di Pelamar.
+  int net(int gross) => gross - gross * _feePercent ~/ 100;
+
+  /// Nominal yang diinput Pelamar (bersih) -> nominal Pencari (dibulatkan ke atas).
+  int gross(int net) =>
+      (net * 100 + (100 - _feePercent) - 1) ~/ (100 - _feePercent);
+
+  /// Peran aktif pemanggil = asisten (untuk layar yang tak punya pihak kontrak).
+  bool get viewerIsAssistant {
+    final id = currentUserId;
+    return id != null && users[id]?.activeRole == Role.assistant;
+  }
+
+  int amountFor(int gross, {required bool asAssistant}) =>
+      asAssistant ? net(gross) : gross;
+
+  int amountFrom(int shown, {required bool asAssistant}) =>
+      asAssistant ? gross(shown) : shown;
+
+  Fees viewFees(Fees f, {required bool asAssistant}) {
+    if (!asAssistant) return f;
+    final n = net(f.amount);
+    return Fees(
+      amount: n,
+      seekerFee: 0,
+      seekerTotal: n,
+      assistantFee: 0,
+      assistantReceives: n,
+    );
+  }
+
+  Listing listingFor(Listing l, {required bool asAssistant}) => asAssistant
+      ? l.copyWith(budgetMin: net(l.budgetMin), budgetMax: net(l.budgetMax))
+      : l;
+
+  Application applicationFor(Application a, {required bool asAssistant}) =>
+      asAssistant ? a.copyWith(proposedRate: net(a.proposedRate)) : a;
+
+  Agreement agreementFor(Agreement a, {required bool asAssistant}) =>
+      asAssistant
+      ? a.copyWith(rate: net(a.rate), fees: viewFees(a.fees, asAssistant: true))
+      : a;
+
+  BookingPeriod periodFor(BookingPeriod p, {required bool asAssistant}) =>
+      asAssistant
+      ? p.copyWith(amount: net(p.amount), serviceFee: 0, total: net(p.amount))
+      : p;
+
+  Booking bookingFor(Booking b, {required bool asAssistant}) => asAssistant
+      ? b.copyWith(
+          rate: net(b.rate),
+          fees: viewFees(b.fees, asAssistant: true),
+          periods: [for (final p in b.periods) periodFor(p, asAssistant: true)],
+        )
+      : b;
 
   // ------------------------------------------------------- cross-feature flow
 
@@ -263,7 +327,6 @@ class MockBackend {
     final ids = <String>[];
     for (var i = 0; i < a.periodCount; i++) {
       final start = a.startDate.add(a.unit.duration * i);
-      final fees = feesFor(a.rate);
       final p = BookingPeriod(
         id: newId(),
         bookingId: id,
@@ -271,8 +334,8 @@ class MockBackend {
         start: start,
         end: start.add(a.unit.duration),
         amount: a.rate,
-        serviceFee: fees.seekerFee,
-        total: fees.seekerTotal,
+        serviceFee: 0,
+        total: a.rate,
         status: PeriodStatus.awaitingPayment,
         dueAt: start.subtract(const Duration(days: 3)),
       );
