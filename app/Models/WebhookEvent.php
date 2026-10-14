@@ -25,4 +25,3 @@ class WebhookEvent extends Model
         ];
     }
 }
-

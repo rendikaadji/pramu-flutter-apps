@@ -68,7 +68,7 @@ class VerificationController extends Controller
     {
         $verification = $request->user()->verification;
 
-        if (!$verification) {
+        if (! $verification) {
             return $this->successResponse([
                 'status' => 'unverified',
                 'rejection_reason' => null,
@@ -108,4 +108,3 @@ class VerificationController extends Controller
         ]);
     }
 }
-

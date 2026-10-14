@@ -15,7 +15,6 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Verification;
 use App\Models\Wallet;
-use App\Models\WalletTransaction;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -391,7 +390,7 @@ class DatabaseSeeder extends Seeder
             [
                 'booking_id' => null,
                 'category' => 'behavior',
-                'description' => "Pelamar membatalkan janji wawancara secara sepihak dan meminta transfer uang muka di luar aplikasi sebelum memulai kerja.",
+                'description' => 'Pelamar membatalkan janji wawancara secara sepihak dan meminta transfer uang muka di luar aplikasi sebelum memulai kerja.',
                 'evidence_paths' => ['reports/chat_screenshot_01.jpg'],
                 'share_chat_consent' => true,
                 'consent_expires_at' => now()->addDays(6),

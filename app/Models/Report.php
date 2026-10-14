@@ -47,4 +47,3 @@ class Report extends Model
         return $this->belongsTo(Booking::class);
     }
 }
-

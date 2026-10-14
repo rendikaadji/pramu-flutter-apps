@@ -29,9 +29,8 @@ trait ApiResponse
             'error' => [
                 'code' => $code,
                 'message' => $message,
-                'fields' => $fields ?? (object)[],
+                'fields' => $fields ?? (object) [],
             ],
         ], $status);
     }
 }
-

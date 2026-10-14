@@ -52,7 +52,7 @@ class AuthController extends Controller
         }
 
         // Generate 6-digit OTP
-        $otpCode = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $otpCode = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
         Otp::create([
             'phone' => $user->phone,
             'code' => $otpCode,
@@ -98,7 +98,7 @@ class AuthController extends Controller
             );
         }
 
-        $code = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
         Otp::create([
             'phone' => $validated['phone'],
             'code' => $code,
@@ -127,7 +127,7 @@ class AuthController extends Controller
             ->latest()
             ->first();
 
-        if (!$otp) {
+        if (! $otp) {
             return $this->errorResponse('OTP_NOT_FOUND', 'Kode OTP tidak ditemukan atau belum diminta.', null, 404);
         }
 
@@ -146,7 +146,7 @@ class AuthController extends Controller
             return $this->errorResponse(
                 'OTP_INVALID',
                 "Kode OTP salah. Sisa percobaan: {$remaining}.",
-                ['code' => ["Kode OTP salah."]],
+                ['code' => ['Kode OTP salah.']],
                 422
             );
         }
@@ -177,7 +177,7 @@ class AuthController extends Controller
             ->orWhere('phone', $validated['login'])
             ->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return $this->errorResponse('INVALID_CREDENTIALS', 'Email/No. HP atau kata sandi tidak cocok.', null, 401);
         }
 
@@ -254,9 +254,9 @@ class AuthController extends Controller
 
         // Ensure user has this role, or add it
         $hasRole = $user->roles()->where('role', $validated['role'])->exists();
-        if (!$hasRole) {
+        if (! $hasRole) {
             $user->roles()->create(['role' => $validated['role']]);
-            if ($validated['role'] === 'assistant' && !$user->wallet()->exists()) {
+            if ($validated['role'] === 'assistant' && ! $user->wallet()->exists()) {
                 $user->wallet()->create(['balance' => 0, 'held_balance' => 0]);
             }
         }
@@ -281,4 +281,3 @@ class AuthController extends Controller
         ]);
     }
 }
-

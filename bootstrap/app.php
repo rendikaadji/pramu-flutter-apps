@@ -1,9 +1,14 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-        $exceptions->render(function (\Illuminate\Validation\ValidationException $e, Request $request) {
+        $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'error' => [
@@ -32,49 +37,49 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, Request $request) {
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'error' => [
                         'code' => 'UNAUTHENTICATED',
                         'message' => 'Sesi Anda telah berakhir atau belum masuk.',
-                        'fields' => (object)[],
+                        'fields' => (object) [],
                     ],
                 ], 401);
             }
         });
 
-        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, Request $request) {
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'error' => [
                         'code' => 'FORBIDDEN',
                         'message' => $e->getMessage() ?: 'Akses ditolak.',
-                        'fields' => (object)[],
+                        'fields' => (object) [],
                     ],
                 ], 403);
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'error' => [
                         'code' => 'NOT_FOUND',
                         'message' => 'Data atau rute tidak ditemukan.',
-                        'fields' => (object)[],
+                        'fields' => (object) [],
                     ],
                 ], 404);
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException $e, Request $request) {
+        $exceptions->render(function (TooManyRequestsHttpException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'error' => [
                         'code' => 'TOO_MANY_ATTEMPTS',
                         'message' => 'Terlalu banyak percobaan. Silakan coba lagi nanti.',
-                        'fields' => (object)[],
+                        'fields' => (object) [],
                     ],
                 ], 429);
             }

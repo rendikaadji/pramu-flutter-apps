@@ -61,13 +61,13 @@ class BookingController extends Controller
             })
             ->find($id);
 
-        if (!$booking) {
+        if (! $booking) {
             return $this->errorResponse('BOOKING_NOT_FOUND', 'Kontrak tidak ditemukan.', null, 404);
         }
 
         // Mask contact details if no period is paid yet (PRD §5.6, CHT-2)
         $hasPaidPeriod = $booking->periods->contains(fn ($p) => in_array($p->status, ['paid', 'in_progress', 'completed', 'settled']));
-        if (!$hasPaidPeriod) {
+        if (! $hasPaidPeriod) {
             if ($booking->seeker) {
                 $booking->seeker->phone = '••••••••';
             }
@@ -88,7 +88,7 @@ class BookingController extends Controller
 
         $period = BookingPeriod::with('booking')->find($periodId);
 
-        if (!$period) {
+        if (! $period) {
             return $this->errorResponse('PERIOD_NOT_FOUND', 'Periode tagihan tidak ditemukan.', null, 404);
         }
 
@@ -100,7 +100,7 @@ class BookingController extends Controller
             return $this->errorResponse('INVALID_STATE', 'Status tagihan tidak dalam status menunggu pembayaran.', null, 409);
         }
 
-        $externalId = "period_pay_{$period->id}_" . Str::random(6);
+        $externalId = "period_pay_{$period->id}_".Str::random(6);
         $invoiceUrl = "https://checkout-staging.xendit.co/web/{$externalId}";
 
         $period->update([
@@ -127,7 +127,7 @@ class BookingController extends Controller
     {
         $period = BookingPeriod::with('booking')->find($periodId);
 
-        if (!$period) {
+        if (! $period) {
             return $this->errorResponse('PERIOD_NOT_FOUND', 'Periode tidak ditemukan.', null, 404);
         }
 
@@ -135,7 +135,7 @@ class BookingController extends Controller
             return $this->errorResponse('FORBIDDEN', 'Hanya pencari yang dapat mengonfirmasi pekerjaan selesai.', null, 403);
         }
 
-        if (!in_array($period->status, ['paid', 'in_progress', 'awaiting_confirmation'])) {
+        if (! in_array($period->status, ['paid', 'in_progress', 'awaiting_confirmation'])) {
             return $this->errorResponse('INVALID_STATE', 'Periode belum dalam status yang dapat dikonfirmasi.', null, 409);
         }
 
@@ -177,7 +177,7 @@ class BookingController extends Controller
     {
         $booking = Booking::with('periods')->find($id);
 
-        if (!$booking) {
+        if (! $booking) {
             return $this->errorResponse('BOOKING_NOT_FOUND', 'Kontrak tidak ditemukan.', null, 404);
         }
 
@@ -194,4 +194,3 @@ class BookingController extends Controller
         ]);
     }
 }
-

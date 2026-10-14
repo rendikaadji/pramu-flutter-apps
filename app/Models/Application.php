@@ -50,4 +50,3 @@ class Application extends Model
         return $this->hasMany(Agreement::class);
     }
 }
-

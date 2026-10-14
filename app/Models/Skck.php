@@ -30,4 +30,3 @@ class Skck extends Model
         return $this->belongsTo(User::class);
     }
 }
-

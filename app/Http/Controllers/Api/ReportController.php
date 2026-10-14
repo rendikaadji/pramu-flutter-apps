@@ -29,7 +29,7 @@ class ReportController extends Controller
         $user = $request->user();
 
         // If related to a booking, mark booking as disputed
-        if (!empty($validated['booking_id'])) {
+        if (! empty($validated['booking_id'])) {
             $booking = Booking::find($validated['booking_id']);
             if ($booking) {
                 $booking->update(['status' => 'disputed']);
@@ -66,7 +66,7 @@ class ReportController extends Controller
     {
         $report = Report::find($id);
 
-        if (!$report || $report->reporter_id !== $request->user()->id) {
+        if (! $report || $report->reporter_id !== $request->user()->id) {
             return $this->errorResponse('FORBIDDEN', 'Laporan tidak ditemukan.', null, 404);
         }
 
@@ -81,4 +81,3 @@ class ReportController extends Controller
         ]);
     }
 }
-

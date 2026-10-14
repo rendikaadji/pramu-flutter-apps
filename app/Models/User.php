@@ -92,4 +92,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Application::class);
     }
+
+    public function skck(): HasOne
+    {
+        return $this->hasOne(Skck::class);
+    }
+
+    public function receivedReviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
 }

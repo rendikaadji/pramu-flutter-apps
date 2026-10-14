@@ -20,7 +20,7 @@ class ReviewController extends Controller
     {
         $booking = Booking::with('reviews')->find($bookingId);
 
-        if (!$booking) {
+        if (! $booking) {
             return $this->errorResponse('BOOKING_NOT_FOUND', 'Kontrak tidak ditemukan.', null, 404);
         }
 
@@ -28,7 +28,7 @@ class ReviewController extends Controller
         $isSeeker = $booking->seeker_id === $user->id;
         $isAssistant = $booking->assistant_id === $user->id;
 
-        if (!$isSeeker && !$isAssistant) {
+        if (! $isSeeker && ! $isAssistant) {
             return $this->errorResponse('FORBIDDEN', 'Bukan pihak dalam kontrak ini.', null, 403);
         }
 
@@ -91,4 +91,3 @@ class ReviewController extends Controller
         ]);
     }
 }
-

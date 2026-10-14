@@ -29,4 +29,3 @@ class Category extends Model
         return $this->hasMany(Listing::class);
     }
 }
-

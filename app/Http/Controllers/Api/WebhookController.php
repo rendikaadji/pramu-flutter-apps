@@ -32,7 +32,7 @@ class WebhookController extends Controller
         $externalId = $request->input('external_id');
         $status = strtoupper($request->input('status', ''));
 
-        if (!$eventId || !$externalId) {
+        if (! $eventId || ! $externalId) {
             return $this->errorResponse('INVALID_PAYLOAD', 'Payload webhook tidak lengkap.', null, 422);
         }
 
@@ -46,7 +46,7 @@ class WebhookController extends Controller
             WebhookEvent::create([
                 'event_id' => $eventId,
                 'source' => 'xendit',
-                'event_type' => 'invoice.' . strtolower($status),
+                'event_type' => 'invoice.'.strtolower($status),
                 'payload' => $request->all(),
                 'processed_at' => now(),
             ]);
@@ -80,4 +80,3 @@ class WebhookController extends Controller
         });
     }
 }
-

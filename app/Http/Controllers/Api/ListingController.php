@@ -34,14 +34,14 @@ class ListingController extends Controller
         }
 
         if ($request->filled('budget_max')) {
-            $query->where('budget_min', '<=', (int)$request->budget_max);
+            $query->where('budget_min', '<=', (int) $request->budget_max);
         }
 
         if ($request->filled('search')) {
             $query->where('title', 'like', "%{$request->search}%");
         }
 
-        $perPage = min((int)($request->per_page ?? 15), 50);
+        $perPage = min((int) ($request->per_page ?? 15), 50);
         $listings = $query->latest()->paginate($perPage);
 
         return $this->successResponse(
@@ -63,7 +63,7 @@ class ListingController extends Controller
         $listing = Listing::with(['category', 'user:id,name,avatar_url,is_verified'])
             ->find($id);
 
-        if (!$listing) {
+        if (! $listing) {
             return $this->errorResponse('LISTING_NOT_FOUND', 'Lowongan tidak ditemukan.', null, 404);
         }
 
@@ -77,7 +77,7 @@ class ListingController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->is_verified) {
+        if (! $user->is_verified) {
             return $this->errorResponse(
                 'VERIFICATION_REQUIRED',
                 'Anda harus menyelesaikan verifikasi KTP terlebih dahulu untuk memasang lowongan.',
@@ -117,7 +117,7 @@ class ListingController extends Controller
     {
         $listing = $request->user()->listings()->find($id);
 
-        if (!$listing) {
+        if (! $listing) {
             return $this->errorResponse('LISTING_NOT_FOUND', 'Lowongan tidak ditemukan.', null, 404);
         }
 
@@ -126,7 +126,7 @@ class ListingController extends Controller
         }
 
         $feeAmount = 25000; // Rp25.000 pasang lowongan (PRD §5.4, LST-2)
-        $externalId = "listing_fee_{$listing->id}_" . Str::random(6);
+        $externalId = "listing_fee_{$listing->id}_".Str::random(6);
 
         // Simulation or integration URL
         $invoiceUrl = "https://checkout-staging.xendit.co/web/{$externalId}";
@@ -170,7 +170,7 @@ class ListingController extends Controller
     {
         $listing = $request->user()->listings()->find($id);
 
-        if (!$listing) {
+        if (! $listing) {
             return $this->errorResponse('LISTING_NOT_FOUND', 'Lowongan tidak ditemukan.', null, 404);
         }
 
@@ -182,4 +182,3 @@ class ListingController extends Controller
         ]);
     }
 }
-

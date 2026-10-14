@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\Interview;
 use App\Models\Listing;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,19 +21,19 @@ class ApplicationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->is_verified) {
+        if (! $user->is_verified) {
             return $this->errorResponse('VERIFICATION_REQUIRED', 'Anda harus terverifikasi untuk melamar lowongan.', null, 403);
         }
 
         $listing = Listing::find($listingId);
-        if (!$listing || $listing->status !== 'open') {
+        if (! $listing || $listing->status !== 'open') {
             return $this->errorResponse('LISTING_UNAVAILABLE', 'Lowongan ini sudah tidak menerima lamaran.', null, 400);
         }
 
         // Check SKCK requirement
         if ($listing->require_skck) {
             $hasVerifiedSkck = $user->skck && $user->skck->status === 'verified';
-            if (!$hasVerifiedSkck) {
+            if (! $hasVerifiedSkck) {
                 return $this->errorResponse(
                     'SKCK_REQUIRED',
                     'Lowongan ini mewajibkan SKCK yang sudah terverifikasi.',
@@ -76,7 +77,7 @@ class ApplicationController extends Controller
     {
         $listing = $request->user()->listings()->find($listingId);
 
-        if (!$listing) {
+        if (! $listing) {
             return $this->errorResponse('NOT_FOUND', 'Lowongan tidak ditemukan atau bukan milik Anda.', null, 404);
         }
 
@@ -113,7 +114,7 @@ class ApplicationController extends Controller
         $application = Application::with(['user.assistantProfile', 'listing', 'interview', 'agreements'])
             ->find($id);
 
-        if (!$application) {
+        if (! $application) {
             return $this->errorResponse('APPLICATION_NOT_FOUND', 'Lamaran tidak ditemukan.', null, 404);
         }
 
@@ -133,7 +134,7 @@ class ApplicationController extends Controller
     {
         $application = Application::with('listing')->find($id);
 
-        if (!$application || $application->listing->user_id !== $request->user()->id) {
+        if (! $application || $application->listing->user_id !== $request->user()->id) {
             return $this->errorResponse('FORBIDDEN', 'Bukan pemilik lowongan.', null, 403);
         }
 
@@ -146,13 +147,50 @@ class ApplicationController extends Controller
     }
 
     /**
+     * Schedule an interview and submit meeting link (Seeker/Employer)
+     */
+    public function scheduleInterview(Request $request, string $id): JsonResponse
+    {
+        $application = Application::with('listing')->find($id);
+
+        if (! $application || $application->listing->user_id !== $request->user()->id) {
+            return $this->errorResponse('FORBIDDEN', 'Hanya pemilik lowongan yang dapat menjadwalkan wawancara.', null, 403);
+        }
+
+        $validated = $request->validate([
+            'meeting_url' => ['required', 'url', 'max:255'],
+            'scheduled_at' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $interview = Interview::updateOrCreate(
+            ['application_id' => $application->id],
+            [
+                'proposed_slots' => [$validated['scheduled_at']],
+                'confirmed_slot' => $validated['scheduled_at'],
+                'meeting_url' => $validated['meeting_url'],
+                'notes' => $validated['notes'] ?? null,
+                'status' => 'confirmed',
+            ]
+        );
+
+        $application->update(['status' => 'interview_scheduled']);
+
+        return $this->successResponse([
+            'message' => 'Wawancara berhasil dijadwalkan dengan tautan pertemuan.',
+            'interview' => $interview,
+            'application_status' => $application->status,
+        ]);
+    }
+
+    /**
      * Accept application (Seeker)
      */
     public function accept(Request $request, string $id): JsonResponse
     {
         $application = Application::with('listing')->find($id);
 
-        if (!$application || $application->listing->user_id !== $request->user()->id) {
+        if (! $application || $application->listing->user_id !== $request->user()->id) {
             return $this->errorResponse('FORBIDDEN', 'Bukan pemilik lowongan.', null, 403);
         }
 
@@ -171,7 +209,7 @@ class ApplicationController extends Controller
     {
         $application = Application::with('listing')->find($id);
 
-        if (!$application || $application->listing->user_id !== $request->user()->id) {
+        if (! $application || $application->listing->user_id !== $request->user()->id) {
             return $this->errorResponse('FORBIDDEN', 'Bukan pemilik lowongan.', null, 403);
         }
 
@@ -193,7 +231,7 @@ class ApplicationController extends Controller
     {
         $application = $request->user()->applications()->find($id);
 
-        if (!$application) {
+        if (! $application) {
             return $this->errorResponse('APPLICATION_NOT_FOUND', 'Lamaran tidak ditemukan.', null, 404);
         }
 
@@ -209,4 +247,3 @@ class ApplicationController extends Controller
         ]);
     }
 }
-

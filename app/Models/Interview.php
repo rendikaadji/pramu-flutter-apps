@@ -33,9 +33,21 @@ class Interview extends Model
         ];
     }
 
+    /**
+     * Optional helper to generate standard Google Meet URL pattern: https://meet.google.com/xxx-yyyy-zzz
+     */
+    public static function generateMeetingUrl(): string
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyz';
+        $p1 = substr(str_shuffle($chars), 0, 3);
+        $p2 = substr(str_shuffle($chars), 0, 4);
+        $p3 = substr(str_shuffle($chars), 0, 3);
+
+        return "https://meet.google.com/{$p1}-{$p2}-{$p3}";
+    }
+
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
     }
 }
-

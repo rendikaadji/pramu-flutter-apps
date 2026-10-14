@@ -27,6 +27,9 @@ class Listing extends Model
         'require_skck',
         'screening_questions',
         'status',
+        'rejection_reason',
+        'reviewed_at',
+        'reviewed_by',
         'listing_fee_invoice_id',
         'listing_fee_invoice_url',
         'paid_at',
@@ -44,12 +47,18 @@ class Listing extends Model
             'screening_questions' => 'array',
             'paid_at' => 'datetime',
             'expires_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function category(): BelongsTo
@@ -62,4 +71,3 @@ class Listing extends Model
         return $this->hasMany(Application::class);
     }
 }
-

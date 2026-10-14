@@ -21,15 +21,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/verifications/{id}', [AdminController::class, 'showVerification'])->name('verifications.show');
     Route::post('/verifications/{id}/approve', [AdminController::class, 'approveVerification'])->name('verifications.approve');
     Route::post('/verifications/{id}/reject', [AdminController::class, 'rejectVerification'])->name('verifications.reject');
+    Route::post('/skck/{id}/approve', [AdminController::class, 'approveSkck'])->name('skck.approve');
+    Route::post('/skck/{id}/reject', [AdminController::class, 'rejectSkck'])->name('skck.reject');
 
     // Users Management
     Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+    Route::get('/users/{id}', [AdminController::class, 'showUser'])->name('users.show');
 
     // Job Listings
     Route::get('/listings', [AdminController::class, 'listings'])->name('listings.index');
+    Route::get('/listings/{id}', [AdminController::class, 'showListing'])->name('listings.show');
 
-    // Interviews (Google Meet)
+    // Interviews (Video Conference / Google Meet / Zoom)
     Route::get('/interviews', [AdminController::class, 'interviews'])->name('interviews.index');
+    Route::post('/interviews/{id}/update', [AdminController::class, 'updateInterview'])->name('interviews.update');
+    Route::post('/interviews/{id}/generate-meet', [AdminController::class, 'generateInterviewMeet'])->name('interviews.generate-meet');
 
     // Escrow & Bookings
     Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings.index');
@@ -44,14 +50,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Secure Internal File Preview (Only via local app storage)
     Route::get('/files/preview', function () {
         $path = request()->query('path');
-        if (!$path) {
+        if (! $path) {
             abort(404);
         }
         if (Storage::disk('local')->exists($path)) {
             return response()->file(Storage::disk('local')->path($path));
         }
-        if (file_exists(storage_path('app/' . $path))) {
-            return response()->file(storage_path('app/' . $path));
+        if (file_exists(storage_path('app/'.$path))) {
+            return response()->file(storage_path('app/'.$path));
         }
         abort(404);
     })->name('file.preview');

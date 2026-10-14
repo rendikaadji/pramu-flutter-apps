@@ -54,6 +54,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/me/applications', [ApplicationController::class, 'myApplications']);
         Route::get('/applications/{id}', [ApplicationController::class, 'show']);
         Route::post('/applications/{id}/shortlist', [ApplicationController::class, 'shortlist']);
+        Route::post('/applications/{id}/schedule-interview', [ApplicationController::class, 'scheduleInterview']);
         Route::post('/applications/{id}/accept', [ApplicationController::class, 'accept']);
         Route::post('/applications/{id}/reject', [ApplicationController::class, 'reject']);
         Route::post('/applications/{id}/withdraw', [ApplicationController::class, 'withdraw']);

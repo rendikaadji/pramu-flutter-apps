@@ -24,7 +24,7 @@ class AgreementController extends Controller
     {
         $application = Application::with('listing')->find($applicationId);
 
-        if (!$application) {
+        if (! $application) {
             return $this->errorResponse('NOT_FOUND', 'Lamaran tidak ditemukan.', null, 404);
         }
 
@@ -32,7 +32,7 @@ class AgreementController extends Controller
         $isSeeker = $application->listing->user_id === $user->id;
         $isAssistant = $application->user_id === $user->id;
 
-        if (!$isSeeker && !$isAssistant) {
+        if (! $isSeeker && ! $isAssistant) {
             return $this->errorResponse('FORBIDDEN', 'Anda tidak terlibat dalam lamaran ini.', null, 403);
         }
 
@@ -68,7 +68,7 @@ class AgreementController extends Controller
     {
         $agreement = Agreement::with(['application.listing'])->find($id);
 
-        if (!$agreement) {
+        if (! $agreement) {
             return $this->errorResponse('NOT_FOUND', 'Kesepakatan tidak ditemukan.', null, 404);
         }
 
@@ -76,7 +76,7 @@ class AgreementController extends Controller
         $isSeeker = $agreement->application->listing->user_id === $user->id;
         $isAssistant = $agreement->application->user_id === $user->id;
 
-        if (!$isSeeker && !$isAssistant) {
+        if (! $isSeeker && ! $isAssistant) {
             return $this->errorResponse('FORBIDDEN', 'Bukan pihak dalam kesepakatan ini.', null, 403);
         }
 
@@ -108,8 +108,8 @@ class AgreementController extends Controller
                 $startDate = Carbon::parse($agreement->start_date);
                 for ($i = 1; $i <= $agreement->period_count; $i++) {
                     $amount = $agreement->rate_per_period;
-                    $seekerFee = (int)round($amount * 0.05); // 5% Seeker service fee
-                    $assistantFee = (int)round($amount * 0.05); // 5% Assistant service fee
+                    $seekerFee = (int) round($amount * 0.05); // 5% Seeker service fee
+                    $assistantFee = (int) round($amount * 0.05); // 5% Assistant service fee
                     $totalToPay = $amount + $seekerFee;
                     $totalPayout = $amount - $assistantFee;
 
@@ -142,4 +142,3 @@ class AgreementController extends Controller
         ]);
     }
 }
-
