@@ -44,9 +44,8 @@ class _Session {
   );
 
   Future<AuthUser> login(String phone) async {
-    final s = await ApiAuthRepository(
-      api,
-    ).login(identifier: phone, password: 'Rahasia123');
+    final s = await ApiAuthRepository(api)
+        .login(identifier: phone, password: 'Rahasia123');
     await tokens.write(s.token);
     return s.user;
   }
@@ -67,9 +66,8 @@ void main() {
     final devices = await ApiAuthRepository(rina.api).devices();
     expect(devices.where((d) => d.current), hasLength(1));
     await expectLater(
-      ApiAuthRepository(
-        _Session('x').api,
-      ).login(identifier: '08999999999', password: 'Rahasia123'),
+      ApiAuthRepository(_Session('x').api)
+          .login(identifier: '08999999999', password: 'Rahasia123'),
       throwsA(
         isA<ApiException>().having((e) => e.code, 'code', 'ACCOUNT_SUSPENDED'),
       ),
@@ -103,16 +101,14 @@ void main() {
     expect((await listings.mine()).length, greaterThan(1));
 
     // Pelamar melihat nominal bersih
-    final browse = await ApiListingRepository(
-      siti.api,
-    ).browse(const ListingFilter(category: 'Juru Masak'));
+    final browse = await ApiListingRepository(siti.api)
+        .browse(const ListingFilter(category: 'Juru Masak'));
     final seen = browse.items.firstWhere((l) => l.id == draft.id);
     expect(seen.budgetMin, 1800000);
 
     // Profil & pencarian
-    final found = await ApiProfileRepository(
-      rina.api,
-    ).search(const AssistantFilter(city: 'Jakarta Selatan'));
+    final found = await ApiProfileRepository(rina.api)
+        .search(const AssistantFilter(city: 'Jakarta Selatan'));
     expect(found.items, isNotEmpty);
     expect(
       (await ApiProfileRepository(siti.api).myProfile())?.userId,
@@ -129,17 +125,19 @@ void main() {
     expect((await rApps.forListing(draft.id)).single.proposedRate, 2000000);
     await rApps.act(app.id, ApplicationAction.shortlist);
     final slot = DateTime.now().toUtc().add(const Duration(days: 2));
-    final iv = await ApiInterviewRepository(
-      rina.api,
-    ).propose(app.id, [DateTime.utc(slot.year, slot.month, slot.day, 3)]);
-    final confirmed = await ApiInterviewRepository(
-      siti.api,
-    ).confirm(iv.id, iv.slots.first);
+    final iv = await ApiInterviewRepository(rina.api)
+        .propose(app.id, [DateTime.utc(slot.year, slot.month, slot.day, 3)]);
+    final confirmed = await ApiInterviewRepository(siti.api)
+        .confirm(iv.id, iv.slots.first);
     expect(confirmed.status, InterviewStatus.confirmed);
     expect(confirmed.meetingUrl, startsWith('https://meet.google.com/'));
     await ApiInterviewRepository(rina.api).evaluate(
       iv.id,
-      const InterviewEvaluation(communication: 5, politeness: 5, reliability: 4),
+      const InterviewEvaluation(
+        communication: 5,
+        politeness: 5,
+        reliability: 4,
+      ),
     );
     expect(
       (await ApiInterviewRepository(rina.api).evaluation(iv.id))?.reliability,
@@ -185,9 +183,9 @@ void main() {
     final msg = await chat.send(app.id, 'WA saya 081298765432');
     expect(msg.masked, isFalse);
     expect(
-      (await ApiChatRepository(rina.api).conversations()).any(
-        (c) => c.id == app.id,
-      ),
+      (await ApiChatRepository(
+        rina.api,
+      ).conversations()).any((c) => c.id == app.id),
       isTrue,
     );
     await ApiChatRepository(rina.api).markRead(app.id);
@@ -230,12 +228,13 @@ void main() {
       ),
     );
     expect(report.status, ReportStatus.received);
-    final shared = await ApiReportRepository(
-      ani.api,
-    ).shareConversation(report.id, conversationId: paused.conversationId!);
+    final shared = await ApiReportRepository(ani.api)
+        .shareConversation(report.id, conversationId: paused.conversationId!);
     expect(shared.share?.revoked, isFalse);
     expect(
-      (await ApiReportRepository(ani.api).revokeShare(report.id)).share?.revoked,
+      (await ApiReportRepository(ani.api).revokeShare(report.id))
+          .share
+          ?.revoked,
       isTrue,
     );
   }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
