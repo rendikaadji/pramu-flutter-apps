@@ -88,7 +88,7 @@ Konvensi: AC klien = apa yang **harus tampil/terjadi di app**. Semua teks UI Ind
 ### PAY — Pembayaran & dompet ([[PRD-v1]] §5.7)
 | ID | AC klien | Fase |
 |---|---|---|
-| PAY-1/2 | Rincian sebelum bayar: nominal + fee pencari = total (angka dari server, **klien tidak menghitung ulang untuk dikirim**; hanya format). Tombol Bayar → `Idempotency-Key` (UUID per niat bayar, dipakai ulang bila retry) → `invoice_url` → WebView → deep link kembali → layar "Memeriksa pembayaran" → refresh period; `paid` hanya setelah server bilang | MVP |
+| PAY-1/2 | Rincian sebelum bayar: total yang dibayar pencari = nominal yang diinput (potongan layanan 10% ada di sisi asisten, tidak ditampilkan sebagai baris biaya; angka dari server, **klien tidak menghitung ulang untuk dikirim**; hanya format). Tombol Bayar → `Idempotency-Key` (UUID per niat bayar, dipakai ulang bila retry) → `invoice_url` → WebView → deep link kembali → layar "Memeriksa pembayaran" → refresh period; `paid` hanya setelah server bilang | MVP |
 | PAY-3/4 | Tampilkan "Dana ditahan" & countdown auto-release; tombol "Konfirmasi selesai" saat `awaiting_confirmation`; tombol "Laporkan masalah" | MVP |
 | PAY-5/6 | Dompet asisten: saldo, riwayat; form rekening (1 aktif, nomor di-mask `••••1234`); ajukan tarik dana (idempotency key); status `queued/processing/success/failed` | MVP |
 | PAY-7/8 | Dialog batal menampilkan estimasi refund dari server; banner "Tagihan period berikut H-3", status `paused` jelas | MVP |

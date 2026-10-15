@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Pramu Apps</string>
+	<string>Pramu</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>pramu_apps</string>
+	<string>Pramu</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Pramu memakai kamera untuk memotret KTP, selfie bersama KTP, SKCK, dan foto profil Anda hanya untuk verifikasi identitas.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pramu meminta akses foto agar Anda dapat memilih foto profil, SKCK, atau bukti laporan dari galeri. Foto lain tidak dibaca.</string>
 </dict>
 </plist>
