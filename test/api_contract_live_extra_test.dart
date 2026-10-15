@@ -62,11 +62,14 @@ void main() {
   late String img;
 
   setUpAll(() {
+    if (!_live) return;
     tmp = Directory.systemTemp.createTempSync('pramu_live_');
     img = '${tmp.path}/x.png';
     File(img).writeAsBytesSync(_png);
   });
-  tearDownAll(() => tmp.deleteSync(recursive: true));
+  tearDownAll(() {
+    if (_live) tmp.deleteSync(recursive: true);
+  });
 
   test('daftar + OTP + peran + verifikasi KTP + reset sandi', () async {
     final s = _Session('new');
@@ -125,7 +128,7 @@ void main() {
     );
     await expectLater(s.auth.me(), throwsA(isA<ApiException>().having((e) => e.status, 'status', 401)));
     expect((await other.login(phone, 'SandiBaru123')).name, 'Uji Baru');
-  });
+  }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
   test('foto, SKCK, perangkat, push token (Bu Maya)', () async {
     final maya = _Session('maya');
@@ -153,7 +156,7 @@ void main() {
     expect((await maya.auth.devices()).any((d) => d.id == victim.id), isFalse);
     // token perangkat yang dicabut sudah tidak valid
     await expectLater(other.auth.me(), throwsA(isA<ApiException>().having((e) => e.status, 'status', 401)));
-  });
+  }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
   test('undangan Pencari -> Pelamar', () async {
     final rina = _Session('rina');
@@ -174,7 +177,7 @@ void main() {
     final inv = await ApiApplicationRepository(lestari.api).invitations();
     expect(inv.single.listingId, open.id);
     expect(inv.single.message, 'Mari melamar');
-  });
+  }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
   test('wawancara ulang/batal + ajukan balik kesepakatan + tanpa wawancara', () async {
     final siti = _Session('siti');
@@ -243,7 +246,7 @@ void main() {
     final cancelled = await pay.cancel(booking.id, reason: 'Rencana berubah');
     expect(cancelled.status, BookingStatus.cancelled);
     expect(cancelled.periods.every((p) => p.status == PeriodStatus.cancelled), isTrue);
-  });
+  }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
   test('rekening + tarik dana idempoten + bukti laporan', () async {
     final siti = _Session('siti2');
@@ -286,5 +289,5 @@ void main() {
       ApiReportRepository(siti.api).get(report.id),
       throwsA(isA<ApiException>().having((e) => e.status, 'status', 404)),
     );
-  });
+  }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 }

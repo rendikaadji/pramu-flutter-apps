@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/app.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
@@ -311,7 +312,13 @@ void main() {
     }
     await tapKey(tester, K.applySubmit);
     expect(find.text('Lamaran terkirim'), findsOneWidget);
-    await tester.tap(find.text('Lihat lamaran'));
+    // Regresi: setelah kembali, detail lowongan harus "Lihat lamaran" (bukan tetap "Lamar sekarang"):
+    // provider turunan ikut di-invalidate saat melamar.
+    GoRouter.of(tester.element(find.byType(Scaffold).last)).pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(K.listingViewApplication), findsOneWidget);
+    expect(find.byKey(K.listingApply), findsNothing);
+    await tapKey(tester, K.listingViewApplication);
     await tester.pumpAndSettle();
     expect(find.text('Detail lamaran'), findsOneWidget);
 
