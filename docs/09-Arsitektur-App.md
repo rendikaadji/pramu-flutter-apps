@@ -73,7 +73,14 @@ Navigasi: gunakan `Routes.*` (builder, mis. `context.push(Routes.bookingDetail(i
 
 ## 5. Mock vs API
 
-`--dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://.../api/v1` → semua `<f>RepositoryProvider` memakai `Api*Repository`. Default (`USE_MOCK=true`) → `Mock*Repository` di atas satu `MockBackend` in-memory (latensi 150 ms, data hilang saat app restart; token `mock.<id>` tetap valid untuk akun seed). Bentuk API (path `/api/v1`, `{"data":…}`, `meta.next_cursor`, field snake_case) adalah **asumsi** sampai `openapi.yaml` ada; sesuaikan di `Api*Repository` + `fromJson` saja.
+`--dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://.../api/v1` → semua `<f>RepositoryProvider` memakai `Api*Repository`. Default (`USE_MOCK=true`) → `Mock*Repository` di atas satu `MockBackend` in-memory (latensi 150 ms, data hilang saat app restart; token `mock.<id>` tetap valid untuk akun seed). Backend asli = repo **pramu-web** (Laravel, `routes/api.php`), yang mengikuti kontrak `Api*Repository` + `fromJson` di app ini (path `/api/v1`, `{"data":…}`, `meta.next_cursor`, snake_case, ID ULID huruf besar). Rincian server: `pramu-web/Docs/09-Arsitektur-Web.md`. Bila kontrak berubah, ubah kedua sisi dalam satu rangkaian kerja, lalu jalankan uji kontrak live:
+
+```bash
+# di pramu-web: php artisan migrate:fresh --seed && php artisan serve
+flutter test test/api_contract_live_test.dart --dart-define=LIVE_API=true --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
+```
+
+Uji ini dilewati di `flutter test` biasa. Data seed server sama dengan akun mock di §5.1, tetapi tanpa reaksi bot. Driver lokal server: tagihan fake lunas saat status dicek, Meet fake, OTP `123456`.
 
 Pinning: `PINNED_SPKI` kosong = nonaktif. Bila diisi, isi `pinValidator` (api_client.dart) dengan pemeriksaan hash SPKI; tanpa validator koneksi ditolak (fail closed). Tidak ada `badCertificateCallback`.
 
@@ -82,7 +89,7 @@ Pinning: `PINNED_SPKI` kosong = nonaktif. Bila diisi, isi `pinValidator` (api_cl
 | Nama | HP | Peran | Catatan |
 |---|---|---|---|
 | Bu Rina | 081234567890 | Pencari, verified | punya 5 lowongan (open, draft, awaiting_payment, 2 filled), 2 pelamar di lowongan open, 2 kontrak (1 aktif, 1 `paused`) |
-| Siti | 081298765432 | Asisten, verified, SKCK verified | lamaran ke Pak Agus (wawancara menunggu konfirmasi), kontrak dgn Bu Rina (periode 1 selesai), dompet Rp1.425.000, rekening BCA |
+| Siti | 081298765432 | Asisten, verified, SKCK verified | lamaran ke Pak Agus (wawancara menunggu konfirmasi), kontrak dgn Bu Rina (periode 1 selesai), dompet Rp1.350.000 (potongan 10%), rekening BCA |
 | Bu Maya | 081355500002 | Pencari + Asisten, verified | uji ganti peran; tanpa profil/rekening/SKCK |
 | Dewi | 081355500003 | Asisten, belum verifikasi | uji gerbang verifikasi & 403 |
 | Akun Ditangguhkan | 08999999999 | Pencari | login → 403 `ACCOUNT_SUSPENDED` |
@@ -166,11 +173,14 @@ Android: `allowBackup=false`, `dataExtractionRules` + `fullBackupContent` (res/x
 dart format lib test && flutter analyze && flutter test
 flutter run --dart-define=USE_MOCK=true          # default
 flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://staging.example/api/v1
+# emulator Android ke pramu-web lokal (php artisan serve --host=0.0.0.0): API_BASE_URL=http://10.0.2.2:8000/api/v1
 ```
+
+Catatan: Android memblokir HTTP polos (`usesCleartextTraffic=false`), jadi uji di emulator butuh HTTPS (mis. `herd secure`) atau pengecualian debug.
 
 Dokumen terkait: [[06-Refactor-DeadCode-Mobile]] · [[05-E2E-Test-Mobile]] · [[07-Git-Commit-Mobile]]
 
-## Kontrak fee untuk backend (diterapkan di mock, wajib diikuti server)
+## Kontrak fee untuk backend (diterapkan di mock dan di server pramu-web: `App\Support\Fees`, snapshot `bookings.fee_percent`)
 
 - Potongan platform 10% seluruhnya di sisi asisten. Pencari membayar tepat nominal yang diinput (`seeker_fee = 0`, `seeker_total = amount`); asisten menerima `amount - 10%`.
 - Respons per peran: untuk pemanggil berperan asisten, semua nominal yang berasal dari pencari (budget lowongan, `proposed_rate`, `rate`/`fees` kesepakatan, `rate`/`fees`/`amount` booking & periode) dikirim **sudah bersih (90%)**, `assistant_fee = 0`. Untuk pencari dikirim nominal asli.
