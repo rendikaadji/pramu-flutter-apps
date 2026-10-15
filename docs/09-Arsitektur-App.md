@@ -176,7 +176,14 @@ flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://stag
 # emulator Android ke pramu-web lokal (php artisan serve --host=0.0.0.0): API_BASE_URL=http://10.0.2.2:8000/api/v1
 ```
 
-Catatan: Android memblokir HTTP polos (`usesCleartextTraffic=false`), jadi uji di emulator butuh HTTPS (mis. `herd secure`) atau pengecualian debug.
+Android memblokir HTTP polos di build release/profile (`usesCleartextTraffic=false`). Khusus build **debug** diizinkan lewat `android/app/src/debug/AndroidManifest.xml`, sehingga emulator bisa memakai server lokal:
+
+```bash
+# pramu-web: php artisan migrate:fresh --seed && php artisan serve --host=0.0.0.0 --port=8000
+flutter run -d emulator-5554 --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+```
+
+Perangkat fisik di jaringan yang sama: ganti `10.0.2.2` dengan IP LAN komputer (firewall harus mengizinkan port 8000). Login uji: `081234567890` / `Rahasia123`.
 
 Dokumen terkait: [[06-Refactor-DeadCode-Mobile]] · [[05-E2E-Test-Mobile]] · [[07-Git-Commit-Mobile]]
 
