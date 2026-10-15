@@ -14,7 +14,7 @@ Belum tentu repo sudah punya kode: **baca kode yang ada dulu**, ikuti konvensi y
 ### Uang
 - Semua nominal = **`int` rupiah** (tanpa `double`, tanpa desimal). Di model, di JSON, di state.
 - Format tampilan lewat **satu fungsi** `formatRupiah(int)` (contoh: `25000` -> `Rp25.000`). Dilarang `NumberFormat`/`'Rp$x'`/`toStringAsFixed` di luar file itu.
-- **Klien tidak menghitung fee untuk dikirim ke server.** Fee 10% (default 5% pencari + 5% asisten), escrow, settlement dihitung server. Klien hanya menampilkan angka dari server.
+- **Klien tidak menghitung fee untuk dikirim ke server.** Fee 10% dipotong penuh dari sisi asisten (Pencari bayar sesuai nominal yang diinput; asisten melihat nominal bersih 90%); tidak ditampilkan sebagai baris biaya ke pengguna. Escrow, settlement dihitung server. Klien hanya menampilkan angka dari server.
 - Status bayar (`paid`, dst) hanya dipercaya dari **server (webhook)**. Deep link/redirect WebView hanya memicu refresh status, bukan menandai sukses.
 - Endpoint uang (bayar, penarikan) kirim `Idempotency-Key` (UUID per niat; dipakai ulang saat retry; tombol dinonaktifkan saat proses). POST uang jangan auto-retry dengan key baru.
 
