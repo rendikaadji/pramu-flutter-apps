@@ -265,9 +265,16 @@ class MockBackend {
   /// Nominal Pencari -> yang tampil di Pelamar.
   int net(int gross) => gross - gross * _feePercent ~/ 100;
 
-  /// Nominal yang diinput Pelamar (bersih) -> nominal Pencari (dibulatkan ke atas).
-  int gross(int net) =>
-      (net * 100 + (100 - _feePercent) - 1) ~/ (100 - _feePercent);
+  /// Nominal yang diinput Pelamar (bersih) -> nominal Pencari (dibulatkan ke atas,
+  /// lalu diturunkan bila bersihnya melebihi input: 500000 -> 555555, bukan 555556).
+  /// Sama dengan `Fees::gross` di server pramu-web.
+  int gross(int shown) {
+    var g = (shown * 100 + (100 - _feePercent) - 1) ~/ (100 - _feePercent);
+    while (g > 0 && net(g) > shown) {
+      g--;
+    }
+    return g;
+  }
 
   /// Peran aktif pemanggil = asisten (untuk layar yang tak punya pihak kontrak).
   bool get viewerIsAssistant {
