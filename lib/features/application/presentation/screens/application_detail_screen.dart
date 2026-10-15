@@ -115,6 +115,11 @@ class _State extends ConsumerState<ApplicationDetailScreen>
         'Wawancara sudah selesai.',
         null,
       ),
+      ApplicationStatus.accepted when a.bookingId != null => (
+        'Kontrak berjalan',
+        'Lihat rincian kontrak dan jadwal pembayaran.',
+        () => go(Routes.bookingDetail(a.bookingId!)),
+      ),
       ApplicationStatus.accepted => (
         'Anda diterima',
         'Lanjutkan ke penyusunan kontrak.',

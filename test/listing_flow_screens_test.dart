@@ -15,6 +15,7 @@ import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/core/time.dart';
+import 'package:pramu_apps/features/application/domain/application.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/interview/domain/interview.dart';
 import 'package:pramu_apps/features/listing/data/listing_providers.dart';
@@ -281,6 +282,23 @@ void main() {
     await tester.tap(find.byIcon(LucideIcons.arrowLeft));
     await tester.pumpAndSettle();
     expect(find.text('Simpan draf?'), findsOneWidget);
+  });
+
+  testWidgets('M-45 lamaran diterima yang sudah punya kontrak -> "Kontrak berjalan"', (
+    tester,
+  ) async {
+    final env = await boot(tester, 'Siti');
+    final siti = env.backend.userByName('Siti').id;
+    final a = env.backend.applications.values.firstWhere(
+      (a) =>
+          a.assistant.id == siti &&
+          a.status == ApplicationStatus.accepted &&
+          a.bookingId != null,
+    );
+    env.go(Routes.applicationDetail(a.id));
+    await tester.pumpAndSettle();
+    expect(find.text('Kontrak berjalan'), findsOneWidget);
+    expect(find.text('Anda diterima'), findsNothing);
   });
 
   testWidgets('M-41/M-43/M-45 asisten melamar lalu menarik lamaran', (
