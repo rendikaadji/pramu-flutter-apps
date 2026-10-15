@@ -115,7 +115,7 @@ Semua `Provider<XRepository>` di `features/<f>/data/<f>_providers.dart`. State U
 
 | Fitur | Provider | Method utama |
 |---|---|---|
-| auth | `authRepositoryProvider` | `register`, `sendOtp`, `verifyOtp`→`AuthSession`, `login`, `logout`, `me`, `setRoles`, `switchRole`, `requestPasswordReset`, `resetPassword`, `devices`, `revokeDevice` |
+| auth | `authRepositoryProvider` | `register`, `sendOtp`, `verifyOtp`→`AuthSession`, `login`, `logout`, `me`, `setRoles`, `switchRole`, `requestPasswordReset`, `resetPassword`, `devices`, `revokeDevice`, `uploadPhoto(path)`/`removePhoto`→`AuthUser` (foto profil kedua peran, JPEG terkompres; 422 bila ditolak) |
 | verification | `verificationRepositoryProvider` | `current`, `submit(ktpPath,selfiePath,nik,onProgress)`, `skck`, `uploadSkck` |
 | profile | `profileRepositoryProvider` | `myProfile`, `saveProfile`, `search(AssistantFilter,cursor)`→`Paged`, `assistant(id)` |
 | listing | `listingRepositoryProvider` | `browse(ListingFilter,cursor)`, `mine`, `get` (juga cek status bayar), `saveDraft(ListingInput,id?)`, `pay`→`Invoice`, `close` |
@@ -139,7 +139,7 @@ Ganti hanya `builder` stub di `features/<f>/presentation/<f>_routes.dart` (path 
 
 | Fitur | Layar (ID → path) |
 |---|---|
-| auth | M-01 `/welcome` · M-02 `/register` · M-03 `/otp` · M-04 `/onboarding/role` · M-05 `/login` · M-06 `/forgot` · M-24 `/account` · M-26 `/account/devices` (M-22 = bottom sheet, tanpa rute) |
+| auth | M-01 `/welcome` · M-02 `/register` · M-03 `/otp` · M-04 `/onboarding/role` · M-05 `/login` · M-06 `/forgot` · M-24 `/account`, ★`/s/profile` (tab Profil Pencari), ★`/a/profile` (tab Profil Pelamar) · M-26 `/account/devices` (M-22 = bottom sheet, tanpa rute) |
 | verification | M-10 `/verification` · M-11 `/verification/guide` · M-12 `/verification/ktp` · M-13 `/verification/selfie` · M-14 `/verification/review` · M-15 `/verification/status` · M-16 `/skck` (`?listing=<ulid>`) |
 | home | M-20 ★`/s/home` · M-21 ★`/a/home` |
 | notification | M-23 `/notifications` |
@@ -150,9 +150,9 @@ Ganti hanya `builder` stub di `features/<f>/presentation/<f>_routes.dart` (path 
 | chat | M-60 ★`/s/chat` & ★`/a/chat` · M-61 `/chat/:id` |
 | booking | M-70 `/applications/:id/agreement/new` · M-71 `/agreements/:id` · M-72 `/contracts` · M-73 `/bookings/:id` |
 | payment | M-74 `/periods/:id/pay` · M-75 `/periods/:id/status` · M-76 `/periods/:id/confirm` · M-77 `/bookings/:id/cancel` · `/pay/return?period=<ulid>` (redirect ke M-75, sudah jadi) |
-| wallet | M-80 ★`/a/wallet` · M-81 `/wallet/payout` · M-82 `/wallet/bank` · M-83 `/wallet/history` |
+| wallet | M-80 `/a/wallet` (dibuka dari tab Profil Pelamar) · M-81 `/wallet/payout` · M-82 `/wallet/bank` · M-83 `/wallet/history` |
 | rating | M-90 `/bookings/:id/rating` · M-91 `/users/:id/reviews` |
-| report | M-25 `/account/privacy` · M-95 `/report/new` (`?booking=&period=`) · M-96 `/reports/:id/share` · M-97 `/reports/:id` |
+| report | M-25 `/account/privacy` · M-95 `/report/new` (`?booking=&period=&user=`; `user` = terlapor dari profil, wire `reported_user_id`; Pelamar boleh melapor saat period `awaiting_payment`) · M-96 `/reports/:id/share` · M-97 `/reports/:id` |
 
 Catatan: nomor HP/PII tidak boleh di path/query (mis. M-03 membaca nomor dari state fitur auth, bukan URL). Deep link push: `notificationRoute(type, ulid)`. Return Xendit: `asisten://pay/return?period=<ulid>` (scheme/App Links dikonfigurasi saat integrasi native; MOB-SEC-02).
 

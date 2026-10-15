@@ -105,22 +105,23 @@ Spacing basis 4: `0,2,4,8,12,16,20,24,32,40,48,64` · margin layar horizontal 16
 
 ```
 Auth: Welcome -> Daftar -> OTP -> Pilih peran -> [Gerbang Verifikasi] -> Beranda
-Shell (top app bar: logo/judul, chip peran, lonceng, avatar -> Akun)
-├─ PENCARI  (bottom nav 4)
+Shell (top app bar: logo/judul, chip peran, lonceng, avatar -> tab Profil)
+├─ PENCARI  (bottom nav 5)
 │   ├─ Beranda        : Langkah berikutnya, lowongan aktif, kontrak berjalan
 │   ├─ Cari           : Cari asisten (filter) -> Profil asisten -> Ajak
 │   ├─ Pekerjaan      : segmen [Lowongan | Kontrak]
 │   │     Lowongan -> Buat/Detail -> Pelamar -> Detail pelamar -> Wawancara -> Kesepakatan
 │   │     Kontrak  -> Detail booking -> Period -> Bayar/Konfirmasi/Batal/Dispute -> Rating
-│   └─ Pesan          : Percakapan
+│   ├─ Pesan          : Percakapan
+│   └─ Profil (M-24)  : /s/profile
 ├─ ASISTEN  (bottom nav 5)
 │   ├─ Beranda        : Langkah berikutnya, rekomendasi lowongan, kontrak berjalan
 │   ├─ Lowongan       : Cari lowongan (filter) -> Detail -> Lamar
 │   ├─ Pekerjaan      : segmen [Lamaran | Kontrak]
 │   ├─ Pesan
-│   └─ Dompet         : Saldo -> Tarik dana -> Riwayat; Rekening
-└─ Akun (via avatar): Profil, Verifikasi & SKCK, Ganti peran, Notifikasi, Rekening, Privasi, Perangkat, Tema, Bantuan, Keluar
-Global: Notifikasi (lonceng), Laporkan (menu ... pada profil/chat/booking)
+│   └─ Profil (M-24)  : /a/profile; Dompet (Saldo -> Tarik dana -> Riwayat; Rekening) dibuka dari sini
+└─ Isi tab Profil (kedua peran): foto profil (unggah/ganti/hapus), Profil, Verifikasi & SKCK, Ganti peran, Notifikasi, Rekening, Privasi, Perangkat, Tema, Bantuan, Keluar
+Global: Notifikasi (lonceng), Laporkan (profil asisten, chat, detail kontrak, rating)
 ```
 
 Aturan: bottom nav 4-5 item berikon+label; tab tetap saat masuk layar detail turun (back stack per tab); tidak ada hamburger; FAB tunggal hanya pada "Pekerjaan > Lowongan" (Pencari: "Buat lowongan"). Deep link dari push langsung membuka layar terkait (NTF-1) dan mengganti peran otomatis bila notifikasi milik peran lain (dengan snackbar "Beralih ke peran Asisten").
@@ -338,7 +339,7 @@ Label Indonesia sederhana per peran. Aksi = tombol utama yang tersedia.
 
 | Status | Label Pencari | Label Asisten | Aksi Pencari | Aksi Asisten |
 |---|---|---|---|---|
-| `awaiting_payment` | Menunggu pembayaran Anda | Menunggu pembayaran pencari | **Bayar** | Ingatkan 🟡 |
+| `awaiting_payment` | Menunggu pembayaran Anda | Menunggu pembayaran pencari | **Bayar** | Ingatkan 🟡, Laporkan |
 | `paid` | Dana ditahan aman | Dana sudah diamankan | - | Chat |
 | `in_progress` | Sedang berjalan | Sedang berjalan | Batalkan, Laporkan | Laporkan |
 | `awaiting_confirmation` | Konfirmasi pekerjaan selesai | Menunggu konfirmasi (otomatis dalam n jam) | **Konfirmasi selesai**, Laporkan | Laporkan |
@@ -399,7 +400,7 @@ Kartu "Privasi Anda" di Akun (M-25): 3 ikon + 1 kalimat tiap butir: "Admin tidak
 | Uang | **MoneyText** (mono/tabular), **FeeBreakdown** (nominal · total), **LedgerTimeline** (period) | |
 | Chat | MessageBubble (teks, tersamar, sistem), MaskedToken, ChatInputBar, DeliveryTicks, PrivacyBanner | |
 | Privasi | ConsentSheet, SecureCaptureFrame, PermissionPrimer, MaskedValue | |
-| Navigasi | BottomNav (4/5, role-tint), AppBar (judul, RolePill, bell, avatar), SegmentedTabs, Breadcrumb tidak dipakai | |
+| Navigasi | BottomNav (5 per peran, role-tint), AppBar (judul, RolePill, bell, avatar -> tab Profil), SegmentedTabs, Breadcrumb tidak dipakai | |
 | Overlay | BottomSheet (utama), ConfirmDialog (adaptif), Snackbar/Toast (info sukses), ActionSheet (iOS adaptif) | Error kritis = inline/banner, bukan snackbar |
 | Umpan balik | Skeleton, EmptyState, ErrorState, OfflineBanner, PullToRefresh, UploadProgress (resume) | |
 | Sistem | PaymentWebViewScreen (Xendit; judul + tombol Tutup + indikator aman; tangani deep link kembali) | |
@@ -594,7 +595,7 @@ Protokol: skrip moderator, think-aloud, rekam layar+suara (izin tertulis), 5 tug
 
 ## 20. Keputusan terbuka (mobile)
 
-1. 🟡 Nama, logo, ikon app, domain (aset store).
+1. ✅ Nama "Pramu", logo, ikon app (adaptive Android) sudah ada; konsep logo di `design/logo-konsep*/`. 🟡 Domain dan aset store.
 2. 🟡 Ambil KTP dari galeri diizinkan? Selfie wajib kamera langsung (rekomendasi: KTP boleh galeri, selfie kamera saja).
 3. 🟡 Pencari melihat SKCK sebagai lencana saja atau dokumen (rekomendasi: lencana).
 4. 🟡 Teks lebih besar khusus di Akun + TTS/suara untuk literasi rendah (ditunda R2?).
