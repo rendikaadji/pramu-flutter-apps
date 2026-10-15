@@ -85,7 +85,9 @@ void main() {
     // login sebelum OTP diverifikasi ditolak
     await expectLater(
       s.auth.login(identifier: phone, password: 'Rahasia123'),
-      throwsA(isA<ApiException>().having((e) => e.code, 'code', 'PHONE_NOT_VERIFIED')),
+      throwsA(
+        isA<ApiException>().having((e) => e.code, 'code', 'PHONE_NOT_VERIFIED'),
+      ),
     );
     await expectLater(
       s.auth.verifyOtp(phone: phone, code: '000000'),
@@ -98,7 +100,10 @@ void main() {
 
     final withRoles = await s.auth.setRoles({Role.seeker, Role.assistant});
     expect(withRoles.roles, {Role.seeker, Role.assistant});
-    expect((await s.auth.switchRole(Role.assistant)).activeRole, Role.assistant);
+    expect(
+      (await s.auth.switchRole(Role.assistant)).activeRole,
+      Role.assistant,
+    );
 
     final ver = ApiVerificationRepository(s.api);
     expect((await ver.current()).status, VerificationStatus.none);
@@ -110,12 +115,24 @@ void main() {
     expect(sent.status, VerificationStatus.pending);
     await expectLater(
       ver.submit(ktpPath: img, selfiePath: img, nik: '3273010101900009'),
-      throwsA(isA<ApiException>().having((e) => e.code, 'code', 'VERIFICATION_INVALID_STATE')),
+      throwsA(
+        isA<ApiException>().having(
+          (e) => e.code,
+          'code',
+          'VERIFICATION_INVALID_STATE',
+        ),
+      ),
     );
     // belum verified -> SKCK & pencarian ditolak
     await expectLater(
       ver.uploadSkck(img),
-      throwsA(isA<ApiException>().having((e) => e.code, 'code', 'VERIFICATION_REQUIRED')),
+      throwsA(
+        isA<ApiException>().having(
+          (e) => e.code,
+          'code',
+          'VERIFICATION_REQUIRED',
+        ),
+      ),
     );
 
     // reset sandi: semua token lama dicabut, login dengan sandi baru
@@ -126,7 +143,10 @@ void main() {
       code: '123456',
       newPassword: 'SandiBaru123',
     );
-    await expectLater(s.auth.me(), throwsA(isA<ApiException>().having((e) => e.status, 'status', 401)));
+    await expectLater(
+      s.auth.me(),
+      throwsA(isA<ApiException>().having((e) => e.status, 'status', 401)),
+    );
     expect((await other.login(phone, 'SandiBaru123')).name, 'Uji Baru');
   }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
@@ -155,7 +175,10 @@ void main() {
     await maya.auth.revokeDevice(victim.id);
     expect((await maya.auth.devices()).any((d) => d.id == victim.id), isFalse);
     // token perangkat yang dicabut sudah tidak valid
-    await expectLater(other.auth.me(), throwsA(isA<ApiException>().having((e) => e.status, 'status', 401)));
+    await expectLater(
+      other.auth.me(),
+      throwsA(isA<ApiException>().having((e) => e.status, 'status', 401)),
+    );
   }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
   test('undangan Pencari -> Pelamar', () async {
@@ -164,89 +187,135 @@ void main() {
     await rina.login('081234567890');
     await lestari.login('081311110003');
 
-    final open = (await ApiListingRepository(rina.api).mine()).firstWhere(
-      (l) => l.title == 'Pengasuh anak usia 3 tahun',
-    );
+    final open = (await ApiListingRepository(
+      rina.api,
+    ).mine()).firstWhere((l) => l.title == 'Pengasuh anak usia 3 tahun');
     final lestariId = (await lestari.auth.me()).id;
     final apps = ApiApplicationRepository(rina.api);
-    await apps.invite(assistantId: lestariId, listingId: open.id, message: 'Mari melamar');
+    await apps.invite(
+      assistantId: lestariId,
+      listingId: open.id,
+      message: 'Mari melamar',
+    );
     await expectLater(
       apps.invite(assistantId: lestariId, listingId: open.id),
-      throwsA(isA<ApiException>().having((e) => e.code, 'code', 'INVITATION_DUPLICATE')),
+      throwsA(
+        isA<ApiException>().having(
+          (e) => e.code,
+          'code',
+          'INVITATION_DUPLICATE',
+        ),
+      ),
     );
     final inv = await ApiApplicationRepository(lestari.api).invitations();
     expect(inv.single.listingId, open.id);
     expect(inv.single.message, 'Mari melamar');
   }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
 
-  test('wawancara ulang/batal + ajukan balik kesepakatan + tanpa wawancara', () async {
-    final siti = _Session('siti');
-    final agus = _Session('agus');
-    final hartini = _Session('hartini');
-    await siti.login('081298765432');
-    await agus.login('081311110012');
-    await hartini.login('081311110011');
+  test(
+    'wawancara ulang/batal + ajukan balik kesepakatan + tanpa wawancara',
+    () async {
+      final siti = _Session('siti');
+      final agus = _Session('agus');
+      final hartini = _Session('hartini');
+      await siti.login('081298765432');
+      await agus.login('081311110012');
+      await hartini.login('081311110011');
 
-    // Wawancara seed (Pak Agus -> Siti): jadwal ulang lalu batal
-    final myApps = await ApiApplicationRepository(siti.api).mine();
-    final withIv = myApps.firstWhere((a) => a.interviewId != null);
-    final iv = ApiInterviewRepository(siti.api);
-    final base = DateTime.now().toUtc().add(const Duration(days: 4));
-    final slot = DateTime.utc(base.year, base.month, base.day, 5);
-    final re = await iv.reschedule(withIv.interviewId!, [slot]);
-    expect(re.status, InterviewStatus.proposed);
-    expect(re.slots.single, slot);
-    expect(
-      (await ApiInterviewRepository(agus.api).byApplication(withIv.id))?.id,
-      withIv.interviewId,
-    );
-    expect((await iv.cancel(withIv.interviewId!)).status, InterviewStatus.cancelled);
+      // Wawancara seed (Pak Agus -> Siti): jadwal ulang lalu batal
+      final myApps = await ApiApplicationRepository(siti.api).mine();
+      final withIv = myApps.firstWhere(
+        (a) =>
+            a.listingTitle == 'Juru masak untuk 4 orang' &&
+            a.interviewId != null,
+      );
+      final iv = ApiInterviewRepository(siti.api);
+      final base = DateTime.now().toUtc().add(const Duration(days: 4));
+      final slot = DateTime.utc(base.year, base.month, base.day, 5);
+      final re = await iv.reschedule(withIv.interviewId!, [slot]);
+      expect(re.status, InterviewStatus.proposed);
+      expect(re.slots.single, slot);
+      expect(
+        (await ApiInterviewRepository(agus.api).byApplication(withIv.id))?.id,
+        withIv.interviewId,
+      );
+      expect(
+        (await iv.cancel(withIv.interviewId!)).status,
+        InterviewStatus.cancelled,
+      );
 
-    // Lowongan "ART mingguan" (lewati wawancara): lamar -> terima langsung
-    final listings = await ApiListingRepository(siti.api).browse(const ListingFilter(category: 'Asisten Rumah Tangga'));
-    final weekly = listings.items.firstWhere((l) => l.title == 'ART mingguan');
-    expect(weekly.skipInterview, isTrue);
-    final app = await ApiApplicationRepository(siti.api).apply(
-      weekly.id,
-      const ApplyInput(message: 'Siap bekerja', proposedRate: 450000),
-    );
-    final hApps = ApiApplicationRepository(hartini.api);
-    await hApps.act(app.id, ApplicationAction.shortlist);
-    await hApps.act(app.id, ApplicationAction.accept);
+      // Lowongan "ART mingguan" (lewati wawancara): lamar -> terima langsung
+      final listings = await ApiListingRepository(siti.api)
+          .browse(const ListingFilter(category: 'Asisten Rumah Tangga'));
+      final weekly = listings.items.firstWhere(
+        (l) => l.title == 'ART mingguan',
+      );
+      expect(weekly.skipInterview, isTrue);
+      final app = await ApiApplicationRepository(siti.api).apply(
+        weekly.id,
+        const ApplyInput(message: 'Siap bekerja', proposedRate: 450000),
+      );
+      final hApps = ApiApplicationRepository(hartini.api);
+      await hApps.act(app.id, ApplicationAction.shortlist);
+      await hApps.act(app.id, ApplicationAction.accept);
 
-    // Pelamar usul, Pencari ajukan balik, Pelamar setuju versi terbaru -> kontrak
-    final start = DateTime.now().add(const Duration(days: 12));
-    final sBooking = ApiBookingRepository(siti.api);
-    final hBooking = ApiBookingRepository(hartini.api);
-    final ag = await sBooking.propose(
-      app.id,
-      AgreementInput(rate: 450000, unit: PeriodUnit.weekly, periodCount: 2, startDate: start),
-    );
-    expect(ag.proposedBy, Role.assistant);
-    final countered = await hBooking.counter(
-      ag.id,
-      AgreementInput(rate: 520000, unit: PeriodUnit.weekly, periodCount: 3, startDate: start),
-    );
-    expect(countered.version, 2);
-    expect(countered.proposedBy, Role.seeker);
-    await expectLater(
-      hBooking.approve(ag.id, version: 1),
-      throwsA(isA<ApiException>().having((e) => e.code, 'code', 'AGREEMENT_VERSION_STALE')),
-    );
-    final done = await sBooking.approve(ag.id, version: countered.version);
-    expect(done.bookingId, isNotNull);
-    final booking = await hBooking.booking(done.bookingId!);
-    expect(booking.periods, hasLength(3));
+      // Pelamar usul, Pencari ajukan balik, Pelamar setuju versi terbaru -> kontrak
+      final start = DateTime.now().add(const Duration(days: 12));
+      final sBooking = ApiBookingRepository(siti.api);
+      final hBooking = ApiBookingRepository(hartini.api);
+      final ag = await sBooking.propose(
+        app.id,
+        AgreementInput(
+          rate: 450000,
+          unit: PeriodUnit.weekly,
+          periodCount: 2,
+          startDate: start,
+        ),
+      );
+      expect(ag.proposedBy, Role.assistant);
+      final countered = await hBooking.counter(
+        ag.id,
+        AgreementInput(
+          rate: 520000,
+          unit: PeriodUnit.weekly,
+          periodCount: 3,
+          startDate: start,
+        ),
+      );
+      expect(countered.version, 2);
+      expect(countered.proposedBy, Role.seeker);
+      await expectLater(
+        hBooking.approve(ag.id, version: 1),
+        throwsA(
+          isA<ApiException>().having(
+            (e) => e.code,
+            'code',
+            'AGREEMENT_VERSION_STALE',
+          ),
+        ),
+      );
+      final done = await sBooking.approve(ag.id, version: countered.version);
+      expect(done.bookingId, isNotNull);
+      final booking = await hBooking.booking(done.bookingId!);
+      expect(booking.periods, hasLength(3));
 
-    // Batal kontrak: pratinjau lalu batalkan (tidak ada dana dibayar -> refund 0)
-    final pay = ApiPaymentRepository(hartini.api);
-    final preview = await pay.cancelPreview(booking.id);
-    expect(preview.refundToSeeker, 0);
-    await expectLater(pay.cancel(booking.id, reason: ' '), throwsA(isA<ApiException>()));
-    final cancelled = await pay.cancel(booking.id, reason: 'Rencana berubah');
-    expect(cancelled.status, BookingStatus.cancelled);
-    expect(cancelled.periods.every((p) => p.status == PeriodStatus.cancelled), isTrue);
-  }, skip: _live ? false : 'Set --dart-define=LIVE_API=true');
+      // Batal kontrak: pratinjau lalu batalkan (tidak ada dana dibayar -> refund 0)
+      final pay = ApiPaymentRepository(hartini.api);
+      final preview = await pay.cancelPreview(booking.id);
+      expect(preview.refundToSeeker, 0);
+      await expectLater(
+        pay.cancel(booking.id, reason: ' '),
+        throwsA(isA<ApiException>()),
+      );
+      final cancelled = await pay.cancel(booking.id, reason: 'Rencana berubah');
+      expect(cancelled.status, BookingStatus.cancelled);
+      expect(
+        cancelled.periods.every((p) => p.status == PeriodStatus.cancelled),
+        isTrue,
+      );
+    },
+    skip: _live ? false : 'Set --dart-define=LIVE_API=true',
+  );
 
   test('rekening + tarik dana idempoten + bukti laporan', () async {
     final siti = _Session('siti2');
@@ -255,13 +324,23 @@ void main() {
     await rina.login('081234567890');
 
     final wallet = ApiWalletRepository(siti.api);
-    final bank = await wallet.saveBankAccount(bank: 'BNI', number: '9876543210', holderName: 'Siti N');
+    final bank = await wallet.saveBankAccount(
+      bank: 'BNI',
+      number: '9876543210',
+      holderName: 'Siti N',
+    );
     expect(bank.maskedNumber, endsWith('3210'));
     expect((await wallet.bankAccount())?.bank, 'BNI');
 
     final before = (await wallet.wallet()).balance;
-    final tx1 = await wallet.requestPayout(500000, idempotencyKey: 'live-payout-1');
-    final tx2 = await wallet.requestPayout(500000, idempotencyKey: 'live-payout-1');
+    final tx1 = await wallet.requestPayout(
+      500000,
+      idempotencyKey: 'live-payout-1',
+    );
+    final tx2 = await wallet.requestPayout(
+      500000,
+      idempotencyKey: 'live-payout-1',
+    );
     expect(tx2.id, tx1.id);
     expect(tx1.type, WalletTxType.payout);
     expect(tx1.payoutStatus, PayoutStatus.queued);
