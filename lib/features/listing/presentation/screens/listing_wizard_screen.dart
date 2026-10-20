@@ -346,6 +346,7 @@ class _State extends ConsumerState<ListingWizardScreen> with ApiActionMixin {
           controller: _desc,
           maxLines: 5,
           maxLength: 1000,
+          showCounter: true,
           errorText: e,
           onChanged: (_) => _touch('description'),
         ),
