@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Kunci rilis dibaca dari android/key.properties (di-gitignore): storeFile, storePassword, keyAlias, keyPassword.
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("key.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -27,13 +35,35 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Domain App Link pembayaran. Build rilis wajib mengisi APP_LINK_HOST dengan domain produksi.
+        manifestPlaceholders["appLinkHost"] =
+            (project.findProperty("APP_LINK_HOST") as String?) ?: "app.pramu.example"
+    }
+
+    signingConfigs {
+        if (keystoreProps.isNotEmpty()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (keystoreProps.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                // Lokal: tetap bisa `flutter run --release`. CI/rilis: gagal keras, jangan pernah kirim APK bertanda debug.
+                val releaseTask = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+                if (System.getenv("CI") != null && releaseTask) {
+                    throw GradleException("android/key.properties tidak ada: build rilis di CI wajib memakai kunci rilis.")
+                }
+                logger.warn("PERINGATAN: key.properties tidak ada, build rilis ditandatangani kunci debug.")
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 }
