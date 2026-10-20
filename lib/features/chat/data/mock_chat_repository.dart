@@ -134,7 +134,7 @@ class MockChatRepository implements ChatRepository {
   });
 
   @override
-  Stream<ChatMessage> incoming(String conversationId) =>
+  Stream<ChatMessage> incoming(String conversationId, {String? afterId}) =>
       (_streams[conversationId] ??= StreamController<ChatMessage>.broadcast())
           .stream;
 }

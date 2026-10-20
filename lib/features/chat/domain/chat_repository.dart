@@ -12,5 +12,6 @@ abstract interface class ChatRepository {
   Future<void> markRead(String conversationId);
 
   /// Pesan masuk realtime. Impl API: polling REST (Reverb = spike terpisah).
-  Stream<ChatMessage> incoming(String conversationId);
+  /// [afterId] = pesan terakhir yang sudah dimuat; polling hanya mengambil yang lebih baru.
+  Stream<ChatMessage> incoming(String conversationId, {String? afterId});
 }
