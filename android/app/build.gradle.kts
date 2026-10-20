@@ -43,21 +43,29 @@ android {
     signingConfigs {
         if (keystoreProps.isNotEmpty()) {
             create("release") {
-                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
-                storePassword = keystoreProps.getProperty("storePassword")
-                keyAlias = keystoreProps.getProperty("keyAlias")
-                keyPassword = keystoreProps.getProperty("keyPassword")
+                fun prop(name: String) = requireNotNull(keystoreProps.getProperty(name)) {
+                    "android/key.properties: field '$name' belum diisi"
+                }
+                storeFile = rootProject.file(prop("storeFile"))
+                storePassword = prop("storePassword")
+                keyAlias = prop("keyAlias")
+                keyPassword = prop("keyPassword")
             }
         }
     }
 
     buildTypes {
         release {
+            // Host App Link placeholder tidak boleh sampai ke build rilis CI (tautan pembayaran tak akan terverifikasi).
+            val appLinkHost = (project.findProperty("APP_LINK_HOST") as String?) ?: ""
+            val releaseTask = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+            if (System.getenv("CI") != null && releaseTask && (appLinkHost.isEmpty() || appLinkHost.endsWith(".example"))) {
+                throw GradleException("APP_LINK_HOST belum diisi dengan domain produksi untuk build rilis.")
+            }
             if (keystoreProps.isNotEmpty()) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
                 // Lokal: tetap bisa `flutter run --release`. CI/rilis: gagal keras, jangan pernah kirim APK bertanda debug.
-                val releaseTask = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
                 if (System.getenv("CI") != null && releaseTask) {
                     throw GradleException("android/key.properties tidak ada: build rilis di CI wajib memakai kunci rilis.")
                 }

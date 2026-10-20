@@ -28,6 +28,8 @@ jobs:
   # Kontrak Flutter <-> Laravel: menjalankan tes live terhadap backend asli (seed segar).
   # Butuh secret BACKEND_REPO_TOKEN (PAT dengan akses baca ke repo backend privat).
   contract:
+    # Secret tidak tersedia di PR dari fork/Dependabot; tanpa guard checkout backend gagal dan check jadi merah.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -48,7 +50,7 @@ jobs:
           path: backend
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           coverage: none
       - uses: subosito/flutter-action@v2
         with:

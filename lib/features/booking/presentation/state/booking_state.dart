@@ -134,6 +134,8 @@ class AgreementNotifier extends AsyncNotifier<AgreementView> {
     final a = await ref
         .read(bookingRepositoryProvider)
         .approve(id, version: cur.agreement.version);
+    // Layar ditutup selama menunggu: ref sudah dibuang, jangan menyentuh state/provider lain.
+    if (!ref.mounted) return;
     state = AsyncData(AgreementView(a, cur.before));
     // Persetujuan kedua pihak membuat kontrak: daftar kontrak/beranda/lamaran harus ikut baru.
     invalidateFlow(ref.invalidate);
