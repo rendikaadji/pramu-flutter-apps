@@ -477,7 +477,8 @@ class AssistantHomeScreen extends ConsumerWidget {
                     subtitle: '${l.category} - ${l.city}',
                     tags: [l.category],
                     trailing:
-                        '${formatRupiah(l.budgetMin)} / '
+                        '${formatRupiah(l.budgetMin)} - '
+                        '${formatRupiah(l.budgetMax)} / '
                         '${l.unit.label.toLowerCase()}',
                     onTap: () => context.push(Routes.listingDetail(l.id)),
                   ),

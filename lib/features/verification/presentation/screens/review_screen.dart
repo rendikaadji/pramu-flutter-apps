@@ -116,11 +116,15 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen>
         children: [
           Text(label, style: context.text.label),
           const SizedBox(height: AppSpace.s8),
-          GestureDetector(
-            onTap: () => _zoom(p),
-            child: PhotoPreview(
-              photo: p,
-              label: 'Pratinjau $label, ketuk untuk memperbesar',
+          Semantics(
+            button: true,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              onTap: () => _zoom(p),
+              child: PhotoPreview(
+                photo: p,
+                label: 'Pratinjau $label, ketuk untuk memperbesar',
+              ),
             ),
           ),
           AppButton(

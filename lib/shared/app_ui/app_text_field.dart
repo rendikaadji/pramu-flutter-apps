@@ -28,6 +28,7 @@ class AppTextField extends StatefulWidget {
     this.prefixText,
     this.prefixIcon,
     this.maxLength,
+    this.showCounter = false,
     this.maxLines = 1,
     this.obscure = false,
     this.sensitive = false,
@@ -51,6 +52,9 @@ class AppTextField extends StatefulWidget {
   /// Ikon di depan field (gaya referensi: ikon + outline radius 12).
   final IconData? prefixIcon;
   final int? maxLength;
+
+  /// Tampilkan "n/maxLength" (mis. pesan lamaran, deskripsi); input pendek seperti nama tetap tanpa penghitung.
+  final bool showCounter;
   final int maxLines;
   final bool obscure;
   final bool sensitive;
@@ -103,7 +107,7 @@ class _AppTextFieldState extends State<AppTextField> {
             style: context.text.body,
             decoration: InputDecoration(
               hintText: widget.hint,
-              counterText: '',
+              counterText: widget.showCounter ? null : '',
               prefixIcon: widget.prefixIcon == null
                   ? null
                   : Icon(widget.prefixIcon, size: 20),

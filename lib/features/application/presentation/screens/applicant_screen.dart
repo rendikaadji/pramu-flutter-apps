@@ -15,6 +15,7 @@ import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/pinned_actions_bar.dart';
 import 'package:pramu_apps/shared/app_ui/rate_text.dart';
+import 'package:pramu_apps/shared/flow_refresh.dart';
 
 /// M-37 Detail pelamar (pencari): rekam jejak + keputusan.
 class ApplicantScreen extends ConsumerStatefulWidget {
@@ -52,7 +53,10 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
       () => ref.read(applicationRepositoryProvider).act(widget.id, action),
       onConflict: _reload,
     );
-    if (done) _reload();
+    if (done) {
+      invalidateFlow(ref.invalidate);
+      _reload();
+    }
   }
 
   @override

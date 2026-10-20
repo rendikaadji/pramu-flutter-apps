@@ -90,7 +90,7 @@ class _State extends ConsumerState<CancelBookingScreen> with ApiActionMixin {
               FeeBreakdown(
                 rows: [
                   FeeRow(
-                    'Hak Pelamar untuk pekerjaan yang sudah dijalani',
+                    'Hak asisten untuk pekerjaan yang sudah dijalani',
                     formatRupiah(pv.assistantEntitlement),
                   ),
                   FeeRow(

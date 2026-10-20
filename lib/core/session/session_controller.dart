@@ -53,11 +53,11 @@ class SessionController extends Notifier<SessionState> {
   }
 
   Future<void> bootstrap() async {
-    final token = await ref.read(tokenStoreProvider).read();
-    if (token == null) {
-      return _set(const SessionState(status: SessionStatus.unauthenticated));
-    }
     try {
+      final token = await ref.read(tokenStoreProvider).read();
+      if (token == null) {
+        return _set(const SessionState(status: SessionStatus.unauthenticated));
+      }
       final user = await ref.read(authRepositoryProvider).me();
       _set(_authed(user));
     } on ApiException catch (e) {
@@ -69,6 +69,9 @@ class SessionController extends Notifier<SessionState> {
           expired: e.isUnauthorized,
         ),
       );
+    } on Object {
+      // Keychain/Keystore rusak atau respons tak terduga: jangan biarkan splash menggantung.
+      _set(const SessionState(status: SessionStatus.unauthenticated));
     }
   }
 
@@ -149,7 +152,14 @@ class SessionController extends Notifier<SessionState> {
 
   Future<void> _clearLocal() async {
     await ref.read(tokenStoreProvider).clear();
-    await ref.read(prefsProvider).remove(_prefGateSeen);
+    final prefs = ref.read(prefsProvider);
+    await prefs.remove(_prefGateSeen);
+    // draf lamaran + penanda kesepakatan milik pengguna sebelumnya tak boleh terbawa ke akun berikutnya
+    for (final k in prefs.getKeys().toList()) {
+      if (k.startsWith('apply_draft_') || k.startsWith('agreement_seen_')) {
+        await prefs.remove(k);
+      }
+    }
     // foto sensitif tak boleh tertinggal pada logout/401/revoke (MOB-SEC-20)
     try {
       await sweepSensitiveFiles();

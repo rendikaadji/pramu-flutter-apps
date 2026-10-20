@@ -15,6 +15,7 @@ import 'package:pramu_apps/features/payment/presentation/state/payment_state.dar
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/report_path.dart';
+import 'package:pramu_apps/shared/flow_refresh.dart';
 
 /// M-76 Konfirmasi selesai (Pencari).
 class ConfirmCompleteScreen extends ConsumerStatefulWidget {
@@ -31,7 +32,7 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
       context,
       title: 'Konfirmasi selesai?',
       message:
-          'Dana ${formatRupiah(p.amount)} akan dicairkan ke Pelamar. '
+          'Dana ${formatRupiah(p.amount)} akan dicairkan ke asisten. '
           'Setelah dikonfirmasi, dana tidak bisa ditarik kembali.',
       confirmLabel: 'Konfirmasi selesai',
     );
@@ -41,9 +42,10 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
       onConflict: () => ref.invalidate(payPeriodProvider(widget.periodId)),
     );
     if (!mounted || !done) return;
+    invalidateFlow(ref.invalidate);
     AppSnack.show(
       context,
-      'Terima kasih. Dana sudah dicairkan ke Pelamar.',
+      'Terima kasih. Dana sudah dicairkan ke asisten.',
       success: true,
     );
     context.canPop()

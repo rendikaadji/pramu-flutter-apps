@@ -232,7 +232,9 @@ mixin ApiActionMixin<T extends StatefulWidget> on State<T> {
       await action();
       if (mounted) setState(() => busy = false);
       return true;
-    } catch (e) {
+    } catch (e, st) {
+      // Bug pemrograman (TypeError, StateError, parse) jangan menyamar sebagai "500 dari server".
+      if (e is! ApiException) debugPrint('aksi gagal non-API: $e\n$st');
       final err = asApiException(e);
       if (!mounted) return false;
       final conflict = err.isConflict && onConflict != null;
