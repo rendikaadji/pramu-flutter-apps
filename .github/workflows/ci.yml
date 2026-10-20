@@ -24,3 +24,51 @@ jobs:
         with:
           name: coverage
           path: coverage/lcov.info
+
+  # Kontrak Flutter <-> Laravel: menjalankan tes live terhadap backend asli (seed segar).
+  # Butuh secret BACKEND_REPO_TOKEN (PAT dengan akses baca ke repo backend privat).
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ENV: ci
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ${{ github.workspace }}/backend/database/ci.sqlite
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      OTP_FIXED_CODE: '123456'
+      BANK_CHANGE_HOLD_HOURS: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: rendikaadji/pramu-laravel-web
+          token: ${{ secrets.BACKEND_REPO_TOKEN }}
+          path: backend
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - name: Siapkan backend
+        working-directory: backend
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          cp .env.example .env
+          php artisan key:generate
+          touch database/ci.sqlite
+          php artisan migrate:fresh --seed --force
+          (cd public && nohup php -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php > ../serve.log 2>&1 &)
+          for i in $(seq 1 20); do curl -sf http://127.0.0.1:8000/api/v1/categories >/dev/null && break; sleep 1; done
+      - run: flutter pub get
+      # Berurutan (-j 1) karena kedua berkas menulis ke DB yang sama.
+      - run: |
+          flutter test -j 1 test/api_contract_live_test.dart test/api_contract_live_extra_test.dart \
+            --dart-define=LIVE_API=true --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
+      - if: failure()
+        run: cat backend/serve.log backend/storage/logs/*.log 2>/dev/null | tail -100

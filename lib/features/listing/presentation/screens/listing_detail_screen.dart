@@ -57,7 +57,7 @@ class ListingDetailScreen extends ConsumerWidget {
         onRetry: () => ref.invalidate(listingDetailProvider(id)),
         skeleton: const DetailSkeleton(),
         data: (ctx, l) => RefreshIndicator(
-          onRefresh: () async => ref.invalidate(listingDetailProvider(id)),
+          onRefresh: () => ref.refresh(listingDetailProvider(id).future),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.only(
