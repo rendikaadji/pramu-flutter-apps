@@ -204,6 +204,13 @@ class ActionErrorBox extends StatelessWidget {
 
 /// Mixin aksi tulis untuk State layar: `busy` (cegah ketuk ganda), error terakhir,
 /// 409 -> dialog "Muat ulang", 429 -> tombol nonaktif sementara.
+/// 409 yang BUKAN "data baru berubah": memuat ulang tidak menyelesaikannya, jadi tampilkan pesan servernya apa adanya.
+const _nonStaleConflicts = {
+  'PAYMENT_BUSY',
+  'BANK_ACCOUNT_RECENTLY_CHANGED',
+  'IDEMPOTENCY_KEY_REUSED',
+};
+
 mixin ApiActionMixin<T extends StatefulWidget> on State<T> {
   bool busy = false;
   ApiException? actionError;
@@ -237,7 +244,10 @@ mixin ApiActionMixin<T extends StatefulWidget> on State<T> {
       if (e is! ApiException) debugPrint('aksi gagal non-API: $e\n$st');
       final err = asApiException(e);
       if (!mounted) return false;
-      final conflict = err.isConflict && onConflict != null;
+      final conflict =
+          err.isConflict &&
+          onConflict != null &&
+          !_nonStaleConflicts.contains(err.code);
       setState(() {
         busy = false;
         actionError = conflict ? null : err;

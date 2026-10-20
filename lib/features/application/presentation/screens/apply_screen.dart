@@ -129,7 +129,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
     }, onConflict: () => ref.invalidate(applyContextProvider(l.id)));
     if (!ok || !mounted) return;
     ref.read(prefsProvider).remove(_draftKey);
-    invalidateFlow(ref.invalidate);
+    invalidateFlow(ref.invalidate, browse: true);
     // Layar detail lowongan masih terpasang di bawah dan memakai provider turunan sendiri;
     // tanpa ini tombolnya tetap "Lamar sekarang" setelah berhasil melamar.
     ref.invalidate(myApplicationForListingProvider(l.id));
