@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Flutter hanya menambah INTERNET di manifest debug/profile; build rilis wajib mendeklarasikannya sendiri. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:enableOnBackInvokedCallback="true"
         android:label="Pramu"
@@ -30,13 +32,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <!-- Return pembayaran (MOB-SEC-02): Android App Links terverifikasi.
-                 GANTI host placeholder dengan domain produksi + pasang /.well-known/assetlinks.json. -->
+                 Host dari -PAPP_LINK_HOST / ORG_GRADLE_PROJECT_APP_LINK_HOST (lihat build.gradle.kts);
+                 pasang /.well-known/assetlinks.json di domain itu. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="https"
-                      android:host="app.pramu.example"
+                      android:host="${appLinkHost}"
                       android:pathPrefix="/pay/return"/>
             </intent-filter>
         </activity>
