@@ -22,9 +22,11 @@ class CountdownBuilder extends StatefulWidget {
     super.key,
     required this.seconds,
     required this.builder,
+    this.onDone,
   });
 
   final int seconds;
+  final VoidCallback? onDone;
   final Widget Function(BuildContext context, int remaining) builder;
 
   @override
@@ -41,6 +43,7 @@ class _CountdownBuilderState extends State<CountdownBuilder> {
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_left <= 1) t.cancel();
       setState(() => _left = _left > 0 ? _left - 1 : 0);
+      if (_left == 0) widget.onDone?.call();
     });
   }
 

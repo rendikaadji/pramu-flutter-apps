@@ -68,7 +68,9 @@ class ChatRoomNotifier extends AsyncNotifier<ChatRoomState> {
     });
     final repo = ref.read(chatRepositoryProvider);
     final list = await repo.messages(conversationId);
-    _listen();
+    // Ruang ditutup selama menunggu: jangan buka langganan polling yang tak pernah dibatalkan.
+    if (!ref.mounted) return ChatRoomState(messages: list);
+    _listen(afterId: list.isEmpty ? null : list.last.id);
     unawaited(_markRead());
     return ChatRoomState(messages: list);
   }
@@ -81,11 +83,18 @@ class ChatRoomNotifier extends AsyncNotifier<ChatRoomState> {
     }
   }
 
-  void _listen() {
+  void _listen({String? afterId}) {
     _sub?.cancel();
+    final loaded = state.value?.messages.where(
+      (m) => !m.id.startsWith('local_'),
+    );
     _sub = ref
         .read(chatRepositoryProvider)
-        .incoming(conversationId)
+        .incoming(
+          conversationId,
+          afterId:
+              afterId ?? (loaded?.isEmpty ?? true ? null : loaded!.last.id),
+        )
         .listen(
           _onIncoming,
           onError: (Object _) {

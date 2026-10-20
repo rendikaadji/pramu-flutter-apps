@@ -112,6 +112,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> with ApiActionMixin {
                     Expanded(
                       child: CountdownBuilder(
                         seconds: _lockSeconds,
+                        onDone: () {
+                          if (mounted) setState(() => _locked = false);
+                        },
                         builder: (_, left) => Text(
                           'Terlalu banyak percobaan. Coba lagi dalam '
                           '${formatCountdown(left)}.',

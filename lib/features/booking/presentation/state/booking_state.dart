@@ -8,6 +8,7 @@ import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/features/booking/data/booking_providers.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
+import 'package:pramu_apps/shared/flow_refresh.dart';
 
 /// M-72.
 final bookingsProvider = FutureProvider.autoDispose<List<Booking>>((ref) {
@@ -134,6 +135,8 @@ class AgreementNotifier extends AsyncNotifier<AgreementView> {
         .read(bookingRepositoryProvider)
         .approve(id, version: cur.agreement.version);
     state = AsyncData(AgreementView(a, cur.before));
+    // Persetujuan kedua pihak membuat kontrak: daftar kontrak/beranda/lamaran harus ikut baru.
+    invalidateFlow(ref.invalidate);
   }
 }
 

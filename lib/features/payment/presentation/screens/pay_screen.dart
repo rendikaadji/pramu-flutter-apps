@@ -38,7 +38,7 @@ class _State extends ConsumerState<PayScreen> with ApiActionMixin {
       context,
       title: 'Bayar ${formatRupiah(p.total)}?',
       message:
-          'Dana ditahan aman dan baru dicairkan ke Pelamar setelah pekerjaan '
+          'Dana ditahan aman dan baru dicairkan ke asisten setelah pekerjaan '
           'selesai. Anda akan diarahkan ke halaman pembayaran.',
       confirmLabel: 'Bayar',
     );

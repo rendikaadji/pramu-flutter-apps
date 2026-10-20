@@ -78,7 +78,7 @@ class _PagedListViewState<T> extends State<PagedListView<T>> {
               ),
             );
           }
-          if (s.error != null && !offline) {
+          if (s.error != null) {
             return ApiErrorView(
               error: s.error!,
               onRetry: widget.onRetryMore ?? widget.onLoadMore,

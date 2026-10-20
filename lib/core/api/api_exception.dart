@@ -19,15 +19,24 @@ class ApiException implements Exception {
     Object? body, {
     Duration? retryAfter,
   }) {
-    final e = (body is Map ? body['error'] : null) as Map?;
+    // Bentuk body tak terduga (HTML 502, field bukan list) tidak boleh melempar saat memetakan error.
+    final raw = body is Map ? body['error'] : null;
+    final e = raw is Map ? raw : null;
+    final code = e?['code'];
+    final message = e?['message'];
+    final rawFields = e?['fields'];
     return ApiException(
       retryAfter: retryAfter,
       status: status,
-      code: (e?['code'] as String?) ?? 'UNKNOWN',
-      message: (e?['message'] as String?) ?? defaultMessage(status),
+      code: code is String ? code : 'UNKNOWN',
+      message: message is String ? message : defaultMessage(status),
       fields: {
-        for (final en in (e?['fields'] as Map? ?? {}).entries)
-          en.key as String: List<String>.from(en.value as List),
+        if (rawFields is Map)
+          for (final en in rawFields.entries)
+            if (en.key is String && en.value is List)
+              en.key as String: [
+                for (final v in en.value as List) v.toString(),
+              ],
       },
     );
   }
