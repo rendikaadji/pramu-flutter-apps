@@ -42,7 +42,7 @@ class _State extends ConsumerState<ConfirmCompleteScreen> with ApiActionMixin {
       onConflict: () => ref.invalidate(payPeriodProvider(widget.periodId)),
     );
     if (!mounted || !done) return;
-    invalidateFlow(ref.invalidate);
+    invalidateFlow(ref.invalidate, wallet: true);
     AppSnack.show(
       context,
       'Terima kasih. Dana sudah dicairkan ke asisten.',

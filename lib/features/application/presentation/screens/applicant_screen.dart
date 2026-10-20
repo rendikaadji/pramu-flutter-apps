@@ -54,7 +54,7 @@ class _State extends ConsumerState<ApplicantScreen> with ApiActionMixin {
       onConflict: _reload,
     );
     if (done) {
-      invalidateFlow(ref.invalidate);
+      invalidateFlow(ref.invalidate, chat: true);
       _reload();
     }
   }

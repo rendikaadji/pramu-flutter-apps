@@ -2,6 +2,9 @@
 // Dilewati secara default. Jalankan setelah `php artisan migrate:fresh --seed` + `php artisan serve`:
 //   flutter test test/api_contract_live_test.dart \
 //     --dart-define=LIVE_API=true --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
+// Env server yang diperlukan: OTP_FIXED_CODE=123456 dan BANK_CHANGE_HOLD_HOURS=0 (tanpa itu OTP acak dan
+// payout setelah ganti rekening ditahan 24 jam). Tes live ini memakai data seed dan menulis ke DB, jadi
+// jalankan `migrate:fresh --seed` sebelum tiap berkas dan jangan paralel (-j 1).
 // Memastikan setiap Api*Repository + fromJson cocok dengan respons server asli.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pramu_apps/core/api/api_client.dart';

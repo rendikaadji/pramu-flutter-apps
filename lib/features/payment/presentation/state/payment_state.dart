@@ -40,7 +40,7 @@ class PaymentStatusNotifier extends AsyncNotifier<PaymentCheck> {
       24; // ~2 menit; setelahnya pengguna menekan "Cek status"
 
   int _polls = 0;
-  bool _flowRefreshed = false;
+  bool _wasPayable = false;
   Timer? _timer;
 
   @override
@@ -54,13 +54,14 @@ class PaymentStatusNotifier extends AsyncNotifier<PaymentCheck> {
   Future<PaymentCheck> _check() async {
     final p = await ref.read(paymentRepositoryProvider).checkStatus(periodId);
     final polling = p.status.canPay && _polls < maxPolls;
-    if (!p.status.canPay && !_flowRefreshed) {
-      _flowRefreshed = true;
-      // Dibayar/berubah: kontrak, beranda, dan dompet perlu data baru. Ditunda agar tidak mengubah provider lain saat build.
+    // Hanya saat tagihan BERALIH dari bisa-dibayar ke tidak (lunas/kedaluwarsa); membuka periode yang
+    // sudah lunas tidak menyegarkan apa pun. Ditunda agar tidak mengubah provider lain saat build.
+    if (_wasPayable && !p.status.canPay) {
       Future.microtask(() {
-        if (ref.mounted) invalidateFlow(ref.invalidate);
+        if (ref.mounted) invalidateFlow(ref.invalidate, wallet: true);
       });
     }
+    _wasPayable = p.status.canPay;
     _timer?.cancel();
     if (polling) _timer = Timer(interval, _tick);
     return PaymentCheck(p, polling: polling);
