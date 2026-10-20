@@ -15,6 +15,7 @@ import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/interview/domain/interview.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/flow_refresh.dart';
 
 /// M-45 Detail lamaran (asisten). Pencari dialihkan ke M-37.
 class ApplicationDetailScreen extends ConsumerStatefulWidget {
@@ -48,7 +49,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
       onConflict: _reload,
     );
     if (done) {
-      ref.invalidate(myApplicationsProvider);
+      invalidateFlow(ref.invalidate);
       _reload();
     }
   }

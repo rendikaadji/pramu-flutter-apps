@@ -18,6 +18,7 @@ import 'package:pramu_apps/features/listing/presentation/widgets/listing_card.da
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/flow_refresh.dart';
 
 const _templates = {
   'Tertarik dan siap':
@@ -128,7 +129,7 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
     }, onConflict: () => ref.invalidate(applyContextProvider(l.id)));
     if (!ok || !mounted) return;
     ref.read(prefsProvider).remove(_draftKey);
-    ref.invalidate(myApplicationsProvider);
+    invalidateFlow(ref.invalidate);
     // Layar detail lowongan masih terpasang di bawah dan memakai provider turunan sendiri;
     // tanpa ini tombolnya tetap "Lamar sekarang" setelah berhasil melamar.
     ref.invalidate(myApplicationForListingProvider(l.id));
@@ -249,7 +250,12 @@ class _State extends ConsumerState<ApplyScreen> with ApiActionMixin {
                 helper: 'Budget pencari ${budgetRange(l)}',
                 onChanged: (_) => _changed('proposed_rate'),
               ),
-              for (var i = 0; i < _answers.length; i++) ...[
+              // Daftar pertanyaan bisa menyusut setelah reload karena konflik; jangan baca di luar batas.
+              for (
+                var i = 0;
+                i < _answers.length && i < l.screeningQuestions.length;
+                i++
+              ) ...[
                 const SizedBox(height: AppSpace.s16),
                 AppTextField(
                   label: l.screeningQuestions[i],

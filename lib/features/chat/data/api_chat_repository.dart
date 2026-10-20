@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/features/chat/domain/chat.dart';
 import 'package:pramu_apps/features/chat/domain/chat_repository.dart';
@@ -39,10 +40,20 @@ class ApiChatRepository implements ChatRepository {
 
   /// ponytail: polling 5 dtk. Ganti ke Reverb setelah spike klien realtime (docs/01 §6.5).
   @override
-  Stream<ChatMessage> incoming(String conversationId) async* {
-    String? last;
+  Stream<ChatMessage> incoming(
+    String conversationId, {
+    String? afterId,
+  }) async* {
+    var last = afterId;
     while (true) {
       await Future<void>.delayed(const Duration(seconds: 5));
+      // Di latar belakang tidak perlu polling; lanjut saat aplikasi kembali aktif.
+      final life = WidgetsBinding.instance.lifecycleState;
+      if (life == AppLifecycleState.paused ||
+          life == AppLifecycleState.hidden ||
+          life == AppLifecycleState.detached) {
+        continue;
+      }
       final fresh = await messages(conversationId, afterId: last);
       for (final m in fresh) {
         yield m;

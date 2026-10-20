@@ -284,22 +284,23 @@ void main() {
     expect(find.text('Simpan draf?'), findsOneWidget);
   });
 
-  testWidgets('M-45 lamaran diterima yang sudah punya kontrak -> "Kontrak berjalan"', (
-    tester,
-  ) async {
-    final env = await boot(tester, 'Siti');
-    final siti = env.backend.userByName('Siti').id;
-    final a = env.backend.applications.values.firstWhere(
-      (a) =>
-          a.assistant.id == siti &&
-          a.status == ApplicationStatus.accepted &&
-          a.bookingId != null,
-    );
-    env.go(Routes.applicationDetail(a.id));
-    await tester.pumpAndSettle();
-    expect(find.text('Kontrak berjalan'), findsOneWidget);
-    expect(find.text('Anda diterima'), findsNothing);
-  });
+  testWidgets(
+    'M-45 lamaran diterima yang sudah punya kontrak -> "Kontrak berjalan"',
+    (tester) async {
+      final env = await boot(tester, 'Siti');
+      final siti = env.backend.userByName('Siti').id;
+      final a = env.backend.applications.values.firstWhere(
+        (a) =>
+            a.assistant.id == siti &&
+            a.status == ApplicationStatus.accepted &&
+            a.bookingId != null,
+      );
+      env.go(Routes.applicationDetail(a.id));
+      await tester.pumpAndSettle();
+      expect(find.text('Kontrak berjalan'), findsOneWidget);
+      expect(find.text('Anda diterima'), findsNothing);
+    },
+  );
 
   testWidgets('M-41/M-43/M-45 asisten melamar lalu menarik lamaran', (
     tester,
