@@ -4,7 +4,6 @@ import 'package:pramu_apps/features/booking/presentation/state/booking_state.dar
 import 'package:pramu_apps/features/chat/presentation/state/chat_state.dart';
 import 'package:pramu_apps/features/home/presentation/state/home_state.dart';
 import 'package:pramu_apps/features/listing/presentation/state/listing_state.dart';
-import 'package:pramu_apps/features/wallet/presentation/state/wallet_state.dart';
 
 /// Inti alur lowongan -> lamaran -> kontrak -> bayar: beranda, daftar kontrak/lamaran/lowongan, detail lamaran.
 /// Tab shell tetap terpasang (IndexedStack), jadi tanpa ini kartu "Langkah berikutnya" dan daftar
@@ -24,21 +23,17 @@ final List<ProviderOrFamily> flowProviders = [
   ..._flowCore,
   listingBrowseProvider,
   conversationsProvider,
-  walletProvider,
 ];
 
 /// Pakai: `invalidateFlow(ref.invalidate)` setelah aksi yang berhasil. Tab lain hanya disegarkan bila aksinya
 /// memang menyentuhnya, supaya mis. daftar Jelajah tidak kembali ke halaman 1 tanpa sebab:
-/// [browse] bila status "sudah melamar" pada daftar berubah, [chat] bila percakapan baru/berubah,
-/// [wallet] bila uang bergerak.
+/// [browse] bila status "sudah melamar" pada daftar berubah, [chat] bila percakapan baru/berubah.
 void invalidateFlow(
   void Function(ProviderOrFamily) invalidate, {
   bool browse = false,
   bool chat = false,
-  bool wallet = false,
 }) {
   _flowCore.forEach(invalidate);
   if (browse) invalidate(listingBrowseProvider);
   if (chat) invalidate(conversationsProvider);
-  if (wallet) invalidate(walletProvider);
 }

@@ -22,13 +22,10 @@ import 'package:pramu_apps/features/interview/domain/interview.dart';
 import 'package:pramu_apps/features/listing/data/api_listing_repository.dart';
 import 'package:pramu_apps/features/listing/domain/listing.dart';
 import 'package:pramu_apps/features/notification/data/api_notification_repository.dart';
-import 'package:pramu_apps/features/payment/data/api_payment_repository.dart';
 import 'package:pramu_apps/features/report/data/api_report_repository.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/verification/data/api_verification_repository.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
-import 'package:pramu_apps/features/wallet/data/api_wallet_repository.dart';
-import 'package:pramu_apps/features/wallet/domain/wallet.dart';
 
 import 'helpers/memory_token_store.dart';
 
@@ -299,15 +296,15 @@ void main() {
       final booking = await hBooking.booking(done.bookingId!);
       expect(booking.periods, hasLength(3));
 
-      // Batal kontrak: pratinjau lalu batalkan (tidak ada dana dibayar -> refund 0)
-      final pay = ApiPaymentRepository(hartini.api);
-      final preview = await pay.cancelPreview(booking.id);
-      expect(preview.refundToSeeker, 0);
+      // Batal kontrak: tanpa refund, semua periode ikut batal
       await expectLater(
-        pay.cancel(booking.id, reason: ' '),
+        hBooking.cancel(booking.id, reason: ' '),
         throwsA(isA<ApiException>()),
       );
-      final cancelled = await pay.cancel(booking.id, reason: 'Rencana berubah');
+      final cancelled = await hBooking.cancel(
+        booking.id,
+        reason: 'Rencana berubah',
+      );
       expect(cancelled.status, BookingStatus.cancelled);
       expect(
         cancelled.periods.every((p) => p.status == PeriodStatus.cancelled),
@@ -317,38 +314,11 @@ void main() {
     skip: _live ? false : 'Set --dart-define=LIVE_API=true',
   );
 
-  test('rekening + tarik dana idempoten + bukti laporan', () async {
+  test('bukti laporan', () async {
     final siti = _Session('siti2');
     final rina = _Session('rina2');
     final sitiUser = await siti.login('081298765432');
     await rina.login('081234567890');
-
-    final wallet = ApiWalletRepository(siti.api);
-    final bank = await wallet.saveBankAccount(
-      bank: 'BNI',
-      number: '9876543210',
-      holderName: 'Siti N',
-    );
-    expect(bank.maskedNumber, endsWith('3210'));
-    expect((await wallet.bankAccount())?.bank, 'BNI');
-
-    final before = (await wallet.wallet()).balance;
-    final tx1 = await wallet.requestPayout(
-      500000,
-      idempotencyKey: 'live-payout-1',
-    );
-    final tx2 = await wallet.requestPayout(
-      500000,
-      idempotencyKey: 'live-payout-1',
-    );
-    expect(tx2.id, tx1.id);
-    expect(tx1.type, WalletTxType.payout);
-    expect(tx1.payoutStatus, PayoutStatus.queued);
-    expect((await wallet.wallet()).balance, before - 500000);
-    await expectLater(
-      wallet.requestPayout(before * 2, idempotencyKey: 'live-payout-2'),
-      throwsA(isA<ApiException>().having((e) => e.status, 'status', 422)),
-    );
 
     final reports = ApiReportRepository(rina.api);
     final report = await reports.submit(

@@ -16,7 +16,6 @@ import 'package:pramu_apps/features/profile/domain/profile.dart';
 import 'package:pramu_apps/features/rating/domain/rating.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
-import 'package:pramu_apps/features/wallet/domain/wallet.dart';
 
 const kMockPassword = 'Rahasia123';
 const kMockOtpOk = '123456';
@@ -117,9 +116,6 @@ class MockBackend {
   DateTime Function() now;
   Duration latency;
 
-  /// Jeda antar langkah otomatis: paid -> in_progress -> awaiting_confirmation, payout queued -> processing -> success.
-  Duration stepDelay = const Duration(seconds: 15);
-
   final users = <String, MockUser>{};
   final profiles = <String, AssistantProfile>{};
   final listings = <String, Listing>{};
@@ -134,11 +130,6 @@ class MockBackend {
   final bookingPeriods = <String, List<String>>{};
   final periods = <String, BookingPeriod>{};
   final completedAt = <String, DateTime>{};
-  final balances = <String, int>{};
-  final walletTx = <String, List<WalletTx>>{};
-  final banks = <String, (String, String, String)>{};
-  final payoutByKey = <String, WalletTx>{};
-  final payoutStart = <String, DateTime>{};
   final reviews = <MockReview>[];
   final notifications = <String, List<AppNotification>>{};
   final reports = <String, (String, Report)>{}; // id -> (ownerId, report)
@@ -239,91 +230,16 @@ class MockBackend {
     );
   }
 
-  /// Penyamaran ala server: nomor HP dan email diganti sampai booking dibayar.
+  /// Penyamaran ala server: nomor HP dan email diganti sampai kontrak dibuat.
   static String maskContacts(String text) => text
       .replaceAll(RegExp(r'(\+?62|0)8[\d\s-]{8,14}'), '[nomor disembunyikan]')
       .replaceAll(RegExp(r'[^@\s]+@[^@\s]+\.[^@\s]+'), '[email disembunyikan]');
 
-  /// Potongan platform: 10% penuh dari sisi Pelamar, Pencari membayar sesuai
-  /// nominal yang diinput (tanpa biaya tambahan). Angka tersimpan = nominal Pencari.
-  static const _feePercent = 10;
-
-  Fees feesFor(int amount) {
-    final fee = amount * _feePercent ~/ 100;
-    return Fees(
-      amount: amount,
-      seekerFee: 0,
-      seekerTotal: amount,
-      assistantFee: fee,
-      assistantReceives: amount - fee,
-    );
-  }
-
-  // ---- tampilan per pihak (meniru server): Pelamar hanya melihat nominal
-  // bersih, tanpa tahu ada potongan. Data internal tetap nominal Pencari.
-
-  /// Nominal Pencari -> yang tampil di Pelamar.
-  int net(int gross) => gross - gross * _feePercent ~/ 100;
-
-  /// Nominal yang diinput Pelamar (bersih) -> nominal Pencari (dibulatkan ke atas,
-  /// lalu diturunkan bila bersihnya melebihi input: 500000 -> 555555, bukan 555556).
-  /// Sama dengan `Fees::gross` di server pramu-web.
-  int gross(int shown) {
-    var g = (shown * 100 + (100 - _feePercent) - 1) ~/ (100 - _feePercent);
-    while (g > 0 && net(g) > shown) {
-      g--;
-    }
-    return g;
-  }
-
-  /// Peran aktif pemanggil = asisten (untuk layar yang tak punya pihak kontrak).
+  /// Peran aktif pemanggil = asisten.
   bool get viewerIsAssistant {
     final id = currentUserId;
     return id != null && users[id]?.activeRole == Role.assistant;
   }
-
-  int amountFor(int gross, {required bool asAssistant}) =>
-      asAssistant ? net(gross) : gross;
-
-  int amountFrom(int shown, {required bool asAssistant}) =>
-      asAssistant ? gross(shown) : shown;
-
-  Fees viewFees(Fees f, {required bool asAssistant}) {
-    if (!asAssistant) return f;
-    final n = net(f.amount);
-    return Fees(
-      amount: n,
-      seekerFee: 0,
-      seekerTotal: n,
-      assistantFee: 0,
-      assistantReceives: n,
-    );
-  }
-
-  Listing listingFor(Listing l, {required bool asAssistant}) => asAssistant
-      ? l.copyWith(budgetMin: net(l.budgetMin), budgetMax: net(l.budgetMax))
-      : l;
-
-  Application applicationFor(Application a, {required bool asAssistant}) =>
-      asAssistant ? a.copyWith(proposedRate: net(a.proposedRate)) : a;
-
-  Agreement agreementFor(Agreement a, {required bool asAssistant}) =>
-      asAssistant
-      ? a.copyWith(rate: net(a.rate), fees: viewFees(a.fees, asAssistant: true))
-      : a;
-
-  BookingPeriod periodFor(BookingPeriod p, {required bool asAssistant}) =>
-      asAssistant
-      ? p.copyWith(amount: net(p.amount), serviceFee: 0, total: net(p.amount))
-      : p;
-
-  Booking bookingFor(Booking b, {required bool asAssistant}) => asAssistant
-      ? b.copyWith(
-          rate: net(b.rate),
-          fees: viewFees(b.fees, asAssistant: true),
-          periods: [for (final p in b.periods) periodFor(p, asAssistant: true)],
-        )
-      : b;
 
   // ------------------------------------------------------- cross-feature flow
 
@@ -341,10 +257,7 @@ class MockBackend {
         start: start,
         end: start.add(a.unit.duration),
         amount: a.rate,
-        serviceFee: 0,
-        total: a.rate,
-        status: PeriodStatus.awaitingPayment,
-        dueAt: start.subtract(const Duration(days: 3)),
+        status: PeriodStatus.scheduled,
       );
       periods[p.id] = p;
       ids.add(p.id);
@@ -361,7 +274,6 @@ class MockBackend {
       periodCount: a.periodCount,
       startDate: a.startDate,
       status: BookingStatus.active,
-      fees: feesFor(a.rate * a.periodCount),
       periods: const [],
       conversationId: app.conversationId,
     );
@@ -406,119 +318,93 @@ class MockBackend {
     );
   }
 
+  /// Periode berjalan menurut jadwal (tanpa pembayaran): terjadwal -> berjalan -> selesai.
   void _advance(Booking b) {
     final t = now();
     for (final pid in bookingPeriods[b.id]!) {
       var p = periods[pid]!;
-      final paid = p.paidAt;
-      if (p.status == PeriodStatus.paid &&
-          paid != null &&
-          t.difference(paid) >= stepDelay) {
+      if (p.status == PeriodStatus.scheduled && !t.isBefore(p.start)) {
         p = p.copyWith(status: PeriodStatus.inProgress);
       }
-      if (p.status == PeriodStatus.inProgress &&
-          paid != null &&
-          t.difference(paid) >= stepDelay * 2) {
-        p = p.copyWith(
-          status: PeriodStatus.awaitingConfirmation,
-          autoReleaseAt: t.add(const Duration(hours: 24)),
-        );
+      if (p.status == PeriodStatus.inProgress && !t.isBefore(p.end)) {
+        p = p.copyWith(status: PeriodStatus.completed);
       }
       periods[pid] = p;
-      final release = p.autoReleaseAt;
-      if (p.status == PeriodStatus.awaitingConfirmation &&
-          release != null &&
-          !t.isBefore(release)) {
-        settle(pid);
-      }
     }
-    final current = bookings[b.id]!;
-    if (current.status != BookingStatus.active &&
-        current.status != BookingStatus.paused) {
+    _finishIfDone(bookings[b.id]!);
+  }
+
+  /// Kontrak selesai bila semua periode final; bot menilai balik.
+  void _finishIfDone(Booking b) {
+    if (b.status != BookingStatus.active) return;
+    if (!bookingPeriods[b.id]!.every((id) => periods[id]!.status.isFinal)) {
       return;
     }
-    final overdue = [
-      for (final pid in bookingPeriods[b.id]!)
-        if (periods[pid]!.status == PeriodStatus.awaitingPayment &&
-            periods[pid]!.dueAt.isBefore(t))
-          periods[pid]!,
-    ];
-    if (overdue.isNotEmpty && current.status == BookingStatus.active) {
-      bookings[b.id] = current.copyWith(
-        status: BookingStatus.paused,
-        pausedUntil: overdue.first.dueAt.add(const Duration(days: 7)),
-      );
-    } else if (overdue.isEmpty && current.status == BookingStatus.paused) {
-      bookings[b.id] = current.copyWith(
-        status: BookingStatus.active,
-        clearPausedUntil: true,
+    bookings[b.id] = b.copyWith(status: BookingStatus.completed);
+    completedAt[b.id] = now();
+    final aid = b.assistant.id;
+    users[aid]!.completedJobs++;
+    for (final (reviewer, reviewee) in [
+      (aid, b.seeker.id),
+      (b.seeker.id, aid),
+    ]) {
+      if (users[reviewer]!.bot) {
+        reviews.add(
+          MockReview(
+            Review(
+              id: newId(),
+              bookingId: b.id,
+              reviewerName: users[reviewer]!.name,
+              stars: 5,
+              comment: 'Kerja samanya lancar. Terima kasih.',
+              createdAt: now(),
+            ),
+            reviewer,
+            reviewee,
+          ),
+        );
+      }
+    }
+    for (final uid in [b.seeker.id, aid]) {
+      notify(
+        uid,
+        NotificationType.rating,
+        'Beri penilaian',
+        'Kontrak selesai. Beri penilaian dalam 7 hari.',
+        b.id,
       );
     }
   }
 
-  /// Dana period dicairkan ke dompet pelamar; kontrak selesai bila semua period final.
-  void settle(String periodId) {
-    final p = periods[periodId]!;
-    periods[periodId] = p.copyWith(status: PeriodStatus.settled);
-    final b = bookings[p.bookingId]!;
-    final receives = feesFor(p.amount).assistantReceives;
-    final aid = b.assistant.id;
-    balances[aid] = (balances[aid] ?? 0) + receives;
-    (walletTx[aid] ??= []).insert(
-      0,
-      WalletTx(
-        id: newId(),
-        type: WalletTxType.earning,
-        amount: receives,
-        title: '${b.listingTitle} - periode ${p.index}',
-        createdAt: now(),
-      ),
-    );
-    notify(
-      aid,
-      NotificationType.payment,
-      'Dana dicairkan',
-      'Dana sudah masuk ke dompet Anda.',
-      p.id,
-    );
-    final all = bookingPeriods[b.id]!.map((id) => periods[id]!);
-    if (all.every((e) => e.status.isFinal) &&
-        b.status != BookingStatus.completed) {
-      bookings[b.id] = b.copyWith(status: BookingStatus.completed);
-      completedAt[b.id] = now();
-      final u = users[aid]!;
-      u.completedJobs++;
-      for (final (reviewer, reviewee) in [
-        (aid, b.seeker.id),
-        (b.seeker.id, aid),
-      ]) {
-        if (users[reviewer]!.bot) {
-          reviews.add(
-            MockReview(
-              Review(
-                id: newId(),
-                bookingId: b.id,
-                reviewerName: users[reviewer]!.name,
-                stars: 5,
-                comment: 'Kerja samanya lancar. Terima kasih.',
-                createdAt: now(),
-              ),
-              reviewer,
-              reviewee,
-            ),
-          );
-        }
+  /// Batalkan kontrak aktif: periode yang belum selesai ikut dibatalkan (tanpa refund).
+  Booking cancelBooking(String id) {
+    final b = booking(id);
+    if (b.status != BookingStatus.active) {
+      apiFail(
+        409,
+        'BOOKING_INVALID_STATE',
+        'Kontrak tidak dapat dibatalkan pada status ini.',
+      );
+    }
+    for (final pid in bookingPeriods[id]!) {
+      if (!periods[pid]!.status.isFinal) {
+        periods[pid] = periods[pid]!.copyWith(status: PeriodStatus.cancelled);
       }
-      for (final uid in [b.seeker.id, aid]) {
+    }
+    bookings[id] = bookings[id]!.copyWith(status: BookingStatus.cancelled);
+    final cur = bookings[id]!;
+    for (final uid in [cur.seeker.id, cur.assistant.id]) {
+      if (uid != currentUserId) {
         notify(
           uid,
-          NotificationType.rating,
-          'Beri penilaian',
-          'Kontrak selesai. Beri penilaian dalam 7 hari.',
-          b.id,
+          NotificationType.booking,
+          'Kontrak dibatalkan',
+          cur.listingTitle,
+          id,
         );
       }
     }
+    return booking(id);
   }
 
   // ------------------------------------------------------------------- seed
@@ -691,7 +577,7 @@ class MockBackend {
     Application app,
     int rate,
     PeriodUnit unit,
-    List<PeriodStatus> statuses,
+    int count,
     Duration startOffset,
   ) {
     final t = now();
@@ -701,43 +587,17 @@ class MockBackend {
       version: 1,
       rate: rate,
       unit: unit,
-      periodCount: statuses.length,
+      periodCount: count,
       startDate: t.add(startOffset),
       proposedBy: Role.seeker,
-      fees: feesFor(rate * statuses.length),
       seekerApprovedAt: t.subtract(const Duration(days: 5)),
       assistantApprovedAt: t.subtract(const Duration(days: 5)),
     );
     final b = createBooking(ag);
     agreements[ag.id] = ag.copyWith(bookingId: b.id);
     applications[app.id] = applications[app.id]!.copyWith(agreementId: ag.id);
-    for (var i = 0; i < statuses.length; i++) {
-      final pid = bookingPeriods[b.id]![i];
-      periods[pid] = periods[pid]!.copyWith(
-        status: statuses[i],
-        paidAt: statuses[i] == PeriodStatus.settled
-            ? t.subtract(const Duration(days: 20))
-            : null,
-      );
-    }
     notifications[app.seeker.id]?.removeWhere((n) => n.targetId == b.id);
     notifications[app.assistant.id]?.removeWhere((n) => n.targetId == b.id);
-    for (final pid in bookingPeriods[b.id]!) {
-      if (periods[pid]!.status == PeriodStatus.settled) {
-        final receives = feesFor(rate).assistantReceives;
-        balances[app.assistant.id] =
-            (balances[app.assistant.id] ?? 0) + receives;
-        (walletTx[app.assistant.id] ??= []).add(
-          WalletTx(
-            id: _sid(),
-            type: WalletTxType.earning,
-            amount: receives,
-            title: '${app.listingTitle} - periode 1',
-            createdAt: t.subtract(const Duration(days: 18)),
-          ),
-        );
-      }
-    }
   }
 
   void _seed() {
@@ -982,17 +842,8 @@ class MockBackend {
       'Berpengalaman dengan bayi.',
     );
 
-    _booking(a3, 1500000, PeriodUnit.monthly, [
-      PeriodStatus.settled,
-      PeriodStatus.awaitingPayment,
-      PeriodStatus.awaitingPayment,
-    ], const Duration(days: -20));
-    _booking(a5, 600000, PeriodUnit.weekly, [
-      PeriodStatus.settled,
-      PeriodStatus.awaitingPayment,
-      PeriodStatus.awaitingPayment,
-      PeriodStatus.awaitingPayment,
-    ], const Duration(days: -10));
+    _booking(a3, 1500000, PeriodUnit.monthly, 3, const Duration(days: -20));
+    _booking(a5, 600000, PeriodUnit.weekly, 4, const Duration(days: -10));
 
     final slot = DateTime.utc(
       now().year,
@@ -1009,7 +860,6 @@ class MockBackend {
     interviews[i1.id] = i1;
     applications[a4.id] = a4.copyWith(interviewId: i1.id);
 
-    banks[siti.id] = ('BCA', '1234567890', 'Siti Nurhaliza');
     reviews.addAll([
       MockReview(
         Review(
@@ -1076,13 +926,6 @@ class MockBackend {
       'Jadwal wawancara diajukan',
       'Pak Agus mengajukan jadwal wawancara. Pilih yang cocok.',
       i1.id,
-    );
-    notify(
-      siti.id,
-      NotificationType.booking,
-      'Tagihan periode 2',
-      'Pencari membayar sebelum periode dimulai. Kami kabari saat dana masuk.',
-      applications[a3.id]!.bookingId,
     );
   }
 }

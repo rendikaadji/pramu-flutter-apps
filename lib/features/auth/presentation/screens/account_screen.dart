@@ -55,10 +55,7 @@ class AccountScreen extends ConsumerWidget {
     }
     final h = ref.watch(seekerHomeProvider).value;
     if (h == null) return null;
-    final active = h.bookings.where(
-      (b) =>
-          b.status == BookingStatus.active || b.status == BookingStatus.paused,
-    );
+    final active = h.bookings.where((b) => b.status == BookingStatus.active);
     return [
       StatItem(
         '${h.listings.where((l) => l.status == ListingStatus.open).length}',
@@ -174,24 +171,6 @@ class AccountScreen extends ConsumerWidget {
               ],
             ],
           ),
-          if (isAssistant) ...[
-            _caption(context, 'Keuangan'),
-            ListTileCard(
-              children: [
-                SettingsRow(
-                  icon: LucideIcons.wallet,
-                  title: 'Dompet',
-                  subtitle: 'Saldo, riwayat, dan penarikan dana',
-                  onTap: () => context.push(Routes.assistantWallet),
-                ),
-                SettingsRow(
-                  icon: LucideIcons.landmark,
-                  title: 'Rekening bank',
-                  onTap: () => context.push(Routes.bank),
-                ),
-              ],
-            ),
-          ],
           _caption(context, 'Pengaturan'),
           ListTileCard(
             children: [
@@ -273,7 +252,7 @@ class AccountScreen extends ConsumerWidget {
           const SizedBox(height: AppSpace.s16),
           Text(
             'Dengan memakai Pramu, Anda menyetujui ketentuan layanan, termasuk '
-            'biaya layanan platform yang sudah diperhitungkan pada nominal transaksi.',
+            'biaya tayang lowongan. Pramu tidak menahan atau memotong gaji.',
             textAlign: TextAlign.center,
             style: context.text.caption.copyWith(color: t.textSubtle),
           ),

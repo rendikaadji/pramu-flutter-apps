@@ -7,6 +7,8 @@ versi: 1.0
 
 # 04 — Debug Playbook Mobile (Flutter)
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Playbook generik berbasis spec ([[Spec-Teknis-v1]] §2 envelope, §8 integrasi) — **belum ada kode**; nama kelas/file di contoh adalah placeholder. Konteks produk: [[PRD-v1]], [[01-PRD-Mobile]]. 🟡 = verifikasi di proyek nyata.
 
 ## 1. Triage 5 menit

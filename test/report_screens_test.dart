@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pramu_apps/core/router/routes.dart';
 import 'package:pramu_apps/core/test_keys.dart';
-import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/report/data/mock_report_repository.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/report/presentation/report_routes.dart';
@@ -105,48 +104,23 @@ void main() {
     expect(find.text('Status laporan'), findsOneWidget);
   });
 
-  testWidgets('M-95: Pelamar boleh melapor periode awaitingPayment', (t) async {
-    final per = rig.backend.periods.values.firstWhere(
-      (p) =>
-          p.status == PeriodStatus.awaitingPayment &&
-          rig.backend.booking(p.bookingId).assistant.id == rig.meId,
-    );
-    final r = await MockReportRepository(rig.backend).submit(
-      ReportInput(
-        type: ReportType.payment,
-        description: 'Pencari belum membayar periode ini.',
-        bookingId: per.bookingId,
-        periodId: per.id,
-      ),
-    );
-    expect(r.periodId, per.id);
-    expect(rig.backend.periods[per.id]!.status, PeriodStatus.disputed);
-  });
-
-  testWidgets('M-95: periode tidak dikenal -> pesan server, tanpa crash', (
-    t,
-  ) async {
-    await t.pumpWidget(
-      rig.app(
-        router: _router(
-          '${Routes.reportNew}?period=01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  testWidgets(
+    'M-95: lapor dari kontrak mengaitkan kontrak tanpa mengubah status',
+    (t) async {
+      final bk = rig.backend.bookings.values.firstWhere(
+        (b) => b.assistant.id == rig.meId,
+      );
+      final r = await MockReportRepository(rig.backend).submit(
+        ReportInput(
+          type: ReportType.behavior,
+          description: 'Pencari bersikap tidak pantas.',
+          bookingId: bk.id,
         ),
-      ),
-    );
-    await t.pumpAndSettle();
-    await t.enterText(
-      find.descendant(
-        of: find.byKey(K.reportDescription),
-        matching: find.byType(TextField),
-      ),
-      'Cukup panjang untuk lolos klien',
-    );
-    await t.ensureVisible(find.byKey(K.reportSubmit));
-    await t.tap(find.byKey(K.reportSubmit));
-    await t.pumpAndSettle();
-    expect(find.text('Periode tidak ditemukan.'), findsOneWidget);
-    expect(t.takeException(), isNull);
-  });
+      );
+      expect(r.bookingId, bk.id);
+      expect(rig.backend.bookings[bk.id]!.status, bk.status);
+    },
+  );
 
   testWidgets('M-96: consent eksplisit -> dibagikan 7 hari', (t) async {
     final r = await seedReport();

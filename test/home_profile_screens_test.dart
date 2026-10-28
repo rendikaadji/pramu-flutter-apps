@@ -16,7 +16,7 @@ void main() {
   ) async {
     await bootApp(t, user: 'Bu Rina');
     expect(find.byKey(K.homeNextStep), findsOneWidget);
-    expect(find.textContaining('Tagihan periode'), findsOneWidget);
+    expect(find.textContaining('pelamar menunggu'), findsOneWidget);
     expect(find.text('Lowongan aktif'), findsOneWidget);
     await t.scrollUntilVisible(
       find.text('Kontrak berjalan'),
@@ -61,7 +61,7 @@ void main() {
     expect(find.text('Yuni'), findsWidgets);
     await t.scrollUntilVisible(find.byKey(K.profileInvite), 200);
     expect(
-      find.textContaining('disembunyikan sampai pembayaran'),
+      find.textContaining('disembunyikan sampai kontrak dibuat'),
       findsOneWidget,
     );
     expect(find.textContaining('0813'), findsNothing);

@@ -8,17 +8,6 @@ class ApiBookingRepository implements BookingRepository {
   final ApiClient _api;
 
   @override
-  Future<Fees> previewFees({
-    required int rate,
-    required int periodCount,
-  }) async => Fees.fromJson(
-    await _api.post(
-      '/fees/preview',
-      data: {'rate': rate, 'period_count': periodCount},
-    ) as Json,
-  );
-
-  @override
   Future<Agreement> propose(String applicationId, AgreementInput input) async =>
       Agreement.fromJson(
         await _api.post(
@@ -68,6 +57,9 @@ class ApiBookingRepository implements BookingRepository {
       Booking.fromJson(await _api.get('/bookings/$id') as Json);
 
   @override
-  Future<BookingPeriod> period(String id) async =>
-      BookingPeriod.fromJson(await _api.get('/booking-periods/$id') as Json);
+  Future<Booking> cancel(String bookingId, {required String reason}) async =>
+      Booking.fromJson(
+        await _api.post('/bookings/$bookingId/cancel', data: {'reason': reason})
+            as Json,
+      );
 }

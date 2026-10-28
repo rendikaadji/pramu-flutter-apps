@@ -44,7 +44,7 @@ void _explainSeal(BuildContext context) => showModalBottomSheet<void>(
   ),
 );
 
-/// M-31 Profil publik asisten. Tanpa HP/alamat; kontak tersamar sampai pembayaran.
+/// M-31 Profil publik asisten. Tanpa HP/alamat; kontak tersamar sampai kontrak dibuat.
 class AssistantProfileScreen extends ConsumerWidget {
   const AssistantProfileScreen({super.key, required this.userId});
   final String userId;
@@ -175,9 +175,7 @@ class AssistantProfileScreen extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpace.s16),
         PrivacyNote(
-          own
-              ? 'Pencari tidak melihat nomor HP Anda sampai pembayaran dilakukan.'
-              : 'Nomor HP disembunyikan sampai pembayaran dilakukan, demi keamanan Anda.',
+          own ? 'Pencari tidak melihat nomor HP Anda sampai kontrak dibuat.' : 'Nomor HP disembunyikan sampai kontrak dibuat, demi keamanan Anda.',
         ),
         const SizedBox(height: AppSpace.s16),
         if (own)

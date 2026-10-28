@@ -62,7 +62,6 @@ class Report {
     required this.status,
     required this.createdAt,
     this.bookingId,
-    this.periodId,
     this.decision,
     this.share,
   });
@@ -74,7 +73,6 @@ class Report {
     status: ReportStatus.from(j['status'] as String?),
     createdAt: parseApiTime(j['created_at'] as String),
     bookingId: j['booking_id'] as String?,
-    periodId: j['period_id'] as String?,
     decision: j['decision'] as String?,
     share: j['share'] == null
         ? null
@@ -87,7 +85,6 @@ class Report {
   final ReportStatus status;
   final DateTime createdAt;
   final String? bookingId;
-  final String? periodId;
   final String? decision; // ringkasan release/refund/split
   final ChatShareConsent? share;
 
@@ -98,7 +95,6 @@ class Report {
     status: status ?? this.status,
     createdAt: createdAt,
     bookingId: bookingId,
-    periodId: periodId,
     decision: decision,
     share: share ?? this.share,
   );
@@ -109,7 +105,6 @@ class ReportInput {
     required this.type,
     required this.description,
     this.bookingId,
-    this.periodId,
     this.userId,
     this.evidencePaths = const [],
   });
@@ -117,7 +112,6 @@ class ReportInput {
   final ReportType type;
   final String description;
   final String? bookingId;
-  final String? periodId; // bila ada: period & booking jadi `disputed`
   final String?
   userId; // pengguna terlapor (dari profil), wire `reported_user_id`
   final List<String> evidencePaths; // foto bukti pilihan sendiri

@@ -5,77 +5,16 @@ import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/interview/domain/interview.dart';
 
 void main() {
-  // status -> (canPay, canConfirmComplete, canDispute)
-  final table = <PeriodStatus, (bool, bool, bool)>{
-    PeriodStatus.awaitingPayment: (true, false, false),
-    PeriodStatus.expired: (false, false, false),
-    PeriodStatus.paid: (false, false, true),
-    PeriodStatus.inProgress: (false, false, true),
-    PeriodStatus.awaitingConfirmation: (false, true, true),
-    PeriodStatus.completed: (false, false, false),
-    PeriodStatus.settled: (false, false, false),
-    PeriodStatus.cancelled: (false, false, false),
-    PeriodStatus.disputed: (false, false, false),
-    PeriodStatus.refunded: (false, false, false),
-    PeriodStatus.unknown: (false, false, false),
-  };
-
-  test(
-    'tabel mencakup semua PeriodStatus',
-    () => expect(table.keys.toSet(), PeriodStatus.values.toSet()),
-  );
-
-  for (final e in table.entries) {
-    test('period ${e.key.name}: pay/confirm/dispute', () {
-      expect((
-        e.key.canPay,
-        e.key.canConfirmComplete,
-        e.key.canDispute,
-      ), e.value);
-    });
-  }
-
-  test('aksi period per peran', () {
-    expect(PeriodStatus.awaitingPayment.actionsFor(Role.seeker), {
-      PeriodAction.pay,
-    });
-    expect(PeriodStatus.awaitingPayment.actionsFor(Role.assistant), {
-      PeriodAction.report,
-    });
-    expect(PeriodStatus.settled.actionsFor(Role.assistant), isEmpty);
-    expect(PeriodStatus.inProgress.actionsFor(Role.seeker), {
-      PeriodAction.cancel,
-      PeriodAction.report,
-    });
-    expect(PeriodStatus.inProgress.actionsFor(Role.assistant), {
-      PeriodAction.report,
-    });
-    expect(PeriodStatus.awaitingConfirmation.actionsFor(Role.seeker), {
-      PeriodAction.confirmComplete,
-      PeriodAction.report,
-    });
-    expect(PeriodStatus.awaitingConfirmation.actionsFor(Role.assistant), {
-      PeriodAction.report,
-    });
-    expect(PeriodStatus.disputed.actionsFor(Role.seeker), {
-      PeriodAction.addEvidence,
-    });
-    expect(PeriodStatus.settled.actionsFor(Role.seeker), isEmpty);
-  });
-
-  test('label period per peran', () {
-    expect(
-      PeriodStatus.awaitingPayment.labelFor(Role.seeker),
-      'Menunggu pembayaran Anda',
-    );
-    expect(
-      PeriodStatus.awaitingPayment.labelFor(Role.assistant),
-      'Menunggu pembayaran Pencari',
-    );
-    expect(
-      PeriodStatus.from('status_baru').labelFor(Role.seeker),
-      'Status tidak dikenal',
-    );
+  test('periode: hanya completed dan cancelled yang final', () {
+    for (final st in PeriodStatus.values) {
+      expect(
+        st.isFinal,
+        st == PeriodStatus.completed || st == PeriodStatus.cancelled,
+        reason: st.name,
+      );
+    }
+    expect(PeriodStatus.from('status_baru'), PeriodStatus.unknown);
+    expect(PeriodStatus.scheduled.label, 'Terjadwal');
   });
 
   test('aksi lamaran per peran', () {

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +13,6 @@ import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/booking/data/booking_providers.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/booking/presentation/state/booking_state.dart';
-import 'package:pramu_apps/features/booking/presentation/widgets/booking_widgets.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/wib_picker.dart';
@@ -71,32 +68,18 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
   late PeriodUnit _unit = widget.existing?.unit ?? PeriodUnit.monthly;
   late int _count = widget.existing?.periodCount ?? 1;
   late DateTime? _start = widget.existing?.startDate;
-  (int, int)? _query;
-  Timer? _debounce;
   String? _localRate;
   String? _localStart;
 
   @override
   void initState() {
     super.initState();
-    _rate.addListener(_schedule);
-    _schedule();
   }
 
   @override
   void dispose() {
-    _debounce?.cancel();
     _rate.dispose();
     super.dispose();
-  }
-
-  void _schedule() {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      if (!mounted) return;
-      final r = parseRupiah(_rate.text);
-      setState(() => _query = r == null || r <= 0 ? null : (r, _count));
-    });
   }
 
   Future<void> _submit() async {
@@ -139,9 +122,6 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
     final role =
         ref.watch(sessionProvider.select((s) => s.activeRole)) ?? Role.seeker;
     final counter = widget.existing != null;
-    final preview = _query == null
-        ? null
-        : ref.watch(feePreviewProvider(_query!));
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: AppSpace.s8, bottom: AppSpace.s24),
       child: Column(
@@ -159,8 +139,8 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
               padding: const EdgeInsets.only(bottom: AppSpace.s16),
               child: Text(
                 role == Role.seeker
-                    ? 'Tentukan tarif, siklus pembayaran, dan tanggal mulai. Pelamar akan meninjau usulan Anda.'
-                    : 'Tentukan tarif, siklus pembayaran, dan tanggal mulai. Pencari akan meninjau usulan Anda.',
+                    ? 'Tentukan tarif, siklus gaji, dan tanggal mulai. Pelamar akan meninjau usulan Anda.'
+                    : 'Tentukan tarif, siklus gaji, dan tanggal mulai. Pencari akan meninjau usulan Anda.',
                 style: context.text.body.copyWith(color: t.textMuted),
               ),
             ),
@@ -180,7 +160,7 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
                   errorText: _localRate ?? fieldError('rate'),
                 ),
                 const SizedBox(height: AppSpace.s16),
-                Text('Siklus pembayaran', style: context.text.label),
+                Text('Siklus gaji', style: context.text.label),
                 const SizedBox(height: AppSpace.s8),
                 SegmentedButton<PeriodUnit>(
                   segments: const [
@@ -211,10 +191,7 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
                         icon: LucideIcons.minus,
                         label: 'Kurangi periode',
                         onPressed: _count > 1
-                            ? () {
-                                setState(() => _count--);
-                                _schedule();
-                              }
+                            ? () => setState(() => _count--)
                             : null,
                       ),
                       SizedBox(
@@ -230,10 +207,7 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
                         icon: LucideIcons.plus,
                         label: 'Tambah periode',
                         onPressed: _count < 24
-                            ? () {
-                                setState(() => _count++);
-                                _schedule();
-                              }
+                            ? () => setState(() => _count++)
                             : null,
                       ),
                     ],
@@ -260,33 +234,8 @@ class _FormState extends ConsumerState<_Form> with ApiActionMixin {
             ),
           ),
           const SizedBox(height: AppSpace.s24),
-          SectionHeader(
-            role == Role.seeker
-                ? 'Perkiraan yang Anda bayar'
-                : 'Perkiraan yang Anda terima',
-          ),
-          if (preview == null)
-            Text(
-              'Isi tarif untuk melihat perkiraan biaya.',
-              style: context.text.body.copyWith(color: t.textMuted),
-            )
-          else
-            preview.when(
-              loading: () => const InlineSkeleton(width: 200),
-              error: (_, _) => Text(
-                'Perkiraan belum bisa ditampilkan. Angka pastinya muncul setelah usulan terkirim.',
-                style: context.text.body.copyWith(color: t.textMuted),
-              ),
-              data: (f) => FeeBreakdown(rows: contractFeeRows(f, role)),
-            ),
-          const SizedBox(height: AppSpace.s4),
-          Text(
-            'Ini baru perkiraan. Angka pasti dihitung saat usulan terkirim.',
-            style: context.text.caption.copyWith(color: t.textMuted),
-          ),
-          const SizedBox(height: AppSpace.s16),
           const PrivacyNote(
-            'Setelah kedua pihak setuju, kesepakatan terkunci dan tidak bisa diubah lagi.',
+            'Gaji dibayar langsung antar pihak. Setelah kedua pihak setuju, kesepakatan terkunci dan tidak bisa diubah lagi.',
           ),
           const SizedBox(height: AppSpace.s16),
           AppButton(

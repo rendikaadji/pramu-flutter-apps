@@ -108,7 +108,7 @@ git add lib/features/listing/ test/listing_filter_test.dart   # tambahkan file s
 git commit -m "feat(listing): tambah filter kota dan rentang budget" -m "Refs: LST-2"
 ```
 Type: `feat` `fix` `refactor` `perf` `test` `docs` `style` `build` `ci` `chore` `revert`.
-Scope: `auth` `verification` `profile` `listing` `application` `interview` `chat` `booking` `payment` `wallet` `rating` `notification` `report` `ui` `build` `ci` `core` `deps`.
+Scope: `auth` `verification` `profile` `listing` `application` `interview` `chat` `booking` `rating` `notification` `report` `ui` `build` `ci` `core` `deps`.
 
 Contoh baik / buruk:
 

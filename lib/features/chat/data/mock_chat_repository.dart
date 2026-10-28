@@ -23,14 +23,7 @@ class MockChatRepository implements ChatRepository {
 
   bool _unmasked(MockConversation c) {
     final bid = c.bookingId;
-    if (bid == null) return false;
-    return _b.bookingPeriods[bid]!.any((p) {
-      final s = _b.periods[p]!.status;
-      return s == PeriodStatus.paid ||
-          s == PeriodStatus.inProgress ||
-          s == PeriodStatus.awaitingConfirmation ||
-          s.isFinal && s != PeriodStatus.cancelled;
-    });
+    return bid != null && _b.bookings[bid]?.status != BookingStatus.cancelled;
   }
 
   @override

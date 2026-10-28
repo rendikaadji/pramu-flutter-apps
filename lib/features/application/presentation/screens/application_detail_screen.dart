@@ -118,7 +118,7 @@ class _State extends ConsumerState<ApplicationDetailScreen>
       ),
       ApplicationStatus.accepted when a.bookingId != null => (
         'Kontrak berjalan',
-        'Lihat rincian kontrak dan jadwal pembayaran.',
+        'Lihat rincian kontrak dan jadwal periode.',
         () => go(Routes.bookingDetail(a.bookingId!)),
       ),
       ApplicationStatus.accepted => (

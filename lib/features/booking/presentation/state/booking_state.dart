@@ -32,16 +32,6 @@ final agreementDraftProvider = FutureProvider.autoDispose
       return ref.watch(bookingRepositoryProvider).byApplication(applicationId);
     }, retry: noRetry);
 
-/// M-70: estimasi fee dari server (tampilan saja).
-final feePreviewProvider = FutureProvider.autoDispose.family<Fees, (int, int)>((
-  ref,
-  q,
-) {
-  return ref
-      .watch(bookingRepositoryProvider)
-      .previewFees(rate: q.$1, periodCount: q.$2);
-}, retry: noRetry);
-
 /// Nilai syarat untuk membandingkan antarversi.
 class AgreementTerms {
   const AgreementTerms(

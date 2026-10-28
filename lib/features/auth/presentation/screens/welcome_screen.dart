@@ -32,10 +32,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           'verifikasi dan rating sebelum menyepakati apa pun.',
     ),
     (
-      title: 'Dana aman, privasi terjaga',
+      title: 'Kesepakatan jelas, privasi terjaga',
       body:
-          'Dana ditahan dengan aman dan dicairkan setelah pekerjaan selesai. '
-          'Kontak pribadi disembunyikan sampai pembayaran dilakukan.',
+          'Kesepakatan kerja tercatat di aplikasi dan gaji dibayar langsung. '
+          'Kontak pribadi disembunyikan sampai kontrak dibuat.',
     ),
   ];
 
@@ -48,7 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget _art(int i) => switch (i) {
     0 => const WelcomeIllustration(size: 260),
     1 => const VerifyIllustration(size: 240),
-    _ => const MoneySafeIllustration(size: 240),
+    _ => const ChatIllustration(size: 240),
   };
 
   @override

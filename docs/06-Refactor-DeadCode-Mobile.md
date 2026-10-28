@@ -7,6 +7,8 @@ versi: 1.0
 
 # 06 — Refactor & Dead Code (Flutter)
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Prosedur aman, berlaku setelah repo `asisten-mobile` ada. Belum ada kode → belum ada temuan nyata; dokumen ini = playbook + target arsitektur dari [[Spec-Teknis-v1]]. Konteks: [[01-PRD-Mobile]]. 🟡 = verifikasi tool/versi di proyek.
 > Prinsip: tidak ada refactor tanpa **test hijau sebelum** dan **sesudah**; satu perubahan kecil per commit ([[07-Git-Commit-Mobile]]).
 

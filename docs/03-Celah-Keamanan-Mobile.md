@@ -7,6 +7,8 @@ versi: 1.0
 
 # 03 - Celah Keamanan Mobile (review desain)
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Acuan: [[PRD-v1]] dan [[Spec-Teknis-v1]] (§2, §3, §8 FCM/Xendit, §9). Pasangan: Web/03-Celah-Keamanan-Web. Standar: OWASP MASVS v2 (kategori STORAGE, CRYPTO, AUTH, NETWORK, PLATFORM, CODE, RESILIENCE, PRIVACY) dan panduan uji MASTG.
 > **Repo `asisten-mobile` belum ada.** Semua temuan = *risiko desain*, bukan bug terbukti. Setiap temuan punya cara verifikasi saat build ada. Tanpa exploit; hanya kelas serangan + mitigasi.
 

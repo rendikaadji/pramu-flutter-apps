@@ -73,7 +73,7 @@ class NotificationsScreen extends ConsumerWidget {
       banner = PermissionRationaleCard(
         icon: LucideIcons.bell,
         title: 'Aktifkan notifikasi',
-        message: 'Kami kabari saat ada pelamar baru, pesan, atau pembayaran. Anda bisa mematikannya kapan saja.',
+        message: 'Kami kabari saat ada pelamar baru, pesan, atau jadwal wawancara. Anda bisa mematikannya kapan saja.',
         primaryLabel: 'Aktifkan notifikasi',
         onPrimary: () => ref.read(pushPermissionProvider.notifier).request(),
       );

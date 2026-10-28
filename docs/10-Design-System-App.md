@@ -7,6 +7,8 @@ versi: 2.0
 
 # 10 — Design System App (Flutter)
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Kontrak untuk semua fitur. **Arah visual v2 (2026-10): terang, bersih, airy, biru langit** mengikuti referensi user; menggantikan "Buku Kas Rumah" di Brief §2-§3 (nilai token di dokumen ini yang berlaku). Sumber lain: Brief §9 (status), §10 (trust), §11 (komponen). Kode: `lib/core/theme/` dan `lib/shared/app_ui/`.
 
 ## 1. Aturan pakai (wajib)

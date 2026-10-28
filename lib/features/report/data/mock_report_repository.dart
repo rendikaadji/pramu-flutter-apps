@@ -1,10 +1,8 @@
 import 'package:pramu_apps/core/mock/mock_backend.dart';
 import 'package:pramu_apps/core/validators.dart';
-import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/report/domain/report_repository.dart';
 
-/// Laporan dengan `periodId` yang bisa disengketakan -> period & booking jadi `disputed`.
 /// Status `received` -> `reviewing` pada pembacaan pertama `get`.
 class MockReportRepository implements ReportRepository {
   MockReportRepository(this._b);
@@ -32,27 +30,8 @@ class MockReportRepository implements ReportRepository {
       });
     }
     if ((i.bookingId != null && !isUlid(i.bookingId)) ||
-        (i.periodId != null && !isUlid(i.periodId)) ||
         (i.userId != null && !isUlid(i.userId))) {
       apiFail(422, 'VALIDATION_FAILED', 'Data tidak valid.');
-    }
-    final pid = i.periodId;
-    if (pid != null) {
-      final p =
-          _b.periods[pid] ??
-          apiFail(404, 'NOT_FOUND', 'Periode tidak ditemukan.');
-      final b = _b.booking(p.bookingId);
-      // Pelamar boleh melapor saat periode menunggu pembayaran (Pencari belum bayar).
-      final assistantUnpaid =
-          p.status == PeriodStatus.awaitingPayment &&
-          b.assistant.id == _b.me.id;
-      if (!p.status.canDispute && !assistantUnpaid) {
-        apiFail(409, 'PERIOD_INVALID_STATE', 'Status periode sudah berubah.');
-      }
-      _b.periods[pid] = p.copyWith(status: PeriodStatus.disputed);
-      _b.bookings[b.id] = _b.bookings[b.id]!.copyWith(
-        status: BookingStatus.disputed,
-      );
     }
     return _save(
       Report(
@@ -62,7 +41,6 @@ class MockReportRepository implements ReportRepository {
         status: ReportStatus.received,
         createdAt: _b.now(),
         bookingId: i.bookingId,
-        periodId: pid,
       ),
     );
   });

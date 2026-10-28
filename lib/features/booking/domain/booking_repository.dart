@@ -1,9 +1,6 @@
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 
 abstract interface class BookingRepository {
-  /// Estimasi fee langsung (M-70). Angka final tetap dari respons server.
-  Future<Fees> previewFees({required int rate, required int periodCount});
-
   /// Usulan kesepakatan dari lamaran `accepted`. Pengusul otomatis setuju.
   Future<Agreement> propose(String applicationId, AgreementInput input);
 
@@ -20,5 +17,7 @@ abstract interface class BookingRepository {
 
   Future<List<Booking>> bookings();
   Future<Booking> booking(String id);
-  Future<BookingPeriod> period(String id);
+
+  /// Batalkan kontrak aktif (alasan wajib). Tanpa refund: tidak ada uang di platform.
+  Future<Booking> cancel(String bookingId, {required String reason});
 }
