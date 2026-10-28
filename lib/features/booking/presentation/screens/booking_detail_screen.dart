@@ -46,7 +46,7 @@ class _State extends ConsumerState<BookingDetailScreen>
 
   void _reload() => ref.invalidate(bookingProvider(widget.bookingId));
 
-  /// Buka rute lalu muat ulang saat kembali (pembatalan/konfirmasi mengubah status).
+  /// Buka rute lalu muat ulang saat kembali (pembatalan mengubah status).
   Future<void> _go(String path) async {
     await context.push(path);
     if (mounted) _reload();
@@ -88,13 +88,8 @@ class _State extends ConsumerState<BookingDetailScreen>
     final other = seeker ? b.assistant : b.seeker;
     final next = b.nextPeriod;
     final frozen =
-        b.status == BookingStatus.disputed ||
         b.status == BookingStatus.cancelled ||
         b.status == BookingStatus.completed;
-    final actions = next == null || frozen
-        ? const <PeriodAction>{}
-        : next.status.actionsFor(role);
-    final dueBanner = b.pausedUntil;
     return [
       ContractHeader(
         title: b.listingTitle,
@@ -109,105 +104,49 @@ class _State extends ConsumerState<BookingDetailScreen>
             '${b.periodCount} periode, mulai ${formatDate(b.startDate)}',
       ),
       const SizedBox(height: AppSpace.s16),
-      if (b.status == BookingStatus.paused)
-        StatusBanner(
-          icon: LucideIcons.clock,
-          text: dueBanner == null
-              ? 'Kontrak dijeda karena tagihan belum dibayar.'
-              : 'Kontrak dijeda karena tagihan belum dibayar. Batas pembayaran ${formatDate(dueBanner)}.',
-        ),
-      if (b.status == BookingStatus.disputed)
-        const StatusBanner(
-          icon: LucideIcons.triangleAlert,
-          text: 'Tim kami sedang meninjau kontrak ini. Pembayaran dibekukan sementara.',
-        ),
-      if (b.status == BookingStatus.cancelled)
+      if (b.status == BookingStatus.cancelled) ...[
         const StatusBanner(
           icon: LucideIcons.ban,
           danger: true,
-          text: 'Kontrak dibatalkan. Dana dikembalikan sesuai rincian pembatalan.',
+          text:
+              'Kontrak dibatalkan. Periode yang belum selesai ikut dibatalkan.',
         ),
-      if (b.status == BookingStatus.paused ||
-          b.status == BookingStatus.disputed ||
-          b.status == BookingStatus.cancelled)
         const SizedBox(height: AppSpace.s16),
+      ],
       if (next != null && !frozen) ...[
         AppCard(
-          key: K.periodTile(next.id),
           color: t.roleContainer(appRoleOf(role)),
           borderColor: t.roleColor(appRoleOf(role)).withValues(alpha: .4),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Langkah berikutnya · Periode ${next.index}',
+                'Periode ${next.index} · ${next.status.label}',
                 style: context.text.label,
               ),
               const SizedBox(height: AppSpace.s4),
-              Text(next.status.labelFor(role), style: context.text.h3),
+              Text(periodRange(next), style: context.text.h3),
               const SizedBox(height: AppSpace.s4),
-              Text(periodRange(next), style: context.text.bodySm),
-              if (!seeker) ...[
-                const SizedBox(height: AppSpace.s4),
-                Text(
-                  'Dana diterima ${formatRupiah(next.amount)}',
-                  style: context.text.label,
-                ),
-              ],
-              if (actions.contains(PeriodAction.pay)) ...[
-                const SizedBox(height: AppSpace.s12),
-                AppButton(
-                  key: K.bookingPay,
-                  label: 'Bayar ${formatRupiah(next.total)}',
-                  onPressed: () => _go(Routes.periodPay(next.id)),
-                ),
-              ],
-              if (actions.contains(PeriodAction.confirmComplete)) ...[
-                const SizedBox(height: AppSpace.s12),
-                AppButton(
-                  key: K.bookingConfirmOpen,
-                  label: 'Konfirmasi selesai',
-                  onPressed: () => _go(Routes.periodConfirm(next.id)),
-                ),
-              ],
-              if (actions.contains(PeriodAction.report)) ...[
-                const SizedBox(height: AppSpace.s8),
-                AppButton(
-                  key: K.bookingReport,
-                  label: 'Laporkan masalah',
-                  variant: AppButtonVariant.secondary,
-                  icon: LucideIcons.flag,
-                  onPressed: () =>
-                      _go(reportNewPath(booking: b.id, period: next.id)),
-                ),
-              ],
-              if (!seeker && next.status.canDispute) ...[
-                const SizedBox(height: AppSpace.s8),
-                Text(
-                  next.status.canConfirmComplete && next.autoReleaseAt != null
-                      ? 'Dana masuk dompet Anda otomatis pada ${formatDateTime(next.autoReleaseAt!)} jika Pencari tidak mengonfirmasi.'
-                      : 'Dana sudah diamankan dan masuk dompet Anda setelah periode selesai.',
-                  style: context.text.bodySm,
-                ),
-              ],
+              Text(
+                'Gaji ${formatRupiah(next.amount)} dibayarkan langsung '
+                'antara pemberi kerja dan asisten.',
+                style: context.text.bodySm,
+              ),
             ],
           ),
         ),
         const SizedBox(height: AppSpace.s16),
       ],
-      const SectionHeader('Rincian biaya'),
-      AppCard(child: FeeBreakdown(rows: contractFeeRows(b.fees, role))),
-      const SizedBox(height: AppSpace.s16),
-      SectionHeader(seeker ? 'Jadwal pembayaran' : 'Jadwal dana diterima'),
+      const SectionHeader('Jadwal periode'),
       LedgerTimeline(
         entries: [
           for (final p in b.periods)
             LedgerEntry(
               title: 'Periode ${p.index}',
-              label: periodShortLabel(p.status, role),
+              label: p.status.label,
               tone: periodTone(p.status, role),
               date: periodRange(p),
-              amount: formatRupiah(seeker ? p.total : p.amount),
+              amount: formatRupiah(p.amount),
             ),
         ],
       ),
@@ -220,19 +159,14 @@ class _State extends ConsumerState<BookingDetailScreen>
           icon: LucideIcons.messageCircle,
           onPressed: () => context.push(Routes.chatRoom(b.conversationId!)),
         ),
-      // Jalan lapor cadangan dari kontrak bila tombol di kartu periode tidak tampil.
-      if (!(next != null &&
-          !frozen &&
-          actions.contains(PeriodAction.report))) ...[
-        const SizedBox(height: AppSpace.s8),
-        AppButton(
-          key: K.bookingReport,
-          label: 'Laporkan masalah',
-          variant: AppButtonVariant.secondary,
-          icon: LucideIcons.flag,
-          onPressed: () => _go(reportNewPath(booking: b.id)),
-        ),
-      ],
+      const SizedBox(height: AppSpace.s8),
+      AppButton(
+        key: K.bookingReport,
+        label: 'Laporkan masalah',
+        variant: AppButtonVariant.secondary,
+        icon: LucideIcons.flag,
+        onPressed: () => _go(reportNewPath(booking: b.id)),
+      ),
       if (b.status.canRate) ...[
         const SizedBox(height: AppSpace.s8),
         AppButton(
@@ -242,7 +176,7 @@ class _State extends ConsumerState<BookingDetailScreen>
           onPressed: () => context.push(Routes.rating(b.id)),
         ),
       ],
-      if (seeker && b.status.canCancel) ...[
+      if (b.status.canCancel) ...[
         const SizedBox(height: AppSpace.s8),
         AppButton(
           key: K.bookingCancel,

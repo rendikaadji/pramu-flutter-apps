@@ -3,7 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
 
-/// Catatan privasi berikon gembok, mis. "Nomor disembunyikan sampai pembayaran
+/// Catatan privasi berikon gembok, mis. "Nomor disembunyikan sampai kontrak dibuat
 /// dilakukan, demi keamanan Anda." Bila `onTap` diisi, jadi penjelas yang bisa diketuk.
 class PrivacyNote extends StatelessWidget {
   const PrivacyNote(this.text, {super.key, this.onTap});

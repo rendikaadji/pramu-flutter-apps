@@ -157,7 +157,7 @@ class _RoleScreenState extends ConsumerState<RoleScreen> with ApiActionMixin {
             icon: LucideIcons.briefcase,
             title: 'Saya Pelamar',
             body: 'Cari pekerjaan sebagai asisten',
-            illustration: const MoneySafeIllustration(size: 120),
+            illustration: const ChatIllustration(size: 120),
           ),
           const SizedBox(height: AppSpace.s8),
           CheckboxListTile(

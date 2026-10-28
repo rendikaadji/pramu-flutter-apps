@@ -40,21 +40,13 @@ void main() {
 
   testWidgets('StatusChip.of memetakan kode backend per peran', (tester) async {
     await tester.pumpWidget(
-      host(StatusChip.of(StatusDomain.period, 'awaiting_payment')),
+      host(StatusChip.of(StatusDomain.period, 'scheduled')),
     );
-    expect(find.text('Menunggu pembayaran Anda'), findsOneWidget);
+    expect(find.text('Terjadwal'), findsOneWidget);
     await tester.pumpWidget(
-      host(
-        StatusChip.of(
-          StatusDomain.period,
-          'awaiting_payment',
-          role: AppRole.assistant,
-        ),
-      ),
+      host(StatusChip.of(StatusDomain.interview, 'no_show')),
     );
-    expect(find.text('Menunggu pembayaran Pencari'), findsOneWidget);
-    await tester.pumpWidget(host(StatusChip.of(StatusDomain.payout, 'failed')));
-    expect(find.text('Gagal'), findsOneWidget);
+    expect(find.text('Tidak hadir'), findsOneWidget);
     expect(_bg(tester), t.dangerContainer);
   });
 }

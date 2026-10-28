@@ -10,7 +10,6 @@ import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/booking/presentation/state/booking_state.dart';
-import 'package:pramu_apps/features/booking/presentation/widgets/booking_widgets.dart';
 import 'package:pramu_apps/shared/app_ui/api_error_view.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
@@ -82,7 +81,7 @@ class _Done extends StatelessWidget {
   Widget build(BuildContext context) => EmptyState(
     icon: LucideIcons.circleCheck,
     title: 'Kontrak sudah dibuat',
-    message: 'Kedua pihak sudah setuju. Tagihan periode pertama siap dibayar.',
+    message: 'Kedua pihak sudah setuju. Kontrak sudah dibuat dan jadwal periode siap.',
     actionLabel: a.bookingId == null ? null : 'Lihat kontrak',
     onAction: a.bookingId == null
         ? null
@@ -214,7 +213,7 @@ class _Body extends StatelessWidget {
                   ),
                 ),
                 _Term(
-                  'Siklus pembayaran',
+                  'Siklus gaji',
                   a.unit.label,
                   before: diff(
                     b != null && b.unit != a.unit,
@@ -240,8 +239,8 @@ class _Body extends StatelessWidget {
               ],
             ),
           ),
-          const SectionHeader('Rincian biaya'),
-          FeeBreakdown(rows: contractFeeRows(a.fees, role)),
+          const SectionHeader('Total kesepakatan'),
+          MoneyText(formatRupiah(a.rate * a.periodCount)),
           const SectionHeader('Status persetujuan'),
           AppCard(
             child: Column(

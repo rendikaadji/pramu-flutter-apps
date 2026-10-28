@@ -11,7 +11,6 @@ final List<RouteBase> reportRoutes = [
     path: Routes.reportNew,
     builder: (_, state) => ReportFormScreen(
       bookingId: state.uri.queryParameters['booking'],
-      periodId: state.uri.queryParameters['period'],
       userId: state.uri.queryParameters['user'],
     ),
   ),

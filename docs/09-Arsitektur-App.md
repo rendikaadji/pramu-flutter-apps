@@ -1,11 +1,13 @@
 ---
 tags: [proyek, mobile, flutter, arsitektur, riverpod, go_router]
 status: draft
-tanggal: 2026-10-10
-versi: 1.0
+tanggal: 2026-10-28
+versi: 1.1
 ---
 
 # 09 — Arsitektur App (kontrak untuk agent fitur)
+
+> **v1.1 (2026-10-28):** penampungan dana (escrow) dihapus: fitur `payment` (bayar periode/konfirmasi selesai/status bayar) dan `wallet` (dompet, rekening, tarik dana) dibuang; potongan 10% (`Fees`) dibuang; periode kini `scheduled → in_progress → completed | cancelled` menurut waktu. Batal kontrak pindah ke fitur `booking` tanpa refund. Biaya tayang lowongan (Invoice/Xendit) tetap di fitur `listing`.
 
 > Fondasi sudah jadi: `core`, lapisan **domain + data** semua fitur (mock + API), router dengan stub layar. Agent fitur hanya mengisi `presentation/` fitur masing-masing. Dokumen ini = kontrak; jika kode berbeda, kodelah yang benar, lalu perbaiki dokumen. Rujukan: [[01-PRD-Mobile]] · [[02-UIUX-Brief-Mobile]] §8–9 · [[03-Celah-Keamanan-Mobile]] · [[05-E2E-Test-Mobile]] §2 · [[06-Refactor-DeadCode-Mobile]] §5.
 
@@ -39,19 +41,19 @@ lib/
     data/<f>_providers.dart         # <f>RepositoryProvider (mock/API dari Env.useMock)
     presentation/<f>_routes.dart    # List<RouteBase> <f>Routes (stub M-xx)  <- agent fitur edit
 ```
-Fitur: `auth verification profile listing application interview chat booking payment wallet rating notification report` + `home` (hanya presentasi: beranda M-20/M-21, memakai provider fitur lain).
+Fitur: `auth verification profile listing application interview chat booking rating notification report` + `home` (hanya presentasi: beranda M-20/M-21, memakai provider fitur lain).
 
 ## 3. Aturan lintas fitur
 
 1. Fitur **tidak** mengimpor `presentation` fitur lain. Berbagi lewat `core/` atau `domain/` (+ provider `data/*_providers.dart`) fitur lain. `home` boleh membaca provider semua fitur.
 2. Tak ada `Dio(`/`http` di luar `core/api/`. Token hanya di `TokenStore`. Tak ada `print` (`avoid_print` aktif); `debugPrint` tanpa token/PII/body.
-3. Uang tampil lewat `formatRupiah`, input lewat `parseRupiah`; **jangan hitung fee untuk dikirim** (hanya tampilkan `Fees`/`BookingPeriod.total` dari repo). Model fee: 10% dipotong dari sisi Pelamar; server mengirim nominal bersih (90%) ke Pelamar dan nominal asli ke Pencari, UI tidak menampilkan baris "Biaya layanan".
-4. Status → label/aksi hanya lewat extension di domain (`PeriodStatus.actionsFor(role)`, `ApplicationStatus.allowedActions(role)`, `InterviewStatus.allowedActions(role)`, `.label`). Jangan `if (status == 'paid')` di UI. Status tak dikenal → `unknown` (jangan crash).
+3. Nominal tampil lewat `formatRupiah`, input lewat `parseRupiah`. Tidak ada potongan: anggaran, tarif lamaran, dan kesepakatan tampil apa adanya. Satu-satunya uang di app = biaya tayang lowongan (angka dari server).
+4. Status → label/aksi hanya lewat extension di domain (`ApplicationStatus.allowedActions(role)`, `InterviewStatus.allowedActions(role)`, `.label`). Jangan `if (status == 'open')` di UI. Status tak dikenal → `unknown` (jangan crash).
 5. Notifier yang bergantung pengguna: `ref.watch(sessionProvider.select((s) => s.user?.id))` agar state reset saat ganti akun/logout.
-6. Buka URL eksternal hanya setelah `isAllowedMeetingUrl` / `isAllowedInvoiceUrl` (lalu `url_launcher`). Param deep link/return bayar = hanya pemicu refresh; status selalu dari API.
+6. Buka URL eksternal hanya setelah `isAllowedMeetingUrl` / `isAllowedInvoiceUrl` (lalu `url_launcher`). Param deep link/return bayar biaya tayang = hanya pemicu refresh; status selalu dari API.
 7. Error: tangkap `ApiException`; `status 0` = jaringan, `409` muat ulang entitas, `422` petakan `fields` ke form, `429` tombol nonaktif sementara, `403 VERIFICATION_REQUIRED` arahkan ke `Routes.verificationGate`. 401 ditangani global (jangan ditangani per layar).
 8. Teks UI Indonesia; semua tombol/field kritis pakai `K.*` dari `core/test_keys.dart` (tambahkan Key baru di sana, jangan duplikat di fitur).
-9. Idempotency: UI membuat `newIdempotencyKey()` **sekali per niat** (bayar period, tarik dana), menyimpannya di state layar, dan memakai ulang saat retry.
+9. Idempotency: UI membuat `newIdempotencyKey()` **sekali per niat** (bayar biaya tayang), menyimpannya di state layar, dan memakai ulang saat retry.
 
 ## 4. Session & Router
 
@@ -67,9 +69,9 @@ Fitur: `auth verification profile listing application interview chat booking pay
 | `expire()` | dipanggil `ApiClient` pada 401 → unauthenticated, `expired=true` |
 | `takeReturnTo()` | tujuan tersimpan sebelum login (router memakainya otomatis) |
 
-Redirect (`appRedirect`, murni, teruji): booting → `/splash`; tamu hanya `Routes.publicPaths` (selain itu → `/welcome`, tujuan diingat); authenticated tanpa peran → `/onboarding/role`; path tak dikenal / param `:id` bukan ULID / query `listing|booking|period|draft` bukan ULID → beranda; `/s/*` hanya Pencari, `/a/*` hanya Asisten; akun `verification == none` yang belum menekan "Nanti dulu" diarahkan sekali ke M-10 saat membuka tab root. Allowlist deep link dibentuk dari pohon rute itu sendiri.
+Redirect (`appRedirect`, murni, teruji): booting → `/splash`; tamu hanya `Routes.publicPaths` (selain itu → `/welcome`, tujuan diingat); authenticated tanpa peran → `/onboarding/role`; path tak dikenal / param `:id` bukan ULID / query `listing|booking|draft|user|conversation` bukan ULID → beranda; `/s/*` hanya Pencari, `/a/*` hanya Asisten; akun `verification == none` yang belum menekan "Nanti dulu" diarahkan sekali ke M-10 saat membuka tab root. Allowlist deep link dibentuk dari pohon rute itu sendiri.
 
-Navigasi: gunakan `Routes.*` (builder, mis. `context.push(Routes.bookingDetail(id))`). Tab root berada di `StatefulShellRoute.indexedStack` per peran (Pencari 5 tab, Asisten 5 tab, `role_shell.dart`). **Keputusan:** layar detail (non-tab) adalah rute penuh di navigator root (bottom nav tersembunyi) agar satu rute dipakai kedua peran; kembalikan ke dalam cabang tab hanya bila desain mewajibkan. M-72 = `/contracts` (segmen "Kontrak" di dalam tab Pekerjaan boleh menautkan ke sini). M-22 (ganti peran) dan M-96 sebagai bottom sheet boleh dibuka dari rutenya masing-masing.
+Navigasi: gunakan `Routes.*` (builder, mis. `context.push(Routes.bookingDetail(id))`). Tab root berada di `StatefulShellRoute.indexedStack` per peran (Pencari 5 tab, Asisten 5 tab, `role_shell.dart`). **Keputusan:** layar detail (non-tab) adalah rute penuh di navigator root (bottom nav tersembunyi) agar satu rute dipakai kedua peran; kembalikan ke dalam cabang tab hanya bila desain mewajibkan. M-22 (ganti peran) dan M-96 sebagai bottom sheet boleh dibuka dari rutenya masing-masing.
 
 ## 5. Mock vs API
 
@@ -88,8 +90,8 @@ Pinning: `PINNED_SPKI` kosong = nonaktif. Bila diisi, isi `pinValidator` (api_cl
 
 | Nama | HP | Peran | Catatan |
 |---|---|---|---|
-| Bu Rina | 081234567890 | Pencari, verified | punya 5 lowongan (open, draft, awaiting_payment, 2 filled), 2 pelamar di lowongan open, 2 kontrak (1 aktif, 1 `paused`) |
-| Siti | 081298765432 | Asisten, verified, SKCK verified | lamaran ke Pak Agus (wawancara menunggu konfirmasi), kontrak dgn Bu Rina (periode 1 selesai), dompet Rp1.350.000 (potongan 10%), rekening BCA |
+| Bu Rina | 081234567890 | Pencari, verified | punya 5 lowongan (open, draft, awaiting_payment, 2 filled), 2 pelamar di lowongan open, 2 kontrak berjalan |
+| Siti | 081298765432 | Asisten, verified, SKCK verified | lamaran ke Pak Agus (wawancara menunggu konfirmasi), kontrak dgn Bu Rina |
 | Bu Maya | 081355500002 | Pencari + Asisten, verified | uji ganti peran; tanpa profil/rekening/SKCK |
 | Dewi | 081355500003 | Asisten, belum verifikasi | uji gerbang verifikasi & 403 |
 | Akun Ditangguhkan | 08999999999 | Pencari | login → 403 `ACCOUNT_SUSPENDED` |
@@ -105,13 +107,11 @@ Pendaftaran baru: nama/HP/email bebas (duplikat → 422 `fields`).
 | OTP benar / salah | `123456` / selain itu (422 `OTP_INVALID`); salah ke-5 per nomor → **429** `OTP_TOO_MANY_ATTEMPTS`, OTP benar pun ditolak |
 | Login salah / suspend / sesi mati | 422 `INVALID_CREDENTIALS` / 403 / 401 (token tak dikenal) |
 | Review KTP | `submit` → `pending`; hasil muncul pada `current()` ke-2: NIK berakhiran `0000` → `rejected` (alasan), selain itu `verified`. SKCK `pending` → `verified` pada `skck()` berikutnya |
-| Bayar fee lowongan / period | `pay`/`startPayment` membuat tagihan (`https://checkout.xendit.co/web/<id>`); status `open`/`paid` **hanya** setelah cek status ke-2 (`ListingRepository.get` / `PaymentRepository.checkStatus`) |
-| Idempotency | `startPayment` dgn key sama → invoice sama; `requestPayout` key sama → transaksi sama |
-| Period bergerak | `paid` → `in_progress` (+15 dtk) → `awaiting_confirmation` (+30 dtk, `autoReleaseAt` +24 jam) lewat `booking()/period()`; `MockBackend.stepDelay` dapat diubah. Tagihan lewat `dueAt` → booking `paused` (seed Bu Rina–Ani) |
+| Bayar biaya tayang | `pay` membuat tagihan (`https://checkout.xendit.co/web/<id>`); status `open` **hanya** setelah cek status ke-2 (`ListingRepository.get`); key idempoten sama → invoice sama |
+| Periode bergerak | `scheduled` → `in_progress` → `completed` menurut `start`/`end` (jam mock `MockBackend.now`); semua final → kontrak `completed` |
 | Wawancara | slot dengan **menit :45** → `confirm` pertama 502 `MEET_CREATE_FAILED`, ulang berhasil (bot tidak mengonfirmasi slot ini) |
-| Kesepakatan | `approve` dgn `version` lama → 409 `AGREEMENT_VERSION_STALE`; kedua setuju → booking + period dibuat, lowongan `filled` |
-| Chat | kontak (HP/email) disamarkan sampai ada period dibayar; teks `/gagal` → 503; balasan otomatis 1,5 dtk bila ada pendengar `incoming` |
-| Dompet | tarik min Rp10.000 & ≤ saldo (422), tanpa rekening 409 `BANK_ACCOUNT_REQUIRED`; `queued`→`processing`→`success`; nominal **99.999** → `failed` (saldo kembali) |
+| Kesepakatan | `approve` dgn `version` lama → 409 `AGREEMENT_VERSION_STALE`; kedua setuju → kontrak + periode dibuat, lowongan `filled` |
+| Chat | kontak (HP/email) disamarkan sampai kontrak dibuat; teks `/gagal` → 503; balasan otomatis 1,5 dtk bila ada pendengar `incoming` |
 | Status berubah | aksi di luar `allowedActions`/`canXxx` → 409 `*_INVALID_STATE` |
 | Pelamar belum verified | `apply`/`pay`/`search` → 403 `VERIFICATION_REQUIRED`; lowongan `require_skck` tanpa SKCK → 403 `SKCK_REQUIRED` |
 | Bot (pengguna `bot`) | satu langkah per pembacaan: pencari-bot shortlist → ajukan wawancara (atau terima langsung bila `skip_interview`) → nilai → terima → usul kesepakatan; asisten-bot mengonfirmasi slot & menyetujui kesepakatan. Memungkinkan alur penuh dengan 1 akun |
@@ -125,13 +125,11 @@ Semua `Provider<XRepository>` di `features/<f>/data/<f>_providers.dart`. State U
 | auth | `authRepositoryProvider` | `register`, `sendOtp`, `verifyOtp`→`AuthSession`, `login`, `logout`, `me`, `setRoles`, `switchRole`, `requestPasswordReset`, `resetPassword`, `devices`, `revokeDevice`, `uploadPhoto(path)`/`removePhoto`→`AuthUser` (foto profil kedua peran, JPEG terkompres; 422 bila ditolak) |
 | verification | `verificationRepositoryProvider` | `current`, `submit(ktpPath,selfiePath,nik,onProgress)`, `skck`, `uploadSkck` |
 | profile | `profileRepositoryProvider` | `myProfile`, `saveProfile`, `search(AssistantFilter,cursor)`→`Paged`, `assistant(id)` |
-| listing | `listingRepositoryProvider` | `browse(ListingFilter,cursor)`, `mine`, `get` (juga cek status bayar), `saveDraft(ListingInput,id?)`, `pay`→`Invoice`, `close` |
+| listing | `listingRepositoryProvider` | `browse(ListingFilter,cursor)`, `mine`, `get` (juga cek status biaya tayang), `saveDraft(ListingInput,id?)`, `pay`→`Invoice`, `close` |
 | application | `applicationRepositoryProvider` | `apply`, `mine`, `forListing`, `get`, `act(id, shortlist/reject/accept/withdraw)`, `invite`, `invitations` |
 | interview | `interviewRepositoryProvider` | `propose`, `get`, `byApplication`, `confirm`, `reschedule`, `cancel`, `evaluate`, `evaluation` |
 | chat | `chatRepositoryProvider` | `conversations`, `messages(id,afterId)`, `send`, `markRead`, `incoming`→`Stream` (API: polling 5 dtk; Reverb menyusul) |
-| booking | `bookingRepositoryProvider` | `previewFees`, `propose`, `agreement`, `byApplication`, `approve(version)`, `counter`, `bookings`, `booking`, `period` |
-| payment | `paymentRepositoryProvider` | `startPayment(periodId,idempotencyKey)`→`Invoice`, `checkStatus`, `confirmComplete`, `cancelPreview`, `cancel` |
-| wallet | `walletRepositoryProvider` | `wallet`, `transactions`, `bankAccount`, `saveBankAccount`, `requestPayout(amount,idempotencyKey)` |
+| booking | `bookingRepositoryProvider` | `propose`, `agreement`, `byApplication`, `approve(version)`, `counter`, `bookings`, `booking`, `cancel` |
 | rating | `ratingRepositoryProvider` | `forBooking`→`BookingReviews` (`theirs` null bila belum `revealed`), `submit`, `reviewsOf` |
 | notification | `notificationRepositoryProvider` | `list`, `unreadCount`, `markRead`, `markAllRead`, `registerPushToken`, `unregisterPushToken`; `notificationRoute(type,id)` memetakan payload push → rute allowlist |
 | report | `reportRepositoryProvider` | `submit(ReportInput)`, `mine`, `get`, `addEvidence`, `shareConversation`, `revokeShare` |
@@ -155,13 +153,11 @@ Ganti hanya `builder` stub di `features/<f>/presentation/<f>_routes.dart` (path 
 | application | M-32 `/assistants/:id/invite` · M-37 `/applications/:id/applicant` · M-43 `/listings/:id/apply` · M-44 ★`/a/jobs` · M-45 `/applications/:id` |
 | interview | M-50 `/applications/:id/interview/propose` · M-51 `/interviews/:id/confirm` · M-52 `/interviews/:id` · M-53 `/interviews/:id/evaluation` |
 | chat | M-60 ★`/s/chat` & ★`/a/chat` · M-61 `/chat/:id` |
-| booking | M-70 `/applications/:id/agreement/new` · M-71 `/agreements/:id` · M-72 `/contracts` · M-73 `/bookings/:id` |
-| payment | M-74 `/periods/:id/pay` · M-75 `/periods/:id/status` · M-76 `/periods/:id/confirm` · M-77 `/bookings/:id/cancel` · `/pay/return?period=<ulid>` (redirect ke M-75, sudah jadi) |
-| wallet | M-80 `/a/wallet` (dibuka dari tab Profil Pelamar) · M-81 `/wallet/payout` · M-82 `/wallet/bank` · M-83 `/wallet/history` |
+| booking | M-70 `/applications/:id/agreement/new` · M-71 `/agreements/:id` · M-72 `/contracts` · M-73 `/bookings/:id` · M-77 `/bookings/:id/cancel` · `/pay/return?listing=<ulid>` (redirect ke M-34) |
 | rating | M-90 `/bookings/:id/rating` · M-91 `/users/:id/reviews` |
-| report | M-25 `/account/privacy` · M-95 `/report/new` (`?booking=&period=&user=`; `user` = terlapor dari profil, wire `reported_user_id`; Pelamar boleh melapor saat period `awaiting_payment`) · M-96 `/reports/:id/share` · M-97 `/reports/:id` |
+| report | M-25 `/account/privacy` · M-95 `/report/new` (`?booking=&user=&conversation=`; `user` = terlapor, wire `reported_user_id`) · M-96 `/reports/:id/share` · M-97 `/reports/:id` |
 
-Catatan: nomor HP/PII tidak boleh di path/query (mis. M-03 membaca nomor dari state fitur auth, bukan URL). Deep link push: `notificationRoute(type, ulid)`. Return Xendit: `asisten://pay/return?period=<ulid>` (scheme/App Links dikonfigurasi saat integrasi native; MOB-SEC-02).
+Catatan: nomor HP/PII tidak boleh di path/query (mis. M-03 membaca nomor dari state fitur auth, bukan URL). Deep link push: `notificationRoute(type, ulid)`. Return Xendit biaya tayang: App Link `https://<APP_LINK_HOST>/pay/return?listing=<ulid>`.
 
 ## 8. Platform (sudah diterapkan)
 
@@ -187,10 +183,6 @@ Perangkat fisik di jaringan yang sama: ganti `10.0.2.2` dengan IP LAN komputer (
 
 Dokumen terkait: [[06-Refactor-DeadCode-Mobile]] · [[05-E2E-Test-Mobile]] · [[07-Git-Commit-Mobile]]
 
-## Kontrak fee untuk backend (diterapkan di mock dan di server pramu-web: `App\Support\Fees`, snapshot `bookings.fee_percent`)
+## Kontrak nominal
 
-- Potongan platform 10% seluruhnya di sisi asisten. Pencari membayar tepat nominal yang diinput (`seeker_fee = 0`, `seeker_total = amount`); asisten menerima `amount - 10%`.
-- Respons per peran: untuk pemanggil berperan asisten, semua nominal yang berasal dari pencari (budget lowongan, `proposed_rate`, `rate`/`fees` kesepakatan, `rate`/`fees`/`amount` booking & periode) dikirim **sudah bersih (90%)**, `assistant_fee = 0`. Untuk pencari dikirim nominal asli.
-- Input asisten (tarif lamaran, tawaran balik kesepakatan) adalah nominal bersih; server mengonversi ke nominal pencari (dibulatkan ke atas: `ceil(net * 100 / 90)`).
-- Klien tidak menampilkan baris biaya layanan di mana pun; `Fees`/`BookingPeriod` hanya diformat.
-- Biaya pasang lowongan (Rp25.000) terpisah dan tetap ditampilkan.
+Tidak ada fee atau potongan platform. Anggaran lowongan, `proposed_rate`, tarif profil, tarif kesepakatan, dan nominal periode dikirim dan ditampilkan apa adanya untuk semua peran. Biaya tayang lowongan (Rp25.000) terpisah dan tampil di layar bayar.

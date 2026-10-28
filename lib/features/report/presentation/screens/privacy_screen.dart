@@ -10,7 +10,7 @@ import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 
 const _visibility = <(String, String)>[
   ('Profil', 'Terlihat oleh pengguna yang membuka lowongan atau profil Anda.'),
-  ('Nomor HP dan email', 'Tersembunyi sampai pembayaran dilakukan.'),
+  ('Nomor HP dan email', 'Tersembunyi sampai kontrak dibuat.'),
   (
     'Percakapan',
     'Hanya Anda dan lawan bicara, kecuali Anda sendiri yang membagikannya.',

@@ -19,8 +19,8 @@ final _contactLike = RegExp(
 );
 
 const _privacyText =
-    'Jaga transaksi tetap di aplikasi agar dana dan data Anda terlindungi. '
-    'Nomor disembunyikan sampai pembayaran dilakukan, demi keamanan Anda.';
+    'Bicarakan kesepakatan di aplikasi agar data Anda terlindungi. '
+    'Nomor disembunyikan sampai kontrak dibuat, demi keamanan Anda.';
 
 enum _Menu { report, share }
 
@@ -92,8 +92,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               const SizedBox(height: AppSpace.s8),
               Text(
                 'Demi keamanan, kontak pribadi disembunyikan sampai '
-                'pembayaran dilakukan. Pembayaran lewat aplikasi melindungi '
-                'dana Anda.',
+                'kontrak dibuat. Setelah itu Anda bisa saling menghubungi '
+                'langsung.',
                 style: context.text.body,
               ),
               const SizedBox(height: AppSpace.s16),

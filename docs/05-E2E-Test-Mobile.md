@@ -7,6 +7,8 @@ versi: 1.0
 
 # 05 — E2E Test Mobile
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Spec uji: [[Spec-Teknis-v1]] §10 ("integration test login→lamar→bayar (sandbox); uji di Android & iOS fisik"). Fitur: [[01-PRD-Mobile]]. **Belum ada kode** → semua snippet adalah templat; ganti nama paket/key/endpoint dengan yang nyata. 🟡 = verifikasi versi/API paket saat dipasang.
 
 ## 1. Fakta penting (jujur)

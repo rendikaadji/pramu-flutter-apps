@@ -14,7 +14,7 @@ class LedgerEntry {
     this.icon,
   });
 
-  /// Teks status (chip), mis. "Dana ditahan aman".
+  /// Teks status (chip), mis. "Sedang berjalan".
   final String label;
   final StatusTone tone;
 
@@ -155,7 +155,7 @@ class LedgerMini extends StatelessWidget {
 
   final List<StatusTone> tones;
 
-  /// Dibacakan screen reader, mis. "Periode 2 dari 4, dana ditahan aman".
+  /// Dibacakan screen reader, mis. "Periode 2 dari 4, sedang berjalan".
   final String? summary;
 
   @override

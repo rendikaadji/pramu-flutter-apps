@@ -6,7 +6,7 @@ import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/booking/domain/booking_repository.dart';
 import 'package:pramu_apps/features/notification/domain/notification.dart';
 
-/// Lawan bicara `bot` menyetujui usulan saat kesepakatan dibaca. Period bergerak otomatis (lihat MockBackend.stepDelay).
+/// Lawan bicara `bot` menyetujui usulan saat kesepakatan dibaca. Period berjalan menurut jadwal.
 class MockBookingRepository implements BookingRepository {
   MockBookingRepository(this._b);
   final MockBackend _b;
@@ -22,16 +22,6 @@ class MockBookingRepository implements BookingRepository {
 
   Role _roleIn(Application app) =>
       app.seeker.id == _b.me.id ? Role.seeker : Role.assistant;
-
-  bool _asAssistant(Application app) => app.assistant.id == _b.me.id;
-
-  Agreement _out(Agreement a) => _b.agreementFor(
-    a,
-    asAssistant: _asAssistant(_b.applications[a.applicationId]!),
-  );
-
-  Booking _bookingOut(Booking b) =>
-      _b.bookingFor(b, asAssistant: b.assistant.id == _b.me.id);
 
   Agreement _agreement(String id) {
     final a =
@@ -56,70 +46,53 @@ class MockBookingRepository implements BookingRepository {
   }
 
   @override
-  Future<Fees> previewFees({required int rate, required int periodCount}) =>
+  Future<Agreement> propose(String applicationId, AgreementInput input) =>
       _b.run(() {
-        if (rate <= 0 || periodCount < 1) {
-          apiFail(422, 'VALIDATION_FAILED', 'Periksa kembali data Anda.', {
-            'rate': ['Tarif tidak valid'],
-          });
+        final app = _app(applicationId);
+        if (app.status != ApplicationStatus.accepted ||
+            app.agreementId != null) {
+          apiFail(
+            409,
+            'APPLICATION_INVALID_STATE',
+            'Status lamaran sudah berubah.',
+          );
         }
-        final asA = _b.viewerIsAssistant;
-        return _b.viewFees(
-          _b.feesFor(_b.amountFrom(rate, asAssistant: asA) * periodCount),
-          asAssistant: asA,
+        _validate(input);
+        final role = _roleIn(app);
+        final rate = input.rate;
+        final now = _b.now();
+        final a = Agreement(
+          id: _b.newId(),
+          applicationId: app.id,
+          version: 1,
+          rate: rate,
+          unit: input.unit,
+          periodCount: input.periodCount,
+          startDate: input.startDate,
+          proposedBy: role,
+          seekerApprovedAt: role == Role.seeker ? now : null,
+          assistantApprovedAt: role == Role.assistant ? now : null,
         );
+        _b.agreements[a.id] = a;
+        _b.applications[app.id] = app.copyWith(agreementId: a.id);
+        final other = role == Role.seeker ? app.assistant.id : app.seeker.id;
+        _b.notify(
+          other,
+          NotificationType.agreement,
+          'Usulan kesepakatan',
+          app.listingTitle,
+          a.id,
+        );
+        return a;
       });
 
   @override
-  Future<Agreement> propose(
-    String applicationId,
-    AgreementInput input,
-  ) => _b.run(() {
-    final app = _app(applicationId);
-    if (app.status != ApplicationStatus.accepted || app.agreementId != null) {
-      apiFail(
-        409,
-        'APPLICATION_INVALID_STATE',
-        'Status lamaran sudah berubah.',
-      );
-    }
-    _validate(input);
-    final role = _roleIn(app);
-    final rate = _b.amountFrom(input.rate, asAssistant: role == Role.assistant);
-    final now = _b.now();
-    final a = Agreement(
-      id: _b.newId(),
-      applicationId: app.id,
-      version: 1,
-      rate: rate,
-      unit: input.unit,
-      periodCount: input.periodCount,
-      startDate: input.startDate,
-      proposedBy: role,
-      fees: _b.feesFor(rate * input.periodCount),
-      seekerApprovedAt: role == Role.seeker ? now : null,
-      assistantApprovedAt: role == Role.assistant ? now : null,
-    );
-    _b.agreements[a.id] = a;
-    _b.applications[app.id] = app.copyWith(agreementId: a.id);
-    final other = role == Role.seeker ? app.assistant.id : app.seeker.id;
-    _b.notify(
-      other,
-      NotificationType.agreement,
-      'Usulan kesepakatan',
-      app.listingTitle,
-      a.id,
-    );
-    return _out(a);
-  });
-
-  @override
-  Future<Agreement> agreement(String id) => _b.run(() => _out(_agreement(id)));
+  Future<Agreement> agreement(String id) => _b.run(() => _agreement(id));
 
   @override
   Future<Agreement?> byApplication(String applicationId) => _b.run(() {
     final id = _app(applicationId).agreementId;
-    return id == null ? null : _out(_agreement(id));
+    return id == null ? null : _agreement(id);
   });
 
   @override
@@ -140,7 +113,7 @@ class MockBookingRepository implements BookingRepository {
         'Status kesepakatan sudah berubah.',
       );
     }
-    return _out(_b.approveAgreement(a, role));
+    return _b.approveAgreement(a, role);
   });
 
   @override
@@ -157,7 +130,7 @@ class MockBookingRepository implements BookingRepository {
     }
     _validate(input);
     final now = _b.now();
-    final rate = _b.amountFrom(input.rate, asAssistant: role == Role.assistant);
+    final rate = input.rate;
     final next = a.copyWith(
       version: a.version + 1,
       rate: rate,
@@ -165,7 +138,6 @@ class MockBookingRepository implements BookingRepository {
       periodCount: input.periodCount,
       startDate: input.startDate,
       proposedBy: role,
-      fees: _b.feesFor(rate * input.periodCount),
       clearApprovals: true,
     );
     final proposed = role == Role.seeker
@@ -180,7 +152,7 @@ class MockBookingRepository implements BookingRepository {
       app.listingTitle,
       id,
     );
-    return _out(proposed);
+    return proposed;
   });
 
   @override
@@ -188,23 +160,22 @@ class MockBookingRepository implements BookingRepository {
     final uid = _b.me.id;
     return [
       for (final b in _b.bookings.values.toList())
-        if (b.seeker.id == uid || b.assistant.id == uid)
-          _bookingOut(_b.booking(b.id)),
+        if (b.seeker.id == uid || b.assistant.id == uid) _b.booking(b.id),
     ]..sort((a, b) => b.startDate.compareTo(a.startDate));
   });
 
   @override
-  Future<Booking> booking(String id) =>
-      _b.run(() => _bookingOut(_b.booking(id)));
+  Future<Booking> booking(String id) => _b.run(() => _b.booking(id));
 
   @override
-  Future<BookingPeriod> period(String id) => _b.run(() {
-    final p =
-        _b.periods[id] ?? apiFail(404, 'NOT_FOUND', 'Periode tidak ditemukan.');
-    final b = _b.booking(p.bookingId);
-    return _b.periodFor(
-      _b.periods[id]!,
-      asAssistant: b.assistant.id == _b.me.id,
-    );
-  });
+  Future<Booking> cancel(String bookingId, {required String reason}) =>
+      _b.run(() {
+        final b = _b.booking(bookingId); // 404 bila bukan pihak
+        if (reason.trim().isEmpty) {
+          apiFail(422, 'VALIDATION_FAILED', 'Periksa kembali data Anda.', {
+            'reason': ['Alasan wajib diisi'],
+          });
+        }
+        return _b.cancelBooking(b.id);
+      });
 }

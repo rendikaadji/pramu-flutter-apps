@@ -7,6 +7,8 @@ versi: 1.0
 
 # Full UI & UX Design Brief — Mobile (Flutter, Android + iOS, 1 app 2 role)
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Sumber: [[PRD-v1]] dan [[Spec-Teknis-v1]] (endpoint & state machine -> state UI). Tokens lengkap ada di brief Web: [[02-UIUX-Brief-Web]] §3 (sumber tunggal). Bagian §3 di sini hanya ringkasan + pemetaan Flutter. Bila berbeda, **dokumen Web menang**.
 > Nama produk TBD -> `[NamaProduk]`. 🟡 = keputusan terbuka.
 

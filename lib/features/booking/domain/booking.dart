@@ -4,31 +4,6 @@ import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/auth/domain/auth.dart';
 import 'package:pramu_apps/features/profile/domain/profile.dart';
 
-/// Rincian biaya DARI SERVER. Klien hanya memformat; jangan dihitung ulang untuk dikirim.
-class Fees {
-  const Fees({
-    required this.amount,
-    required this.seekerFee,
-    required this.seekerTotal,
-    required this.assistantFee,
-    required this.assistantReceives,
-  });
-
-  factory Fees.fromJson(Map<String, dynamic> j) => Fees(
-    amount: j['amount'] as int,
-    seekerFee: j['seeker_fee'] as int,
-    seekerTotal: j['seeker_total'] as int,
-    assistantFee: j['assistant_fee'] as int,
-    assistantReceives: j['assistant_receives'] as int,
-  );
-
-  final int amount;
-  final int seekerFee;
-  final int seekerTotal; // yang dibayar pencari
-  final int assistantFee;
-  final int assistantReceives; // yang diterima asisten
-}
-
 // ---------------------------------------------------------------- Agreement
 
 class Agreement {
@@ -41,7 +16,6 @@ class Agreement {
     required this.periodCount,
     required this.startDate,
     required this.proposedBy,
-    required this.fees,
     this.seekerApprovedAt,
     this.assistantApprovedAt,
     this.bookingId,
@@ -56,7 +30,6 @@ class Agreement {
     periodCount: j['period_count'] as int,
     startDate: parseApiTime(j['start_date'] as String),
     proposedBy: Role.from(j['proposed_by'] as String?) ?? Role.seeker,
-    fees: Fees.fromJson(j['fees'] as Map<String, dynamic>),
     seekerApprovedAt: j['seeker_approved_at'] == null
         ? null
         : parseApiTime(j['seeker_approved_at'] as String),
@@ -74,7 +47,6 @@ class Agreement {
   final int periodCount;
   final DateTime startDate;
   final Role proposedBy;
-  final Fees fees; // atas total kontrak
   final DateTime? seekerApprovedAt;
   final DateTime? assistantApprovedAt;
   final String? bookingId;
@@ -92,7 +64,6 @@ class Agreement {
     int? periodCount,
     DateTime? startDate,
     Role? proposedBy,
-    Fees? fees,
     DateTime? seekerApprovedAt,
     DateTime? assistantApprovedAt,
     bool clearApprovals = false,
@@ -106,7 +77,6 @@ class Agreement {
     periodCount: periodCount ?? this.periodCount,
     startDate: startDate ?? this.startDate,
     proposedBy: proposedBy ?? this.proposedBy,
-    fees: fees ?? this.fees,
     seekerApprovedAt: clearApprovals
         ? null
         : seekerApprovedAt ?? this.seekerApprovedAt,
@@ -140,65 +110,27 @@ class AgreementInput {
 
 // ------------------------------------------------------------------- Period
 
-enum PeriodAction { pay, confirmComplete, cancel, report, addEvidence }
-
 enum PeriodStatus {
-  awaitingPayment,
-  expired,
-  paid,
+  scheduled,
   inProgress,
-  awaitingConfirmation,
   completed,
-  settled,
   cancelled,
-  disputed,
-  refunded,
   unknown;
 
   static PeriodStatus from(String? s) => enumFromWire(values, s, unknown);
 
-  /// Label per peran (UIUX §9). Untuk settled asisten, UI menambahkan nominal.
-  String labelFor(Role role) {
-    final seeker = role == Role.seeker;
-    return switch (this) {
-      awaitingPayment =>
-        seeker ? 'Menunggu pembayaran Anda' : 'Menunggu pembayaran Pencari',
-      paid => seeker ? 'Dana ditahan aman' : 'Dana Pencari sudah diamankan',
-      inProgress => 'Sedang berjalan',
-      awaitingConfirmation =>
-        seeker ? 'Konfirmasi pekerjaan selesai' : 'Menunggu konfirmasi Pencari',
-      completed || settled => seeker ? 'Selesai' : 'Dana masuk dompet',
-      expired => 'Tagihan kedaluwarsa',
-      cancelled || refunded => 'Dibatalkan',
-      disputed => 'Sedang ditinjau',
-      unknown => 'Status tidak dikenal',
-    };
-  }
+  String get label => switch (this) {
+    scheduled => 'Terjadwal',
+    inProgress => 'Sedang berjalan',
+    completed => 'Selesai',
+    cancelled => 'Dibatalkan',
+    unknown => 'Status tidak dikenal',
+  };
 
-  bool get canPay => this == awaitingPayment;
-  bool get canConfirmComplete => this == awaitingConfirmation;
-  bool get canDispute =>
-      this == paid || this == inProgress || this == awaitingConfirmation;
-  bool get isFinal =>
-      this == settled ||
-      this == completed ||
-      this == cancelled ||
-      this == refunded;
-
-  Set<PeriodAction> actionsFor(Role role) {
-    final seeker = role == Role.seeker;
-    return {
-      if (seeker && canPay) PeriodAction.pay,
-      if (seeker && canConfirmComplete) PeriodAction.confirmComplete,
-      if (seeker && this == inProgress) PeriodAction.cancel,
-      // Pelamar boleh melapor saat Pencari belum membayar.
-      if (canDispute || (!seeker && this == awaitingPayment))
-        PeriodAction.report,
-      if (this == disputed) PeriodAction.addEvidence,
-    };
-  }
+  bool get isFinal => this == completed || this == cancelled;
 }
 
+/// Jadwal satu periode kerja. Tanpa tagihan: gaji dibayar langsung antar pihak.
 class BookingPeriod {
   const BookingPeriod({
     required this.id,
@@ -207,13 +139,7 @@ class BookingPeriod {
     required this.start,
     required this.end,
     required this.amount,
-    required this.serviceFee,
-    required this.total,
     required this.status,
-    required this.dueAt,
-    this.autoReleaseAt,
-    this.invoiceId,
-    this.paidAt,
   });
 
   factory BookingPeriod.fromJson(Map<String, dynamic> j) => BookingPeriod(
@@ -223,15 +149,7 @@ class BookingPeriod {
     start: parseApiTime(j['start'] as String),
     end: parseApiTime(j['end'] as String),
     amount: j['amount'] as int,
-    serviceFee: j['service_fee'] as int,
-    total: j['total'] as int,
     status: PeriodStatus.from(j['status'] as String?),
-    dueAt: parseApiTime(j['due_at'] as String),
-    autoReleaseAt: j['auto_release_at'] == null
-        ? null
-        : parseApiTime(j['auto_release_at'] as String),
-    invoiceId: j['invoice_id'] as String?,
-    paidAt: j['paid_at'] == null ? null : parseApiTime(j['paid_at'] as String),
   );
 
   final String id;
@@ -239,37 +157,17 @@ class BookingPeriod {
   final int index; // 1-based
   final DateTime start;
   final DateTime end;
-  final int amount; // hak asisten sebelum fee
-  final int serviceFee; // fee pencari (dari server)
-  final int total; // yang dibayar pencari (dari server)
+  final int amount; // gaji per periode yang disepakati
   final PeriodStatus status;
-  final DateTime dueAt; // batas bayar
-  final DateTime? autoReleaseAt; // countdown auto-release dana
-  final String? invoiceId;
-  final DateTime? paidAt;
 
-  BookingPeriod copyWith({
-    PeriodStatus? status,
-    DateTime? autoReleaseAt,
-    String? invoiceId,
-    DateTime? paidAt,
-    int? amount,
-    int? serviceFee,
-    int? total,
-  }) => BookingPeriod(
+  BookingPeriod copyWith({PeriodStatus? status, int? amount}) => BookingPeriod(
     id: id,
     bookingId: bookingId,
     index: index,
     start: start,
     end: end,
     amount: amount ?? this.amount,
-    serviceFee: serviceFee ?? this.serviceFee,
-    total: total ?? this.total,
     status: status ?? this.status,
-    dueAt: dueAt,
-    autoReleaseAt: autoReleaseAt ?? this.autoReleaseAt,
-    invoiceId: invoiceId ?? this.invoiceId,
-    paidAt: paidAt ?? this.paidAt,
   );
 }
 
@@ -277,24 +175,20 @@ class BookingPeriod {
 
 enum BookingStatus {
   active,
-  paused,
   completed,
   cancelled,
-  disputed,
   unknown;
 
   static BookingStatus from(String? s) => enumFromWire(values, s, unknown);
 
   String get label => switch (this) {
     active => 'Berjalan',
-    paused => 'Dijeda, tagihan belum dibayar',
     completed => 'Selesai',
     cancelled => 'Dibatalkan',
-    disputed => 'Dalam sengketa',
     unknown => 'Status tidak dikenal',
   };
 
-  bool get canCancel => this == active || this == paused;
+  bool get canCancel => this == active;
   bool get canRate => this == completed;
 }
 
@@ -310,10 +204,8 @@ class Booking {
     required this.periodCount,
     required this.startDate,
     required this.status,
-    required this.fees,
     required this.periods,
     this.conversationId,
-    this.pausedUntil,
   });
 
   factory Booking.fromJson(Map<String, dynamic> j) => Booking(
@@ -327,15 +219,11 @@ class Booking {
     periodCount: j['period_count'] as int,
     startDate: parseApiTime(j['start_date'] as String),
     status: BookingStatus.from(j['status'] as String?),
-    fees: Fees.fromJson(j['fees'] as Map<String, dynamic>),
     periods: [
       for (final p in j['periods'] as List)
         BookingPeriod.fromJson(p as Map<String, dynamic>),
     ],
     conversationId: j['conversation_id'] as String?,
-    pausedUntil: j['paused_until'] == null
-        ? null
-        : parseApiTime(j['paused_until'] as String),
   );
 
   final String id;
@@ -348,12 +236,10 @@ class Booking {
   final int periodCount;
   final DateTime startDate;
   final BookingStatus status;
-  final Fees fees; // snapshot
   final List<BookingPeriod> periods;
   final String? conversationId;
-  final DateTime? pausedUntil;
 
-  /// Period yang paling relevan untuk "Langkah berikutnya".
+  /// Period yang sedang atau akan berjalan.
   BookingPeriod? get nextPeriod {
     for (final p in periods) {
       if (!p.status.isFinal) return p;
@@ -364,10 +250,7 @@ class Booking {
   Booking copyWith({
     BookingStatus? status,
     List<BookingPeriod>? periods,
-    DateTime? pausedUntil,
-    bool clearPausedUntil = false,
     int? rate,
-    Fees? fees,
   }) => Booking(
     id: id,
     applicationId: applicationId,
@@ -379,9 +262,7 @@ class Booking {
     periodCount: periodCount,
     startDate: startDate,
     status: status ?? this.status,
-    fees: fees ?? this.fees,
     periods: periods ?? this.periods,
     conversationId: conversationId,
-    pausedUntil: clearPausedUntil ? null : pausedUntil ?? this.pausedUntil,
   );
 }

@@ -18,7 +18,6 @@ class ApiReportRepository implements ReportRepository {
       'type': wire(i.type),
       'description': i.description,
       'booking_id': ?i.bookingId,
-      'period_id': ?i.periodId,
       // Opsional: kontrak M-95 belum mendefinisikan field ini; server mengabaikan bila belum ada.
       'reported_user_id': ?i.userId,
       'evidence[]': await _files(i.evidencePaths),

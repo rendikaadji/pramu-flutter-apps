@@ -6,7 +6,7 @@ import '../app_skeleton.dart';
 
 /// Komposisi skeleton yang meniru bentuk, ukuran, dan spasi komponen aslinya
 /// agar transisi ke konten tidak meloncat. Setiap komposisi tingkat-layar
-/// (`HomeSkeleton`, `DetailSkeleton`, `WalletSkeleton`, `ProfileSkeleton`,
+/// (`HomeSkeleton`, `DetailSkeleton`, `ProfileSkeleton`,
 /// `ListSkeleton`) memasang satu [SkeletonScope] (shimmer sinkron + label
 /// "Memuat"); blok kecil (`ListCardSkeleton`, `SkeletonText`) dipakai di
 /// dalamnya.
@@ -629,66 +629,6 @@ class _InfoRowSkeleton extends StatelessWidget {
       Expanded(child: SkeletonText(factor: .6, lineHeight: 20)),
     ],
   );
-}
-
-/// Dompet: kartu saldo besar, tombol, judul seksi, riwayat transaksi.
-class WalletSkeleton extends StatelessWidget {
-  const WalletSkeleton({super.key, this.rows = 3});
-  final int rows;
-
-  @override
-  Widget build(BuildContext context) {
-    // MoneyHeroCard: 20 + label 20 + 4 + nominal 40 + 16 + footer 44 + 20.
-    final hero = 20 + _scaled(context, 20) + 4 + 40 + 16 + 44 + 20.0;
-    return SkeletonScope(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: AppSpace.s24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppSkeleton(height: hero, radius: AppRadius.lg),
-            const SizedBox(height: AppSpace.s16),
-            const AppSkeleton(height: 56, radius: AppRadius.button),
-            const SizedBox(height: AppSpace.s24),
-            const _SectionHeaderSkeleton(width: 100),
-            _Grouped(rows: rows, kind: SkeletonCardKind.transaction),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Grouped extends StatelessWidget {
-  const _Grouped({required this.rows, required this.kind});
-  final int rows;
-  final SkeletonCardKind kind;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.tokens;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: t.surface,
-        borderRadius: AppRadius.brCard,
-        border: Border.all(color: t.borderSubtle),
-        boxShadow: t.e1,
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < rows; i++) ...[
-            if (i > 0)
-              Divider(
-                height: 1,
-                indent: AppSpace.s16 + 40 + AppSpace.s12,
-                color: t.borderSubtle,
-              ),
-            ListCardSkeleton(kind: kind),
-          ],
-        ],
-      ),
-    );
-  }
 }
 
 /// Profil: kartu identitas, StatsRow, judul seksi, grup baris pengaturan.

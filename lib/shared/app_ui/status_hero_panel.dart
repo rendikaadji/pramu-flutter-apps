@@ -4,7 +4,7 @@ import '../../core/theme/app_theme.dart';
 import 'status_chip.dart';
 
 /// Visual hasil/status layar penuh: lencana bulat bertinta nada (ikon + teks + warna),
-/// judul, dan penjelasan. Dipakai status pembayaran, hasil pencairan, status laporan.
+/// judul, dan penjelasan. Dipakai status biaya tayang dan status laporan.
 class StatusHeroPanel extends StatelessWidget {
   const StatusHeroPanel({
     super.key,

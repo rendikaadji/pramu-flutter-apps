@@ -57,7 +57,6 @@ void main() {
         for (final w in <Widget>[
           const HomeSkeleton(),
           const DetailSkeleton(),
-          const WalletSkeleton(),
           const ProfileSkeleton(),
           for (final k in SkeletonCardKind.values)
             ListSkeleton(count: 2, kind: k),

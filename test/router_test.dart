@@ -77,7 +77,7 @@ void main() {
 
   test('guard peran: /a/* untuk pencari dan /s/* untuk asisten dialihkan', () {
     expect(
-      redirect(authed(Role.seeker), Routes.assistantWallet),
+      redirect(authed(Role.seeker), Routes.assistantJobs),
       Routes.seekerHome,
     );
     expect(
@@ -95,8 +95,8 @@ void main() {
       expect(redirect(s, '/bookings/123'), Routes.seekerHome);
       expect(redirect(s, '/bookings/$ulid/../x'), Routes.seekerHome);
       expect(redirect(s, '/bookings/$ulid'), isNull);
-      expect(redirect(s, '/pay/return?period=$ulid'), isNull);
-      expect(redirect(s, '/pay/return?period=jahat'), Routes.seekerHome);
+      expect(redirect(s, '/pay/return?listing=$ulid'), isNull);
+      expect(redirect(s, '/pay/return?listing=jahat'), Routes.seekerHome);
       expect(redirect(s, '/listings/new?draft=$ulid'), isNull);
     },
   );
