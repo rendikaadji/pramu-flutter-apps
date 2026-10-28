@@ -136,7 +136,6 @@ extension MockFlows on MockBackend {
             periodCount: l.periodCount,
             startDate: start,
             proposedBy: Role.seeker,
-            fees: feesFor(app.proposedRate * l.periodCount),
             seekerApprovedAt: now(),
           );
           agreements[a.id] = a;

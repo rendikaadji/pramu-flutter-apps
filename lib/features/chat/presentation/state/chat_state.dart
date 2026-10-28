@@ -191,12 +191,7 @@ final contactsOpenProvider = FutureProvider.autoDispose.family<bool, String?>((
   if (bookingId == null) return false;
   try {
     final b = await ref.read(bookingRepositoryProvider).booking(bookingId);
-    return b.periods.any(
-      (p) =>
-          p.status.canDispute ||
-          p.status == PeriodStatus.completed ||
-          p.status == PeriodStatus.settled,
-    );
+    return b.status != BookingStatus.cancelled;
   } on Exception {
     return false;
   }

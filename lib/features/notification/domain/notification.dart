@@ -81,7 +81,7 @@ String? notificationRoute(NotificationType type, String? id) {
     NotificationType.chat => Routes.chatRoom(id!),
     NotificationType.agreement => Routes.agreementReview(id!),
     NotificationType.booking => Routes.bookingDetail(id!),
-    NotificationType.payment => Routes.periodStatus(id!),
+    NotificationType.payment => Routes.listingManage(id!),
     NotificationType.rating => Routes.rating(id!),
     NotificationType.report => Routes.reportStatus(id!),
     NotificationType.unknown => null,

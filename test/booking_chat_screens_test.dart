@@ -128,113 +128,53 @@ void main() {
     });
   });
 
-  group('booking + payment M-72..M-77', () {
-    testWidgets('alur sukses: detail -> bayar -> periksa -> diterima', (
-      tester,
-    ) async {
+  group('booking M-72..M-77', () {
+    testWidgets('detail kontrak: jadwal periode tanpa tagihan', (tester) async {
       final env = await boot(tester, 'Bu Rina');
       final b = sitiBooking(env.backend);
-      env.go('/contracts');
+      env.go('/bookings/${b.id}');
       await settle(tester);
-      await tap(tester, find.byKey(K.contractCard(b.id)));
-      await settle(tester);
-      expect(find.byKey(K.bookingPay), findsOneWidget);
-
-      await tap(tester, find.byKey(K.bookingPay));
-      await settle(tester);
-      await tap(tester, find.byKey(K.payButton));
-      await settle(tester);
-      await tester.tap(dialogButton('Bayar'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-
-      expect(env.opened.single.host, 'checkout.xendit.co');
-      expect(find.byKey(K.paymentChecking), findsOneWidget);
-      // polling server 5 dtk: cek ke-2 -> paid (webhook mock)
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byKey(K.periodStatus), findsOneWidget);
-      expect(find.text('Pembayaran diterima'), findsOneWidget);
+      expect(find.text('Jadwal periode'), findsOneWidget);
+      expect(find.textContaining('Bayar'), findsNothing);
+      expect(find.textContaining('dompet'), findsNothing);
     });
 
-    testWidgets('halaman bayar tidak terbuka bila peluncur gagal', (
-      tester,
-    ) async {
-      final env = await boot(tester, 'Bu Rina', launchOk: false);
-      final b = sitiBooking(env.backend);
-      final pid = b.periods.firstWhere((p) => p.status.canPay).id;
-      env.go('/periods/$pid/pay');
-      await settle(tester);
-      await tap(tester, find.byKey(K.payButton));
-      await settle(tester);
-      await tester.tap(dialogButton('Bayar'));
-      await settle(tester);
-      expect(find.textContaining('belum bisa dibuka'), findsOneWidget);
-      expect(find.byKey(K.payButton), findsOneWidget);
-    });
-
-    testWidgets('deep link /pay/return tidak pernah menandai lunas', (
-      tester,
-    ) async {
-      final env = await boot(tester, 'Bu Rina');
-      final pid = sitiBooking(env.backend).periods
-          .firstWhere((p) => p.status.canPay)
-          .id;
-      env.go('/pay/return?period=$pid&status=PAID');
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byKey(K.paymentChecking), findsOneWidget);
-      for (var i = 0; i < 26; i++) {
-        await tester.pump(const Duration(seconds: 5));
-      }
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byKey(K.paymentPending), findsOneWidget);
-      expect(find.text('Pembayaran diterima'), findsNothing);
-      expect(
-        find.textContaining('Anda tidak perlu membayar lagi'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('konfirmasi selesai: dialog lalu dana dicairkan', (
-      tester,
-    ) async {
-      final env = await boot(tester, 'Bu Rina');
-      final b = sitiBooking(env.backend);
-      final p = b.periods.firstWhere((p) => p.status.canPay);
-      env.backend.periods[p.id] = p.copyWith(
-        status: PeriodStatus.awaitingConfirmation,
-        autoReleaseAt: DateTime.now().toUtc().add(const Duration(hours: 5)),
-      );
-      env.go('/periods/${p.id}/confirm');
-      await settle(tester);
-      expect(find.textContaining('otomatis dicairkan'), findsOneWidget);
-      await tap(tester, find.byKey(K.confirmComplete));
-      await settle(tester);
-      await tester.tap(dialogButton('Konfirmasi selesai'));
-      await settle(tester);
-      expect(env.backend.periods[p.id]!.status.isFinal, isTrue);
-    });
-
-    testWidgets('batalkan: pratinjau server, 409 -> dialog muat ulang', (
+    testWidgets('batalkan: alasan -> konfirmasi -> kontrak dibatalkan', (
       tester,
     ) async {
       final env = await boot(tester, 'Bu Rina');
       final b = sitiBooking(env.backend);
       env.go('/bookings/${b.id}/cancel');
       await settle(tester);
-      expect(find.textContaining('Kembali ke Anda'), findsOneWidget);
+      expect(find.textContaining('Perkiraan dana'), findsNothing);
       await tap(tester, find.byKey(K.cancelReason(0)));
       await tester.pump();
-      env.backend.bookings[b.id] = env.backend.bookings[b.id]!.copyWith(
-        status: BookingStatus.completed,
-      );
       await tap(tester, find.byKey(K.cancelSubmit));
       await settle(tester);
       await tester.tap(dialogButton('Batalkan kontrak'));
       await settle(tester);
-      expect(find.text('Data sudah berubah'), findsOneWidget);
+      expect(env.backend.bookings[b.id]!.status, BookingStatus.cancelled);
     });
+
+    testWidgets(
+      'batalkan: 409 bila status sudah berubah -> dialog muat ulang',
+      (tester) async {
+        final env = await boot(tester, 'Bu Rina');
+        final b = sitiBooking(env.backend);
+        env.go('/bookings/${b.id}/cancel');
+        await settle(tester);
+        await tap(tester, find.byKey(K.cancelReason(0)));
+        await tester.pump();
+        env.backend.bookings[b.id] = env.backend.bookings[b.id]!.copyWith(
+          status: BookingStatus.completed,
+        );
+        await tap(tester, find.byKey(K.cancelSubmit));
+        await settle(tester);
+        await tester.tap(dialogButton('Batalkan kontrak'));
+        await settle(tester);
+        expect(find.text('Data sudah berubah'), findsOneWidget);
+      },
+    );
 
     for (final who in ['Bu Rina', 'Siti']) {
       testWidgets('kontrak selesai: $who tetap bisa melaporkan', (
@@ -284,7 +224,6 @@ void main() {
         periodCount: fresh.periodCount,
         startDate: fresh.startDate,
         proposedBy: Role.seeker,
-        fees: fresh.fees,
         seekerApprovedAt: fresh.seekerApprovedAt,
       );
       env.go('/agreements/$id');
@@ -305,68 +244,6 @@ void main() {
       await settle(tester);
       expect(find.text('Versi 2'), findsOneWidget);
       expect(find.textContaining('Sebelumnya'), findsOneWidget);
-    });
-  });
-
-  group('wallet M-80..M-83', () {
-    testWidgets('saldo tampil; tarik dana sukses; skala teks 1.3', (
-      tester,
-    ) async {
-      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      final env = await boot(tester, 'Siti');
-      env.go('/a/wallet');
-      await settle(tester);
-      expect(find.byKey(K.walletBalance), findsOneWidget);
-      expect(find.text('Rp1.350.000'), findsOneWidget);
-
-      await tap(tester, find.byKey(K.walletPayoutOpen));
-      await settle(tester);
-      await tester.enterText(find.byKey(K.payoutAmount), '50000');
-      await tap(tester, find.byKey(K.payoutSubmit));
-      await settle(tester);
-      expect(find.textContaining('BCA ••••7890'), findsWidgets);
-      await tester.tap(dialogButton('Tarik dana'));
-      await settle(tester);
-      expect(find.byKey(K.payoutResult), findsOneWidget);
-      expect(find.text('Antre'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('nominal melebihi saldo -> pesan field, tanpa panggilan', (
-      tester,
-    ) async {
-      final env = await boot(tester, 'Siti');
-      env.go('/wallet/payout');
-      await settle(tester);
-      await tester.enterText(find.byKey(K.payoutAmount), '99999999');
-      await tap(tester, find.byKey(K.payoutSubmit));
-      await settle(tester);
-      expect(
-        find.text('Nominal melebihi saldo yang bisa ditarik.'),
-        findsOneWidget,
-      );
-      expect(find.byType(Dialog), findsNothing);
-    });
-
-    testWidgets('rekening: nomor tersamar setelah simpan', (tester) async {
-      final env = await boot(tester, 'Siti');
-      env.go('/wallet/bank');
-      await settle(tester);
-      expect(find.text('••••7890'), findsOneWidget);
-      await tap(tester, find.byKey(K.bankEdit));
-      await settle(tester);
-      await tap(tester, find.byKey(K.bankSave));
-      await settle(tester);
-      expect(find.text('Pilih bank Anda.'), findsWidgets);
-      expect(find.textContaining('8 sampai 16 digit'), findsOneWidget);
-    });
-
-    testWidgets('riwayat memuat transaksi', (tester) async {
-      final env = await boot(tester, 'Siti');
-      env.go('/wallet/history');
-      await settle(tester);
-      expect(find.textContaining('periode 1'), findsOneWidget);
     });
   });
 }

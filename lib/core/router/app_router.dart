@@ -14,17 +14,15 @@ import 'package:pramu_apps/features/home/presentation/home_routes.dart';
 import 'package:pramu_apps/features/interview/presentation/interview_routes.dart';
 import 'package:pramu_apps/features/listing/presentation/listing_routes.dart';
 import 'package:pramu_apps/features/notification/presentation/notification_routes.dart';
-import 'package:pramu_apps/features/payment/presentation/payment_routes.dart';
 import 'package:pramu_apps/features/profile/presentation/profile_routes.dart';
 import 'package:pramu_apps/features/rating/presentation/rating_routes.dart';
 import 'package:pramu_apps/features/report/presentation/report_routes.dart';
 import 'package:pramu_apps/features/verification/domain/verification.dart';
 import 'package:pramu_apps/features/verification/presentation/verification_routes.dart';
-import 'package:pramu_apps/features/wallet/presentation/wallet_routes.dart';
 import 'package:pramu_apps/shared/app_ui/pramu_mark.dart';
 
 const _splash = '/splash';
-const _ulidQueryKeys = ['listing', 'booking', 'period', 'draft'];
+const _ulidQueryKeys = ['listing', 'booking', 'draft', 'user', 'conversation'];
 
 /// Semua rute fitur. Router memilah: path tab -> cabang shell, sisanya -> layar penuh.
 final List<RouteBase> allFeatureRoutes = [
@@ -38,8 +36,6 @@ final List<RouteBase> allFeatureRoutes = [
   ...interviewRoutes,
   ...chatRoutes,
   ...bookingRoutes,
-  ...paymentRoutes,
-  ...walletRoutes,
   ...ratingRoutes,
   ...reportRoutes,
 ];

@@ -80,7 +80,7 @@ class _BookingTile extends StatelessWidget {
     final summary = current == null
         ? b.status.label
         : 'Periode ${current.index} dari ${b.periods.length}, '
-              '${current.status.labelFor(role).toLowerCase()}';
+              '${current.status.label.toLowerCase()}';
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpace.s12),
       child: AppCard(
@@ -129,7 +129,7 @@ class _NextHero extends StatelessWidget {
       title: next.title,
       subtitle: next.message,
       ctaLabel: 'Lanjutkan',
-      illustration: illustration ?? const MoneySafeIllustration(size: 104),
+      illustration: illustration ?? const WelcomeIllustration(size: 104),
       onTap: () => context.push(next.route),
     ),
   );
@@ -255,11 +255,7 @@ class SeekerHomeScreen extends ConsumerWidget {
         .take(3)
         .toList();
     final bookings = d.bookings
-        .where(
-          (b) =>
-              b.status == BookingStatus.active ||
-              b.status == BookingStatus.paused,
-        )
+        .where((b) => b.status == BookingStatus.active)
         .toList();
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -393,11 +389,7 @@ class AssistantHomeScreen extends ConsumerWidget {
     final next = d.next;
     final meter = d.profile?.completeness ?? 0;
     final bookings = d.bookings
-        .where(
-          (b) =>
-              b.status == BookingStatus.active ||
-              b.status == BookingStatus.paused,
-        )
+        .where((b) => b.status == BookingStatus.active)
         .toList();
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),

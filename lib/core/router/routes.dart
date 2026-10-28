@@ -33,7 +33,6 @@ abstract final class Routes {
   static const assistantJobs = '/a/jobs'; // M-44
   static const assistantChat = '/a/chat'; // M-60
   static const assistantAccount = '/a/profile'; // M-24 (tab Profil Pelamar)
-  static const assistantWallet = '/a/wallet'; // M-80 (dibuka dari Profil)
 
   // --- notification / report umum
   static const notifications = '/notifications'; // M-23
@@ -60,17 +59,13 @@ abstract final class Routes {
   static const agreementReviewT = '/agreements/:id'; // M-71
   static const contracts = '/contracts'; // M-72
   static const bookingDetailT = '/bookings/:id'; // M-73
-  static const periodPayT = '/periods/:id/pay'; // M-74
-  static const periodStatusT = '/periods/:id/status'; // M-75
-  static const periodConfirmT = '/periods/:id/confirm'; // M-76
   static const bookingCancelT = '/bookings/:id/cancel'; // M-77
-  static const payReturn = '/pay/return'; // ?period=<ulid> -> M-75
-  static const payout = '/wallet/payout'; // M-81
-  static const bank = '/wallet/bank'; // M-82
-  static const walletHistory = '/wallet/history'; // M-83
+  static const payReturn =
+      '/pay/return'; // ?listing=<ulid> -> M-34 (cek status biaya tayang)
   static const ratingT = '/bookings/:id/rating'; // M-90
   static const userReviewsT = '/users/:id/reviews'; // M-91
-  static const reportNew = '/report/new'; // M-95 (?booking=&period=&user=)
+  static const reportNew =
+      '/report/new'; // M-95 (?booking=&user=&conversation=)
   static const reportShareT = '/reports/:id/share'; // M-96
   static const reportStatusT = '/reports/:id'; // M-97
 
@@ -93,9 +88,6 @@ abstract final class Routes {
       '/applications/$applicationId/agreement/new';
   static String agreementReview(String id) => '/agreements/$id';
   static String bookingDetail(String id) => '/bookings/$id';
-  static String periodPay(String id) => '/periods/$id/pay';
-  static String periodStatus(String id) => '/periods/$id/status';
-  static String periodConfirm(String id) => '/periods/$id/confirm';
   static String bookingCancel(String id) => '/bookings/$id/cancel';
   static String rating(String bookingId) => '/bookings/$bookingId/rating';
   static String userReviews(String id) => '/users/$id/reviews';

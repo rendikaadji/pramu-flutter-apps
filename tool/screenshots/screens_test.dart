@@ -25,8 +25,6 @@ import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/booking/domain/booking.dart';
 import 'package:pramu_apps/features/home/presentation/state/home_state.dart';
 import 'package:pramu_apps/features/verification/presentation/state/verification_state.dart';
-import 'package:pramu_apps/features/wallet/domain/wallet.dart';
-import 'package:pramu_apps/features/wallet/presentation/state/wallet_state.dart';
 import 'package:pramu_apps/shared/app_ui/gallery/design_gallery_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -196,15 +194,6 @@ void main() {
   screen('13-booking', 'Bu Rina', (t, e) async {
     e.go('/bookings/${sitiBooking(e.b).id}');
   });
-  screen('14-period-pay', 'Bu Rina', (t, e) async {
-    final id = e.b.bookingPeriods[sitiBooking(e.b).id]!.firstWhere(
-      (p) => e.b.periods[p]!.status == PeriodStatus.awaitingPayment,
-    );
-    e.go('/periods/$id/pay');
-  });
-  screen('15-wallet', 'Siti', (t, e) async {
-    e.go('/a/wallet');
-  });
   screen('16-account', 'Bu Rina', (t, e) async {
     e.go('/account');
   });
@@ -282,9 +271,6 @@ void main() {
   screen('41-privacy', 'Bu Rina', (t, e) async {
     e.go('/account/privacy');
   });
-  screen('42-bank', 'Siti', (t, e) async {
-    e.go('/wallet/bank');
-  });
   screen('43-cancel', 'Bu Rina', (t, e) async {
     e.go('/bookings/${sitiBooking(e.b).id}/cancel');
   });
@@ -331,11 +317,6 @@ void main() {
           (ref) => Completer<AssistantHome>().future,
         ),
       ],
-    ),
-    'L3-wallet': (
-      'Siti',
-      '/a/wallet',
-      [walletProvider.overrideWith((ref) => Completer<Wallet>().future)],
     ),
   };
   for (final entry in loading.entries) {

@@ -22,34 +22,8 @@ class NextStep {
   final String route;
 }
 
-Iterable<BookingPeriod> _periods(List<Booking> bs) => bs
-    .where(
-      (b) =>
-          b.status == BookingStatus.active || b.status == BookingStatus.paused,
-    )
-    .expand((b) => b.periods);
-
-/// Pencari: tagihan -> konfirmasi selesai -> pelamar -> lowongan belum tayang.
+/// Pencari: pelamar menunggu -> pembayaran biaya tayang -> lowongan draf.
 NextStep? seekerNextStep(List<Listing> listings, List<Booking> bookings) {
-  final due = _periods(bookings).where((p) => p.status.canPay).toList()
-    ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
-  if (due.isNotEmpty) {
-    final p = due.first;
-    return NextStep(
-      'Tagihan periode ${p.index} jatuh tempo ${formatDate(p.dueAt)}',
-      'Bayar agar kontrak tetap berjalan.',
-      Routes.periodPay(p.id),
-    );
-  }
-  for (final p in _periods(bookings)) {
-    if (p.status.canConfirmComplete) {
-      return NextStep(
-        'Konfirmasi pekerjaan periode ${p.index} selesai',
-        'Dana dicairkan ke asisten setelah Anda konfirmasi.',
-        Routes.periodConfirm(p.id),
-      );
-    }
-  }
   for (final l in listings) {
     if (l.status == ListingStatus.open && l.applicantCount > 0) {
       return NextStep(
@@ -108,18 +82,6 @@ NextStep? assistantNextStep(
         'Lanjutkan ke kesepakatan kerja.',
         Routes.applicationDetail(a.id),
       );
-    }
-  }
-  for (final b in bookings) {
-    for (final p in b.periods) {
-      if (p.status.canConfirmComplete) {
-        return NextStep(
-          'Menunggu konfirmasi ${b.seeker.name}',
-          'Periode ${p.index} sudah selesai. Dana dicairkan setelah '
-              'dikonfirmasi.',
-          Routes.bookingDetail(b.id),
-        );
-      }
     }
   }
   return null;

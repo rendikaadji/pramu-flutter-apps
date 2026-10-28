@@ -10,30 +10,8 @@ import 'package:pramu_apps/shared/app_ui/status_presets.dart';
 AppRole appRoleOf(Role r) =>
     r == Role.seeker ? AppRole.seeker : AppRole.assistant;
 
-/// Rincian nominal per peran. Angka dari server (sudah bersih per peran);
-/// potongan layanan tidak ditampilkan ke pengguna.
-List<FeeRow> contractFeeRows(Fees f, Role role) => [
-  FeeRow(
-    role == Role.seeker ? 'Total yang Anda bayar' : 'Dana yang Anda terima',
-    formatRupiah(role == Role.seeker ? f.seekerTotal : f.assistantReceives),
-    total: true,
-  ),
-];
-
 StatusTone periodTone(PeriodStatus s, Role role) =>
     statusPreset(StatusDomain.period, wire(s), appRoleOf(role)).tone;
-
-/// Label ringkas untuk baris jadwal (muat 1 baris di 390dp); label penuh tetap
-/// di kartu "Langkah berikutnya".
-String periodShortLabel(PeriodStatus s, Role role) {
-  final seeker = role == Role.seeker;
-  return switch (s) {
-    PeriodStatus.awaitingPayment => seeker ? 'Perlu dibayar' : 'Belum dibayar',
-    PeriodStatus.awaitingConfirmation =>
-      seeker ? 'Perlu konfirmasi' : 'Menunggu Pencari',
-    _ => s.labelFor(role),
-  };
-}
 
 String periodRange(BookingPeriod p) =>
     '${formatDate(p.start)} - ${formatDate(p.end)}';
@@ -57,9 +35,7 @@ class BookingCard extends StatelessWidget {
     final other = role == Role.seeker ? b.assistant : b.seeker;
     final done = b.periods.where((p) => p.status.isFinal).length;
     final next = b.nextPeriod;
-    final total = role == Role.seeker
-        ? b.fees.seekerTotal
-        : b.fees.assistantReceives;
+    final total = b.rate * b.periodCount;
     return AppCard(
       onTap: onTap,
       child: Column(
@@ -86,7 +62,7 @@ class BookingCard extends StatelessWidget {
             summary: next == null
                 ? '$done periode selesai'
                 : 'Periode ${next.index} dari ${b.periods.length}, '
-                      '${next.status.labelFor(role)}',
+                      '${next.status.label}',
           ),
           const SizedBox(height: AppSpace.s12),
           Row(
@@ -108,7 +84,7 @@ class BookingCard extends StatelessWidget {
   }
 }
 
-/// Banner status penting (dijeda, sengketa, dibatalkan).
+/// Banner status penting (mis. dibatalkan).
 class StatusBanner extends StatelessWidget {
   const StatusBanner({
     super.key,

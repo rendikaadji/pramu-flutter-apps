@@ -281,47 +281,6 @@ class VerifyIllustration extends StatelessWidget {
   }
 }
 
-/// Dana aman: dompet + koin + perisai.
-class MoneySafeIllustration extends StatelessWidget {
-  const MoneySafeIllustration({super.key, this.size = 220});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => _Illo(size: size, draw: _money);
-
-  static void _money(Canvas c, _P p) {
-    _blob(c, p);
-    c.drawCircle(const Offset(80, 50), 17, _f(p.accent));
-    c.drawCircle(
-      const Offset(80, 50),
-      10,
-      _s(p.paper.withValues(alpha: .8), 2.5),
-    );
-    c.drawCircle(
-      const Offset(116, 42),
-      14,
-      _f(p.accent.withValues(alpha: .75)),
-    );
-    c.drawCircle(
-      const Offset(116, 42),
-      8,
-      _s(p.paper.withValues(alpha: .8), 2.5),
-    );
-    _rr(c, 38, 56, 116, 70, 14, _f(p.primary));
-    _rr(c, 38, 56, 116, 20, 10, _f(p.bright));
-    _rr(c, 120, 86, 44, 28, 10, _f(p.ink));
-    c.drawCircle(const Offset(136, 100), 5.5, _f(p.accent));
-    _sparkle(c, 172, 40, 7, p.accent);
-    c.drawCircle(const Offset(28, 40), 4, _f(p.bright));
-    // perisai di depan
-    final sh = _shieldPath(70, 88, 40);
-    c.drawPath(sh, _f(p.paper));
-    c.drawPath(sh, _s(p.primary, 4));
-    _check(c, 70, 110, 20, p.primary);
-  }
-}
-
 /// Obrolan: dua gelembung pesan.
 class ChatIllustration extends StatelessWidget {
   const ChatIllustration({super.key, this.size = 220});

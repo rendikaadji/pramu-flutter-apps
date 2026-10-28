@@ -2,8 +2,7 @@
 // Dilewati secara default. Jalankan setelah `php artisan migrate:fresh --seed` + `php artisan serve`:
 //   flutter test test/api_contract_live_test.dart \
 //     --dart-define=LIVE_API=true --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
-// Env server yang diperlukan: OTP_FIXED_CODE=123456 dan BANK_CHANGE_HOLD_HOURS=0 (tanpa itu OTP acak dan
-// payout setelah ganti rekening ditahan 24 jam). Tes live ini memakai data seed dan menulis ke DB, jadi
+// Env server yang diperlukan: OTP_FIXED_CODE=123456 (tanpa itu OTP acak). Tes live ini memakai data seed dan menulis ke DB, jadi
 // jalankan `migrate:fresh --seed` sebelum tiap berkas dan jangan paralel (-j 1).
 // Memastikan setiap Api*Repository + fromJson cocok dengan respons server asli.
 import 'package:flutter_test/flutter_test.dart';
@@ -22,14 +21,12 @@ import 'package:pramu_apps/features/interview/domain/interview.dart';
 import 'package:pramu_apps/features/listing/data/api_listing_repository.dart';
 import 'package:pramu_apps/features/listing/domain/listing.dart';
 import 'package:pramu_apps/features/notification/data/api_notification_repository.dart';
-import 'package:pramu_apps/features/payment/data/api_payment_repository.dart';
 import 'package:pramu_apps/features/profile/data/api_profile_repository.dart';
 import 'package:pramu_apps/features/profile/domain/profile.dart';
 import 'package:pramu_apps/features/rating/data/api_rating_repository.dart';
 import 'package:pramu_apps/features/report/data/api_report_repository.dart';
 import 'package:pramu_apps/features/report/domain/report.dart';
 import 'package:pramu_apps/features/verification/data/api_verification_repository.dart';
-import 'package:pramu_apps/features/wallet/data/api_wallet_repository.dart';
 
 import 'helpers/memory_token_store.dart';
 
@@ -103,11 +100,11 @@ void main() {
     expect((await listings.get(draft.id)).status, ListingStatus.open);
     expect((await listings.mine()).length, greaterThan(1));
 
-    // Pelamar melihat nominal bersih
+    // Pelamar melihat anggaran apa adanya
     final browse = await ApiListingRepository(siti.api)
         .browse(const ListingFilter(category: 'Juru Masak'));
     final seen = browse.items.firstWhere((l) => l.id == draft.id);
-    expect(seen.budgetMin, 1800000);
+    expect(seen.budgetMin, 2000000);
 
     // Profil & pencarian
     final found = await ApiProfileRepository(rina.api)
@@ -125,7 +122,7 @@ void main() {
     );
     expect(app.proposedRate, 1800000);
     final rApps = ApiApplicationRepository(rina.api);
-    expect((await rApps.forListing(draft.id)).single.proposedRate, 2000000);
+    expect((await rApps.forListing(draft.id)).single.proposedRate, 1800000);
     await rApps.act(app.id, ApplicationAction.shortlist);
     final slot = DateTime.now().toUtc().add(const Duration(days: 2));
     final iv = await ApiInterviewRepository(rina.api)
@@ -151,8 +148,6 @@ void main() {
 
     // Kesepakatan -> kontrak
     final rBooking = ApiBookingRepository(rina.api);
-    final fees = await rBooking.previewFees(rate: 2000000, periodCount: 2);
-    expect(fees.assistantFee, 400000);
     final start = DateTime.now().add(const Duration(days: 10));
     final ag = await rBooking.propose(
       app.id,
@@ -164,24 +159,15 @@ void main() {
       ),
     );
     final sBooking = ApiBookingRepository(siti.api);
-    expect((await sBooking.byApplication(app.id))?.rate, 1800000);
+    expect((await sBooking.byApplication(app.id))?.rate, 2000000);
     final agreed = await sBooking.approve(ag.id, version: ag.version);
     expect(agreed.bookingId, isNotNull);
     final booking = await rBooking.booking(agreed.bookingId!);
     expect(booking.periods, hasLength(2));
-    expect((await sBooking.booking(booking.id)).rate, 1800000);
+    expect((await sBooking.booking(booking.id)).rate, 2000000);
+    expect(booking.periods.first.status, PeriodStatus.scheduled);
 
-    // Bayar periode (driver fake lunas saat dicek) + chat terbuka
-    final pay = ApiPaymentRepository(rina.api);
-    final pinv = await pay.startPayment(
-      booking.periods.first.id,
-      idempotencyKey: 'contract-p1',
-    );
-    expect(pinv.amount, 2000000);
-    expect(
-      (await pay.checkStatus(booking.periods.first.id)).status,
-      PeriodStatus.paid,
-    );
+    // Kontrak jadi: chat terbuka
     final chat = ApiChatRepository(siti.api);
     final msg = await chat.send(app.id, 'WA saya 081298765432');
     expect(msg.masked, isFalse);
@@ -193,17 +179,7 @@ void main() {
     );
     await ApiChatRepository(rina.api).markRead(app.id);
 
-    final preview = await pay.cancelPreview(booking.id);
-    expect(preview.refundToSeeker, 2000000);
-
-    // Dompet, rating, notifikasi
-    final wallet = await ApiWalletRepository(siti.api).wallet();
-    expect(wallet.hasBankAccount, isTrue);
-    expect(wallet.held, 1800000);
-    expect(
-      (await ApiWalletRepository(siti.api).transactions()).items,
-      isNotEmpty,
-    );
+    // Rating, notifikasi
     expect(
       (await ApiRatingRepository(rina.api).reviewsOf(sitiUser.id)).items,
       isNotEmpty,
@@ -214,25 +190,21 @@ void main() {
     await notif.markAllRead();
     expect(await notif.unreadCount(), 0);
 
-    // Laporan Pelamar saat tagihan belum dibayar (kontrak Rina-Ani paused)
+    // Laporan Pelamar terhadap kontrak Rina-Ani
     final aniBookings = await ApiBookingRepository(ani.api).bookings();
-    final paused = aniBookings.firstWhere(
-      (b) => b.status == BookingStatus.paused,
-    );
-    final unpaid = paused.periods.firstWhere(
-      (p) => p.status == PeriodStatus.awaitingPayment,
+    final running = aniBookings.firstWhere(
+      (b) => b.status == BookingStatus.active,
     );
     final report = await ApiReportRepository(ani.api).submit(
       ReportInput(
-        type: ReportType.payment,
-        description: 'Pencari belum membayar tagihan periode.',
-        bookingId: paused.id,
-        periodId: unpaid.id,
+        type: ReportType.behavior,
+        description: 'Pencari bersikap tidak pantas di chat.',
+        bookingId: running.id,
       ),
     );
     expect(report.status, ReportStatus.received);
     final shared = await ApiReportRepository(ani.api)
-        .shareConversation(report.id, conversationId: paused.conversationId!);
+        .shareConversation(report.id, conversationId: running.conversationId!);
     expect(shared.share?.revoked, isFalse);
     expect(
       (await ApiReportRepository(ani.api).revokeShare(report.id))

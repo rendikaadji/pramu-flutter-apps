@@ -59,8 +59,6 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
             label: 'Pesan',
             badgeCount: 3,
           ),
-          if (_role == AppRole.assistant)
-            const AppNavItem(icon: LucideIcons.wallet, label: 'Dompet'),
         ],
       ),
       body: Column(
@@ -178,7 +176,6 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
               SuccessIllustration(size: 150),
               EmptyListIllustration(size: 150),
               VerifyIllustration(size: 150),
-              MoneySafeIllustration(size: 150),
               ChatIllustration(size: 150),
             ],
           ),
@@ -287,14 +284,10 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
             spacing: AppSpace.s8,
             runSpacing: AppSpace.s8,
             children: [
-              StatusChip.of(StatusDomain.period, 'paid'),
-              StatusChip.of(
-                StatusDomain.period,
-                'awaiting_payment',
-                role: AppRole.assistant,
-              ),
+              StatusChip.of(StatusDomain.period, 'in_progress'),
+              StatusChip.of(StatusDomain.period, 'scheduled'),
               StatusChip.of(StatusDomain.listing, 'open'),
-              StatusChip.of(StatusDomain.payout, 'failed'),
+              StatusChip.of(StatusDomain.application, 'accepted'),
             ],
           ),
           const SizedBox(height: AppSpace.s16),
@@ -317,13 +310,9 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
             completedJobs: 8,
             since: 'Mar 2026',
           ),
-          const SectionHeader('Uang & period'),
+          const SectionHeader('Biaya tayang & jadwal'),
           const FeeBreakdown(
-            rows: [
-              FeeRow('Gaji periode 1', 'Rp1.000.000'),
-              FeeRow('Biaya layanan (5%)', 'Rp50.000'),
-              FeeRow('Total', 'Rp1.050.000', total: true),
-            ],
+            rows: [FeeRow('Biaya tayang lowongan', 'Rp25.000', total: true)],
           ),
           const SizedBox(height: AppSpace.s12),
           const LedgerTimeline(
@@ -337,7 +326,7 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
               ),
               LedgerEntry(
                 title: 'Periode 2',
-                label: 'Dana ditahan aman',
+                label: 'Sedang berjalan',
                 tone: StatusTone.info,
                 date: '1 - 31 Okt 2026',
                 amount: 'Rp1.000.000',
@@ -345,7 +334,7 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
               ),
               LedgerEntry(
                 title: 'Periode 3',
-                label: 'Menunggu pembayaran',
+                label: 'Terjadwal',
                 tone: StatusTone.warning,
                 date: '1 - 30 Nov 2026',
                 amount: 'Rp1.000.000',
@@ -390,7 +379,7 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
           ),
           const SizedBox(height: AppSpace.s12),
           const PrivacyNote(
-            'Nomor disembunyikan sampai pembayaran dilakukan, demi keamanan Anda.',
+            'Nomor disembunyikan sampai kontrak dibuat, demi keamanan Anda.',
           ),
           const SectionHeader('Alur'),
           const StepProgress(current: 2, total: 4, title: 'Deskripsi'),
@@ -441,9 +430,9 @@ class _DesignGalleryScreenState extends State<DesignGalleryScreen> {
                   body: 'Semua profil terverifikasi sebelum Anda menghubungi.',
                 ),
                 OnboardingPage(
-                  illustration: MoneySafeIllustration(size: 200),
-                  title: 'Dana ditahan aman',
-                  body: 'Pembayaran baru diteruskan setelah pekerjaan selesai.',
+                  illustration: VerifyIllustration(size: 200),
+                  title: 'Kesepakatan tercatat',
+                  body: 'Gaji dibayar langsung antar pihak.',
                 ),
               ],
             ),

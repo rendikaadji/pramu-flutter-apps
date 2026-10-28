@@ -25,16 +25,10 @@ const _types = [
   ReportType.other,
 ];
 
-/// M-95 Laporkan / ajukan sengketa. [bookingId]/[periodId] dari query (sudah divalidasi ULID).
+/// M-95 Laporkan masalah. [bookingId] dari query (sudah divalidasi ULID).
 class ReportFormScreen extends ConsumerStatefulWidget {
-  const ReportFormScreen({
-    super.key,
-    this.bookingId,
-    this.periodId,
-    this.userId,
-  });
+  const ReportFormScreen({super.key, this.bookingId, this.userId});
   final String? bookingId;
-  final String? periodId;
   final String? userId; // pengguna terlapor (ULID)
 
   @override
@@ -50,13 +44,11 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
   String? _typeNote;
 
   String? get _booking => isUlid(widget.bookingId) ? widget.bookingId : null;
-  String? get _period => isUlid(widget.periodId) ? widget.periodId : null;
   String? get _user => isUlid(widget.userId) ? widget.userId : null;
 
   @override
   void initState() {
     super.initState();
-    if (_period != null) _type = ReportType.payment;
   }
 
   @override
@@ -99,7 +91,6 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
               type: _type,
               description: _desc.text.trim(),
               bookingId: _booking,
-              periodId: _period,
               userId: _user,
               evidencePaths: List.of(_paths),
             ),
@@ -268,29 +259,6 @@ class _ReportFormScreenState extends ConsumerState<ReportFormScreen> {
             },
           ),
           const SizedBox(height: AppSpace.s24),
-          if (_period != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpace.s12),
-              child: AppCard(
-                color: t.warningContainer,
-                borderColor: t.warning.withValues(alpha: .4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ExcludeSemantics(
-                      child: Icon(LucideIcons.triangleAlert, color: t.warning),
-                    ),
-                    const SizedBox(width: AppSpace.s12),
-                    Expanded(
-                      child: Text(
-                        'Periode ini bisa dibekukan sementara sampai ada putusan. Dana Anda tetap ditahan aman.',
-                        style: context.text.body,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           const PrivacyNote(
             'Setelah terkirim, kami memberi kabar lewat notifikasi. Anda bisa menambah bukti dan memantau statusnya kapan saja.',
           ),

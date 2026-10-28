@@ -22,8 +22,7 @@ class MockApplicationRepository implements ApplicationRepository {
     return _b.applications[id]!;
   }
 
-  Application _out(Application a) =>
-      _b.applicationFor(a, asAssistant: a.assistant.id == _b.me.id);
+  Application _out(Application a) => a;
 
   @override
   Future<Application> apply(String listingId, ApplyInput input) => _b.run(() {
@@ -62,7 +61,7 @@ class MockApplicationRepository implements ApplicationRepository {
       seeker: l.owner,
       assistant: _b.card(me.id),
       message: input.message.trim(),
-      proposedRate: _b.gross(input.proposedRate),
+      proposedRate: input.proposedRate,
       status: ApplicationStatus.pending,
       createdAt: _b.now(),
       answers: input.answers,

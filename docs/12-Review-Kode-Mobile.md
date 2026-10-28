@@ -7,6 +7,8 @@ versi: 1.0
 
 # 12 — Review Kode Mobile (branch feat/core-app-mvp)
 
+> **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
+
 > Mode baca saja. `flutter analyze`: **No issues found**. `flutter test`: **256 test lulus**. Cakupan: pola lintas fitur (state, error, timer, idempotency, paginasi), bukan setiap layar baris-per-baris. Rujukan: [[09-Arsitektur-App]] · [[10-Design-System-App]] · [[06-Refactor-DeadCode-Mobile]] · [[07-Git-Commit-Mobile]].
 
 Yang sudah baik (terverifikasi): tidak ada impor lintas `presentation` fitur; tidak ada warna/fontSize hardcode di `features/`; semua tampilan uang lewat `formatRupiah` (tak ada `double` uang, tak ada hitung fee di UI); aksi status lewat `allowedActions`/`actionsFor`; Idempotency-Key per niat (pay dan payout) dirotasi hanya pada penolakan pasti; semua Timer dibatalkan di `dispose`/`onDispose`; Key di `test_keys.dart` tidak duplikat; semua `Routes.*` punya GoRoute.
