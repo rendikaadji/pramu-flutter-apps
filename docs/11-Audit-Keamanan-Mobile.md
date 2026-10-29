@@ -6,7 +6,7 @@ versi: 1.0
 ---
 
 # 11 - Audit Keamanan Mobile (static review, branch feat/core-app-mvp)
-> **Kode lama (29 Oktober 2026):** dokumen ini menggambarkan kode yang masih ada. Domain app akan dibangun ulang mengikuti [PRD Web v1.2](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web (keputusan K-47). Kontrak API berubah total dan ID berganti dari ULID ke UUIDv7.
+> **Kode lama (29 Oktober 2026):** dokumen ini menggambarkan kode yang masih ada. Domain app akan dibangun ulang mengikuti [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web (keputusan K-47). Kontrak API berubah total dan ID berganti dari ULID ke UUIDv7.
 
 > **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
 

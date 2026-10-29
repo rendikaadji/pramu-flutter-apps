@@ -6,7 +6,7 @@ versi: 1.1
 ---
 
 # 09 — Arsitektur App (kontrak untuk agent fitur)
-> **Kode lama (29 Oktober 2026):** dokumen ini menggambarkan kode yang masih ada. Domain app akan dibangun ulang mengikuti [PRD Web v1.2](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web (keputusan K-47). Kontrak API berubah total dan ID berganti dari ULID ke UUIDv7.
+> **Kode lama (29 Oktober 2026):** dokumen ini menggambarkan kode yang masih ada. Domain app akan dibangun ulang mengikuti [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web (keputusan K-47). Kontrak API berubah total dan ID berganti dari ULID ke UUIDv7.
 
 > **v1.1 (2026-10-28):** penampungan dana (escrow) dihapus: fitur `payment` (bayar periode/konfirmasi selesai/status bayar) dan `wallet` (dompet, rekening, tarik dana) dibuang; potongan 10% (`Fees`) dibuang; periode kini `scheduled → in_progress → completed | cancelled` menurut waktu. Batal kontrak pindah ke fitur `booking` tanpa refund. Biaya tayang lowongan (Invoice/Xendit) tetap di fitur `listing`.
 

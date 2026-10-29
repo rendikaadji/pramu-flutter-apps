@@ -9,7 +9,7 @@ versi: 1.0
 
 Tanggal: 29 Oktober 2026
 Status: Disetujui
-Acuan: PRD versi 1.0 dan file aturan final. Lihat juga [PRD Web v1.2](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) (sumber aturan produk) dan [[09-Arsitektur-App]] (sisi Flutter).
+Acuan: PRD versi 1.0 dan file aturan final. Lihat juga [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) (sumber aturan produk) dan [[09-Arsitektur-App]] (sisi Flutter).
 
 ## 1. Keputusan
 
