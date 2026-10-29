@@ -29,6 +29,7 @@ Baca sesuai jenis tugas. **Minimal baca 01 + 07 untuk tugas apa pun.**
 | Refactor / bersih-bersih | [06-Refactor-DeadCode-Mobile](docs/06-Refactor-DeadCode-Mobile.md) | Prosedur aman + hal yang **tidak boleh** dihapus |
 | Commit / branch / PR / rilis | [07-Git-Commit-Mobile](docs/07-Git-Commit-Mobile.md) | Format commit, scope, branch, larangan commit, template PR |
 | Pakai Claude Code | [08-Skill-Mobile](docs/08-Skill-Mobile.md) | Skill `asisten-mobile` di `docs/skills/` |
+| Pilihan teknologi / stack backend | [13-Keputusan-Teknologi](docs/13-Keputusan-Teknologi.md) | Stack disetujui (Laravel, Flutter, PostgreSQL, dll.), prinsip teknis, yang belum diverifikasi |
 
 **Checklist "sudah paham alur" (jawab sendiri sebelum mulai):**
 - [ ] Saya tahu ID fitur yang saya kerjakan (mis. `LST-1`) dan AC-nya di PRD.

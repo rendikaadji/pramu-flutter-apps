@@ -6,6 +6,7 @@ versi: 1.1
 ---
 
 # 01 — PRD Mobile (Flutter) — Asisten Marketplace
+> **USANG (29 Oktober 2026):** dokumen ini mengikuti model lama (lowongan, lamaran, wawancara, SKCK, escrow). Sumber aturan produk sekarang satu: [PRD Web v1.1](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web. Dokumen ini ditulis ulang per modul saat app dibangun ulang (keputusan K-47).
 
 > **Perubahan lingkup (2026-10-28, v1.1):** penampungan dana (escrow) **dihapus**: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, sengketa dana, dan potongan platform 10%. Yang tetap: lowongan (dengan biaya tayang), lamaran, wawancara, kesepakatan, kontrak (jadwal periode tanpa uang), chat, rating, cari asisten, undangan, laporan. Gaji dibayar langsung antara pemberi kerja dan asisten; satu-satunya uang di platform = biaya tayang lowongan.
 > Turunan [[PRD-v1]] (apa) + [[Spec-Teknis-v1]] (bagaimana API). Dokumen ini hanya sisi **app Flutter**: layar, perilaku klien, platform. AC bisnis lengkap tetap di PRD-v1 §5; di sini hanya AC **sisi klien**. Rencana kerja: [[Rencana-Kerja-v1]]. Penanda: **[MVP]** / **[R2]** / 🟡 = perlu konfirmasi.
