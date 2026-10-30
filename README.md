@@ -22,7 +22,7 @@ Baca sesuai jenis tugas. **Minimal baca 01 + 07 untuk tugas apa pun.**
 
 | Tugas kamu | Baca dulu | Kenapa |
 |---|---|---|
-| Fitur baru (layar/alur) | [01-PRD-Mobile](docs/01-PRD-Mobile.md) → [02-UIUX-Brief-Mobile](docs/02-UIUX-Brief-Mobile.md) | Apa yang dibangun, ID fitur (mis. `AUTH-1`), AC sisi klien, desain layar |
+| Fitur baru (layar/alur) | [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) → [Brief UI/UX v2](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/02-UIUX-Brief-Web.md) → [02-UIUX-Brief-Mobile](docs/02-UIUX-Brief-Mobile.md) | Aturan produk, layar dan wireframe, hal khusus aplikasi. `01-PRD-Mobile` sudah usang (model lama) |
 | Menyentuh login, token, uang, data pribadi | [03-Celah-Keamanan-Mobile](docs/03-Celah-Keamanan-Mobile.md) | Daftar risiko & checklist go/no-go |
 | Memperbaiki bug | [04-Debug-Playbook-Mobile](docs/04-Debug-Playbook-Mobile.md) | Triage, tabel gejala → penyebab, template bug report |
 | Menulis test | [05-E2E-Test-Mobile](docs/05-E2E-Test-Mobile.md) | Struktur test, test hooks (Key/Semantics), cakupan minimum |
