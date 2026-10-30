@@ -33,6 +33,18 @@ Acuan: PRD versi 1.0 dan file aturan final. Lihat juga [PRD Web v1.3](https://gi
 | Monitoring | Sentry dan log terpusat |
 | CI/CD | GitHub Actions |
 
+### 1.1 Versi target (dicek 30 Oktober 2026)
+
+Sama dengan Docs/10 §1.1 di repo backend. Pakai rilis **stabil** terbaru, bukan rilis kandidat, dan konfirmasi ulang nomor patch saat instalasi.
+
+| Komponen | Versi target | Catatan |
+|---|---|---|
+| Flutter / Dart | **3.47.x / 3.13.x** | CI sudah memakai 3.47.7 dan `sdk: ^3.13.2`. Flutter 3.50 dijadwalkan November 2026; naik lewat PR setelah rilis stabil |
+| Paket utama | `flutter_riverpod` 3.x, `go_router` 18.x, `dio` 5.x, `flutter_secure_storage` 11.x, `intl` 0.20.x | Sesuai `pubspec.yaml` saat ini; perbarui minor rutin lewat `flutter pub outdated` |
+| Backend untuk test kontrak | PHP **8.5**, Laravel **13.x**, PostgreSQL **18** | Job CI `contract` harus memakai versi ini (Docs/15 §4.3 di repo backend) |
+
+Aturan pembaruan sama dengan backend: rilis kandidat tidak dipakai, versi mayor dinaikkan setelah stabil dan didukung dependensi utama.
+
 ## 2. Alasan
 
 - Aturan bisnis yang kompleks (irisan, lock, kredit, gerbang job ketiga, batas booking) lebih aman ditangani di satu backend.

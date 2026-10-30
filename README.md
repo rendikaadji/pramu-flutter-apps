@@ -28,7 +28,7 @@ Baca sesuai jenis tugas. **Minimal baca 01 + 07 untuk tugas apa pun.**
 | Menulis test | [05-E2E-Test-Mobile](docs/05-E2E-Test-Mobile.md) | Struktur test, test hooks (Key/Semantics), cakupan minimum |
 | Refactor / bersih-bersih | [06-Refactor-DeadCode-Mobile](docs/06-Refactor-DeadCode-Mobile.md) | Prosedur aman + hal yang **tidak boleh** dihapus |
 | Commit / branch / PR / rilis | [07-Git-Commit-Mobile](docs/07-Git-Commit-Mobile.md) | Format commit, scope, branch, larangan commit, template PR |
-| Pakai Claude Code | [08-Skill-Mobile](docs/08-Skill-Mobile.md) | Skill `asisten-mobile` di `docs/skills/` |
+| Pakai Claude Code | [Skill pramu-mobile](docs/skills/pramu-mobile/SKILL.md) | Aturan wajib AI agent untuk model baru |
 | Pilihan teknologi / stack backend | [13-Keputusan-Teknologi](docs/13-Keputusan-Teknologi.md) | Stack disetujui (Laravel, Flutter, PostgreSQL, dll.), prinsip teknis, yang belum diverifikasi |
 
 **Checklist "sudah paham alur" (jawab sendiri sebelum mulai):**
