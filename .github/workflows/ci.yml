@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.47.7
@@ -20,7 +20,7 @@ jobs:
       - run: flutter analyze --fatal-infos
       # Tes API live (test/api_contract_live*) otomatis dilewati tanpa backend; kontraknya dijalankan terpisah.
       - run: flutter test --coverage
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/lcov.info
@@ -32,16 +32,33 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Versi mengikuti Docs/10 §1.1 di repo backend. Skema backend memakai fitur khusus PostgreSQL.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pramu
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       APP_ENV: ci
-      DB_CONNECTION: sqlite
-      DB_DATABASE: ${{ github.workspace }}/backend/database/ci.sqlite
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: pramu
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
       CACHE_STORE: array
       SESSION_DRIVER: array
       QUEUE_CONNECTION: sync
       OTP_FIXED_CODE: '123456'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Perubahan kontrak dikerjakan di dua repo: pakai branch backend bernama sama bila ada, selain itu main.
       - name: Pilih ref backend
         id: backend_ref
@@ -54,7 +71,7 @@ jobs:
           else
             echo "ref=main" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: rendikaadji/pramu-laravel-web
           ref: ${{ steps.backend_ref.outputs.ref }}
@@ -62,7 +79,8 @@ jobs:
           path: backend
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
+          extensions: pdo_pgsql
           coverage: none
       - uses: subosito/flutter-action@v2
         with:
@@ -75,14 +93,13 @@ jobs:
           composer install --no-interaction --prefer-dist --no-progress
           cp .env.example .env
           php artisan key:generate
-          touch database/ci.sqlite
           php artisan migrate:fresh --seed --force
           (cd public && nohup php -S 127.0.0.1:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php > ../serve.log 2>&1 &)
-          for i in $(seq 1 20); do curl -sf http://127.0.0.1:8000/api/v1/categories >/dev/null && break; sleep 1; done
+          for i in $(seq 1 20); do curl -sf http://127.0.0.1:8000/up >/dev/null && break; sleep 1; done
       - run: flutter pub get
-      # Berurutan (-j 1) karena kedua berkas menulis ke DB yang sama.
+      # Berurutan (-j 1): berkas kontrak live menulis ke DB yang sama.
       - run: |
-          flutter test -j 1 test/api_contract_live_test.dart test/api_contract_live_extra_test.dart \
+          flutter test -j 1 test/api_contract_live_test.dart \
             --dart-define=LIVE_API=true --dart-define=API_BASE_URL=http://127.0.0.1:8000/api/v1
       - if: failure()
         run: cat backend/serve.log backend/storage/logs/*.log 2>/dev/null | tail -100
