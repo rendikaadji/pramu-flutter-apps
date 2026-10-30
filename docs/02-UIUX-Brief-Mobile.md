@@ -88,6 +88,7 @@ Foto diri setengah badan memakai bingkai bahu. Foto rumah diambil dari kamera, d
 | Mikrofon | Saat menekan "Mulai merekam" video | "Mikrofon dipakai untuk suara video perkenalan." |
 | Lokasi | Saat memilih pin rumah atau lokasi job | "Lokasi dipakai untuk menghitung jarak. Pihak lain hanya melihat kecamatan sampai disepakati." |
 | Notifikasi | Setelah ajuan pertama | "Agar kamu tidak melewatkan ajuan dan batas waktu." |
+| Foto/galeri (simpan) | Saat menekan "Simpan QR ke galeri" | "QR disimpan agar bisa dipindai dari aplikasi bank atau e-wallet di HP ini." |
 
 Jika izin ditolak, tampilkan `PermissionRationaleCard` dengan tombol "Buka Pengaturan", dan sediakan jalan alternatif bila ada (misalnya geser pin manual di peta).
 
@@ -104,8 +105,10 @@ Semua aksi yang mengubah status mengirim kunci idempoten (PRD §24), sehingga me
 
 ## 6. Pembayaran di aplikasi
 
-- Halaman gateway dibuka di **Custom Tabs** (Android) atau **SFSafariViewController** (iOS), bukan WebView, agar pengguna melihat domain gateway.
-- Setelah kembali ke aplikasi, layar S-11 menunggu webhook (Brief semua platform §8.2).
+- Metode satu-satunya: **QRIS dinamis** (PRD §18.1, K-106). QR dirender di aplikasi dari `qr_payload` yang dikirim API. Tidak ada halaman gateway atau WebView.
+- **Simpan QR ke galeri:** gambar PNG dengan nominal dan nama "Pramu" di bawah QR, karena pengguna sering membayar dari ponsel yang sama. Penyimpanan memakai izin foto/galeri, yang diminta saat tombol ditekan.
+- Kecerahan layar dinaikkan sementara selama QR tampil, agar mudah dipindai dari perangkat lain.
+- Layar S-11 menunggu webhook (Brief semua platform §8.2) lewat Reverb, dengan polling 5 detik sebagai cadangan.
 - Jika pengguna menutup aplikasi saat membayar, Beranda menampilkan kartu "Pembayaran sedang diproses" sampai webhook tiba.
 
 ## 7. Platform
