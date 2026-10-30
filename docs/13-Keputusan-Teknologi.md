@@ -26,7 +26,7 @@ Acuan: PRD versi 1.0 dan file aturan final. Lihat juga [PRD Web v1.3](https://gi
 | Push notification | Firebase Cloud Messaging |
 | Notifikasi WhatsApp | Penyedia WhatsApp Business API di Indonesia |
 | Penyimpanan file | Object storage kompatibel S3 dengan bucket privat, akses lewat tautan sementara |
-| Pembayaran | Midtrans atau Xendit |
+| Pembayaran | QRIS dinamis langsung dari BCA, tanpa agregator (diubah 30 Oktober 2026; PRD K-106, K-107) |
 | Verifikasi KTP dan wajah | Penyedia OCR dan liveness pihak ketiga yang terdaftar di Indonesia |
 | Peta dan lokasi | Google Maps Platform |
 | Hosting | Cloud di region Jakarta, atau VPS dengan Docker |
