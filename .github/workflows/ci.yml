@@ -59,18 +59,21 @@ jobs:
       OTP_FIXED_CODE: '123456'
     steps:
       - uses: actions/checkout@v7
-      # Perubahan kontrak dikerjakan di dua repo: pakai branch backend bernama sama bila ada, selain itu main.
+      # Perubahan kontrak dikerjakan di dua repo: pakai branch backend bernama sama selama branch itu masih punya
+      # commit yang belum ada di main. Branch yang sudah di-merge (ahead_by = 0) atau tidak ada memakai main.
       - name: Pilih ref backend
         id: backend_ref
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
           GH_TOKEN: ${{ secrets.BACKEND_REPO_TOKEN }}
         run: |
-          if git ls-remote --exit-code --heads "https://x-access-token:${GH_TOKEN}@github.com/rendikaadji/pramu-laravel-web.git" "$BRANCH" >/dev/null 2>&1; then
+          ahead=$(gh api "repos/rendikaadji/pramu-laravel-web/compare/main...${BRANCH}" --jq .ahead_by 2>/dev/null) || ahead=0
+          if [ "${ahead:-0}" -gt 0 ] 2>/dev/null; then
             echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
           else
             echo "ref=main" >> "$GITHUB_OUTPUT"
           fi
+          echo "Backend: $(cat "$GITHUB_OUTPUT" | tail -1) (ahead_by=${ahead:-0})"
       - uses: actions/checkout@v7
         with:
           repository: rendikaadji/pramu-laravel-web
