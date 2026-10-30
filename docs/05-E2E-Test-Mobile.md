@@ -6,7 +6,7 @@ versi: 1.0
 ---
 
 # 05 — E2E Test Mobile
-> **USANG (29 Oktober 2026):** dokumen ini mengikuti model lama (lowongan, lamaran, wawancara, SKCK, escrow). Sumber aturan produk sekarang satu: [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web. Dokumen ini ditulis ulang per modul saat app dibangun ulang (keputusan K-47).
+> **USANG (29 Oktober 2026):** dokumen ini mengikuti model lama (lowongan, lamaran, wawancara, SKCK, escrow). Sumber aturan produk sekarang satu: [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) dan [Skema Database](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/12-Skema-Database.md) di repo pramu-laravel-web. Rencana uji model baru: [Docs/18-Rencana-Uji](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/18-Rencana-Uji.md).
 
 > **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
 
