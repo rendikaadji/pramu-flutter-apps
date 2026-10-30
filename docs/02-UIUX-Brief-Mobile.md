@@ -55,7 +55,7 @@ Acuan:
 │ Video membantu majikan mengenalmu  │
 │ sebelum menyetujui.                │
 │ Contoh yang bisa kamu ucapkan:     │
-│ 1. "Nama saya {Siti}, dari {Coblong}."│
+│ 1. "Nama saya {Siti}, dari {Kebayoran Baru}."│
 │ 2. "Saya biasa {masak dan mengasuh │
 │    anak}, sudah {5} tahun."        │
 │ 3. "Saya bisa mulai {hari Senin}." │
@@ -147,7 +147,22 @@ Setiap komponen baru masuk ke `DesignGalleryScreen` dan diuji golden di terang/g
 - Deep link dari push untuk peran lain: harus pindah peran dan membuka layar yang benar.
 - Skala teks 200% pada S-05, S-10, dan S-12.
 
-## 11. Keputusan terbuka
+## 11. Dua bahasa (PRD §3.4)
+
+Aturan tampilan dan istilah ada di Brief semua platform §11.1. Di aplikasi:
+
+- **Mekanisme:** `flutter_localizations` dan `gen-l10n`. Berkas `lib/l10n/app_id.arb` dan `app_en.arb`, dengan `app_id.arb` sebagai templat. `MaterialApp(supportedLocales: [id, en], localizationsDelegates: …)`.
+- **Akses teks:** semua teks lewat `context.l10n.namaKunci`. Lint kustom atau `grep` di CI menolak string literal berhuruf di `lib/features/**`.
+- **Penyimpanan:**
+  - Pilihan disimpan di `shared_preferences` sebelum masuk.
+  - Setelah masuk, pilihan disinkronkan ke `users.bahasa` lewat API.
+  - Perubahan di perangkat lain berlaku saat aplikasi dibuka berikutnya.
+- **Ganti bahasa saat berjalan:** locale disimpan di state global (Riverpod), sehingga `MaterialApp` dibangun ulang tanpa restart dan tanpa kehilangan isi form. Header `Accept-Language` ikut berubah untuk permintaan API berikutnya.
+- **Format:** `intl` `NumberFormat`/`DateFormat` dengan locale aktif. `core/money` menerima locale.
+- **Komponen `app_ui`:** default label bahasa Indonesia di komponen (misalnya `PrivacyNote`) diganti parameter wajib, agar teks selalu datang dari ARB.
+- **Golden test:** `tool/screenshots` dijalankan untuk `id`, `en`, dan bahasa semu `en-XA` (+40%) di skala teks 100% dan 130%.
+
+## 12. Keputusan terbuka
 
 1. Penyedia OCR dan liveness, beserta ukuran SDK-nya (memengaruhi ukuran APK).
 2. Batas kompresi video final setelah uji kualitas di perangkat kelas bawah.
