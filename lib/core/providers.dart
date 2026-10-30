@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/ids.dart';
-import 'package:pramu_apps/core/mock/mock_backend.dart';
-import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/storage/secure_token_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,11 +26,7 @@ final apiClientProvider = Provider<ApiClient>(
   (ref) => ApiClient(
     tokens: ref.watch(tokenStoreProvider),
     deviceId: ref.watch(deviceIdProvider),
-    onUnauthorized: () => ref.read(sessionProvider.notifier).expire(),
+    // shortcut: sesi kedaluwarsa belum ditangani; modul Akun (Docs/15 §4.4 langkah 3) mengarahkan ke layar masuk.
+    onUnauthorized: () {},
   ),
-);
-
-/// Penyimpanan in-memory bersama semua Mock*Repository (hanya dipakai bila Env.useMock).
-final mockBackendProvider = Provider<MockBackend>(
-  (ref) => MockBackend(tokens: ref.watch(tokenStoreProvider)),
 );

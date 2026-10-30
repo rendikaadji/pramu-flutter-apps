@@ -5,14 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pramu_apps/core/router/app_router.dart';
 import 'package:pramu_apps/core/theme/app_theme.dart';
 import 'package:pramu_apps/core/theme_mode_controller.dart';
-import 'package:pramu_apps/features/notification/data/push_providers.dart';
 
 class PramuApp extends ConsumerWidget {
   const PramuApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(pushTokenSyncProvider);
     return MaterialApp.router(
       title: 'Pramu',
       debugShowCheckedModeBanner: false,
