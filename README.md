@@ -22,13 +22,14 @@ Baca sesuai jenis tugas. **Minimal baca 01 + 07 untuk tugas apa pun.**
 
 | Tugas kamu | Baca dulu | Kenapa |
 |---|---|---|
-| Fitur baru (layar/alur) | [01-PRD-Mobile](docs/01-PRD-Mobile.md) → [02-UIUX-Brief-Mobile](docs/02-UIUX-Brief-Mobile.md) | Apa yang dibangun, ID fitur (mis. `AUTH-1`), AC sisi klien, desain layar |
+| Fitur baru (layar/alur) | [PRD Web v1.3](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/01-PRD-Web.md) → [Brief UI/UX v2](https://github.com/rendikaadji/pramu-laravel-web/blob/main/Docs/02-UIUX-Brief-Web.md) → [02-UIUX-Brief-Mobile](docs/02-UIUX-Brief-Mobile.md) | Aturan produk, layar dan wireframe, hal khusus aplikasi. `01-PRD-Mobile` sudah usang (model lama) |
 | Menyentuh login, token, uang, data pribadi | [03-Celah-Keamanan-Mobile](docs/03-Celah-Keamanan-Mobile.md) | Daftar risiko & checklist go/no-go |
 | Memperbaiki bug | [04-Debug-Playbook-Mobile](docs/04-Debug-Playbook-Mobile.md) | Triage, tabel gejala → penyebab, template bug report |
 | Menulis test | [05-E2E-Test-Mobile](docs/05-E2E-Test-Mobile.md) | Struktur test, test hooks (Key/Semantics), cakupan minimum |
 | Refactor / bersih-bersih | [06-Refactor-DeadCode-Mobile](docs/06-Refactor-DeadCode-Mobile.md) | Prosedur aman + hal yang **tidak boleh** dihapus |
 | Commit / branch / PR / rilis | [07-Git-Commit-Mobile](docs/07-Git-Commit-Mobile.md) | Format commit, scope, branch, larangan commit, template PR |
 | Pakai Claude Code | [08-Skill-Mobile](docs/08-Skill-Mobile.md) | Skill `asisten-mobile` di `docs/skills/` |
+| Pilihan teknologi / stack backend | [13-Keputusan-Teknologi](docs/13-Keputusan-Teknologi.md) | Stack disetujui (Laravel, Flutter, PostgreSQL, dll.), prinsip teknis, yang belum diverifikasi |
 
 **Checklist "sudah paham alur" (jawab sendiri sebelum mulai):**
 - [ ] Saya tahu ID fitur yang saya kerjakan (mis. `LST-1`) dan AC-nya di PRD.

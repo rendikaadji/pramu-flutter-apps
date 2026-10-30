@@ -7,6 +7,8 @@ versi: 2.0
 
 # 10 — Design System App (Flutter)
 
+> **30 Oktober 2026:** design system v2 ini menjadi sumber token untuk semua platform: aplikasi, web majikan, dan tema admin Filament. Perubahan komponen untuk model baru (domain `StatusChip`, `TrustCard` tanpa SKCK, komponen baru) ada di [[02-UIUX-Brief-Mobile]] v2 §9.
+
 > **Perubahan lingkup 2026-10-28:** penampungan dana (escrow) dihapus: bayar periode, konfirmasi selesai, auto-release, dompet, rekening bank, tarik dana, batal+refund, potongan platform 10%, dan sengketa dana **tidak berlaku lagi** (layar M-74..76, M-80..83). Kesepakatan, kontrak (tanpa uang), biaya tayang lowongan, dan rating tetap. Acuan terbaru: [[01-PRD-Mobile]] dan [[09-Arsitektur-App]].
 
 > Kontrak untuk semua fitur. **Arah visual v2 (2026-10): terang, bersih, airy, biru langit** mengikuti referensi user; menggantikan "Buku Kas Rumah" di Brief §2-§3 (nilai token di dokumen ini yang berlaku). Sumber lain: Brief §9 (status), §10 (trust), §11 (komponen). Kode: `lib/core/theme/` dan `lib/shared/app_ui/`.
