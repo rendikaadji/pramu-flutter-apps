@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/ids.dart';
@@ -190,8 +191,22 @@ class _PeranScreenState extends ConsumerState<PeranScreen> {
           const SizedBox(height: AppSpace.s12),
           FieldErrorText(_galat!),
         ],
+        const SizedBox(height: AppSpace.s16),
+        const _LihatDulu(),
       ],
     ),
+  );
+}
+
+/// Pintu ke kartu terbatas sebelum data lengkap (PRD §7.7, K-113).
+class _LihatDulu extends StatelessWidget {
+  const _LihatDulu();
+
+  @override
+  Widget build(BuildContext context) => AppButton(
+    label: 'Lihat dulu pekerja dan pekerjaan di sekitarmu',
+    variant: AppButtonVariant.secondary,
+    onPressed: () => context.push('/jelajah'),
   );
 }
 
@@ -275,6 +290,8 @@ class LanjutkanScreen extends ConsumerWidget {
               onPressed: () =>
                   ref.read(peranAktifProvider.notifier).pilih(siap),
             ),
+          const SizedBox(height: AppSpace.s12),
+          const _LihatDulu(),
         ],
       ),
     );

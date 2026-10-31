@@ -159,6 +159,47 @@ void main() {
     },
   );
 
+  testWidgets(
+    'akun yang belum KTP bisa Lihat dulu: kartu terbatas tanpa data pribadi, lalu Lihat lebih jauh',
+    (tester) async {
+      final backend = await _pasang(tester, {
+        'GET /me': (_) => _akun(langkah: 'KTP'),
+        'GET /jelajah': (o) => {
+          'data': [
+            {
+              'kategori': {'id': 'k1', 'kode': 'ART', 'nama': 'ART'},
+              'kelompok_jarak': '3-5',
+              'rating': null,
+              'jumlah_ulasan': 0,
+              'jumlah_selesai': 2,
+              'baru': true,
+              'ongkos_ditanggung': null,
+            },
+          ],
+          'next_cursor': null,
+          'sisa_hari_ini': 29,
+        },
+      });
+
+      await tester.tap(
+        find.text('Lihat dulu pekerja dan pekerjaan di sekitarmu'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Sisa kartu yang bisa dilihat hari ini: 29'),
+        findsOneWidget,
+      );
+      expect(find.text('ART'), findsOneWidget);
+      expect(find.text('3-5 km · Baru · 2 pekerjaan selesai'), findsOneWidget);
+      expect(backend.panggilan.last.queryParameters['peran'], 'MAJIKAN');
+
+      await tester.tap(find.text('Lihat lebih jauh'));
+      await tester.pumpAndSettle();
+      expect(backend.panggilan.last.queryParameters['lebih_jauh'], 'true');
+    },
+  );
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {

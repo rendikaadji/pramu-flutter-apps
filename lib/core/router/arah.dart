@@ -36,6 +36,10 @@ String? arahkan(AsyncValue<Akun?> sesi, String lokasi, {String? peran}) {
     'PERAN' => '/peran',
     _ => '/lanjutkan',
   };
-  if (tujuan != null) return lokasi == tujuan ? null : tujuan;
+  if (tujuan != null) {
+    // "Lihat dulu" (PRD §7.7) terbuka sebelum KTP lengkap, tetapi setelah persetujuan.
+    if (lokasi == '/jelajah' && tujuan != '/persetujuan') return null;
+    return lokasi == tujuan ? null : tujuan;
+  }
   return rutePraMasuk.contains(lokasi) || lokasi == '/' ? '/beranda' : null;
 }

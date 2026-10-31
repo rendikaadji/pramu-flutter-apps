@@ -37,6 +37,20 @@ void main() {
     expect(arahkan(AsyncData(_akun(langkah: 'KTP')), '/lanjutkan'), isNull);
   });
 
+  test(
+    '"Lihat dulu" terbuka sebelum KTP lengkap tetapi tidak sebelum persetujuan',
+    () {
+      expect(
+        arahkan(AsyncData(_akun(langkah: 'PERSETUJUAN')), '/jelajah'),
+        '/persetujuan',
+      );
+      expect(arahkan(AsyncData(_akun(langkah: 'PERAN')), '/jelajah'), isNull);
+      expect(arahkan(AsyncData(_akun(langkah: 'KTP')), '/jelajah'), isNull);
+      expect(arahkan(AsyncData(_akun()), '/jelajah'), isNull);
+      expect(arahkan(const AsyncData(null), '/jelajah'), '/masuk');
+    },
+  );
+
   test('onboarding selesai: layar pra-masuk diarahkan ke Beranda, layar lain dibiarkan', () {
     final selesai = AsyncData<Akun?>(_akun());
     for (final r in rutePraMasuk) {
