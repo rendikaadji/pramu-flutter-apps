@@ -44,6 +44,11 @@ class ProfilBaris extends StatelessWidget {
                   'Ada catatan pembatalan',
                   style: context.text.caption.copyWith(color: t.warning),
                 ),
+              if (profil.laporanTerverifikasi)
+                Text(
+                  'Ada laporan terverifikasi',
+                  style: context.text.caption.copyWith(color: t.danger),
+                ),
             ],
           ),
         ),
