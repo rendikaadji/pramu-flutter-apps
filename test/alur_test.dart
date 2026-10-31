@@ -321,6 +321,43 @@ void main() {
     },
   );
 
+  testWidgets('Akun: Ajak tetangga membuka pesan WhatsApp dari server', (
+    tester,
+  ) async {
+    Uri? dibuka;
+    await _pasang(
+      tester,
+      {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [],
+          'job_saya': [],
+        },
+        'GET /me/undangan': (_) => {
+          'wilayah': 'Kota Bekasi',
+          'tautan': 'https://pramu.example/undang/32.75',
+          'pesan': 'Ayo gabung Pramu di Kota Bekasi: https://pramu.example/undang/32.75',
+          'tautan_wa': 'https://wa.me/?text=Ayo%20gabung%20Pramu',
+        },
+      },
+      tambahan: [
+        urlLauncherProvider.overrideWithValue((uri, mode) async {
+          dibuka = uri;
+          return true;
+        }),
+      ],
+    );
+
+    await tester.tap(find.text('Akun'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ajak tetangga lewat WhatsApp'));
+    await tester.pumpAndSettle();
+
+    expect(dibuka?.host, 'wa.me');
+    expect(dibuka?.queryParameters['text'], 'Ayo gabung Pramu');
+  });
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {
