@@ -77,6 +77,13 @@ class AkunScreen extends ConsumerWidget {
                 subtitle: 'Makin banyak yang bergabung, makin mudah menemukan yang cocok.',
                 onTap: () => _ajak(context, ref),
               ),
+              if (aktif == Peran.majikan)
+                SettingsRow(
+                  icon: LucideIcons.badgeCheck,
+                  title: 'Langganan',
+                  subtitle: 'Paket, kuota job aktif, dan perpanjangan.',
+                  onTap: () => context.push('/langganan'),
+                ),
               SettingsRow(
                 icon: LucideIcons.receipt,
                 title: 'Tagihan dan pembayaran',
