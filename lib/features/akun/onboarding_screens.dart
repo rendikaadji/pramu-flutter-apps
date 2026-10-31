@@ -250,15 +250,32 @@ class LanjutkanScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final langkah = ref.watch(sessionProvider).value?.langkahBerikutnya;
+    final akun = ref.watch(sessionProvider).value;
+    final aktif = ref.watch(peranAktifProvider);
+    final langkah = akun?.langkahUntuk(aktif);
+    // Peran lain yang sudah siap: pengguna bisa kembali memakainya tanpa menunggu langkah peran ini.
+    final siap = akun?.peranSiap;
+    const namaPeran = {Peran.majikan: 'majikan', Peran.pekerja: 'pekerja'};
     return AppScaffold(
       title: 'Lanjutkan pendaftaran',
       scrollable: true,
-      body: EmptyState(
-        title: _namaLangkah[langkah] ?? 'Langkah berikutnya',
-        message: 'Langkah ini sedang disiapkan di aplikasi. Kami beri tahu begitu bisa dilanjutkan.',
-        actionLabel: 'Periksa lagi',
-        onAction: () => ref.read(sessionProvider.notifier).muatUlang(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          EmptyState(
+            title: _namaLangkah[langkah] ?? 'Langkah berikutnya',
+            message: 'Langkah ini sedang disiapkan di aplikasi. Kami beri tahu begitu bisa dilanjutkan.',
+            actionLabel: 'Periksa lagi',
+            onAction: () => ref.read(sessionProvider.notifier).muatUlang(),
+          ),
+          if (siap != null && siap != aktif)
+            AppButton(
+              label: 'Pakai sebagai ${namaPeran[siap] ?? siap}',
+              variant: AppButtonVariant.secondary,
+              onPressed: () =>
+                  ref.read(peranAktifProvider.notifier).pilih(siap),
+            ),
+        ],
       ),
     );
   }

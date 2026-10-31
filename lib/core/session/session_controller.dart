@@ -13,6 +13,7 @@ class Akun {
     this.bahasa = 'id',
     this.statusVerifikasi = 'BELUM',
     this.langkahBerikutnya,
+    this.langkahPerPeran = const {},
   });
 
   factory Akun.fromJson(Json j) => Akun(
@@ -23,6 +24,10 @@ class Akun {
     peran: [for (final p in j['peran'] as List? ?? const []) p as String],
     statusVerifikasi: j['status_verifikasi'] as String? ?? 'BELUM',
     langkahBerikutnya: j['langkah_onboarding_berikutnya'] as String?,
+    langkahPerPeran: {
+      for (final e in (j['langkah_per_peran'] as Map? ?? const {}).entries)
+        e.key as String: e.value as String?,
+    },
   );
 
   final String id;
@@ -31,9 +36,24 @@ class Akun {
   final String bahasa;
   final List<String> peran;
   final String statusVerifikasi;
+
+  /// Langkah yang menghalangi seluruh akun; null begitu ada satu peran siap.
   final String? langkahBerikutnya;
 
+  /// Langkah per peran (null = peran siap). Menambah peran kedua tidak mengunci peran pertama.
+  final Map<String, String?> langkahPerPeran;
+
   bool get onboardingSelesai => langkahBerikutnya == null;
+
+  /// Langkah untuk [peran]: langkah akun dulu, lalu langkah khusus peran itu.
+  String? langkahUntuk(String? peran) =>
+      langkahBerikutnya ?? (peran == null ? null : langkahPerPeran[peran]);
+
+  /// Peran pertama yang sudah siap dipakai, bila ada.
+  String? get peranSiap => [
+    for (final p in peran)
+      if (langkahPerPeran.containsKey(p) && langkahPerPeran[p] == null) p,
+  ].firstOrNull;
   String get nama => [namaDepan, inisial].whereType<String>().join(' ').trim();
 }
 
@@ -102,7 +122,10 @@ class PeranAktif extends Notifier<String?> {
     final akun = ref.watch(sessionProvider).value;
     if (akun == null || akun.peran.isEmpty) return null;
     final simpan = ref.read(prefsProvider).getString(_kunciPeran);
-    return akun.peran.contains(simpan) ? simpan : akun.peran.first;
+    // Tanpa pilihan tersimpan, pakai peran yang sudah siap agar peran baru yang belum lengkap tidak mengunci akun.
+    return akun.peran.contains(simpan)
+        ? simpan
+        : akun.peranSiap ?? akun.peran.first;
   }
 
   void pilih(String peran) {
