@@ -21,6 +21,7 @@ class Booking {
     this.tagihanTeks,
     this.percakapanId,
     this.penanggungBiaya,
+    this.gratisPerkenalan = false,
   });
 
   factory Booking.fromJson(Json j) {
@@ -42,6 +43,7 @@ class Booking {
           : '${tagihan['judul']}: ${Uang.fromJson(tagihan['nominal']).teks}',
       percakapanId: j['percakapan_id'] as String?,
       penanggungBiaya: j['penanggung_biaya'] as String?,
+      gratisPerkenalan: j['gratis_perkenalan'] as bool? ?? false,
       aksi: Aksi.fromJson(j),
     );
   }
@@ -58,6 +60,9 @@ class Booking {
   final BatasWaktu? batasLock;
   final String? tagihanTeks;
   final String? percakapanId;
+
+  /// Biaya admin digratiskan oleh jatah pertama pekerja selama masa perkenalan (K-123).
+  final bool gratisPerkenalan;
 
   /// MAJIKAN atau PEKERJA untuk pekerjaan rutin; null untuk sekali datang (tanpa biaya admin).
   final String? penanggungBiaya;

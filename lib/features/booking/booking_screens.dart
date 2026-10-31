@@ -129,7 +129,9 @@ class BookingDetailScreen extends ConsumerWidget {
                         if (b.penanggungBiaya != null) ...[
                           const SizedBox(height: AppSpace.s4),
                           Text(
-                            'Biaya admin ${b.biayaAdmin.teks} dibayar oleh $pembayar saat kedua pihak setuju.',
+                            b.gratisPerkenalan
+                                ? 'Biaya admin gratis selama masa perkenalan.'
+                                : 'Biaya admin ${b.biayaAdmin.teks} dibayar oleh $pembayar saat kedua pihak setuju.',
                             style: context.text.body,
                           ),
                         ],

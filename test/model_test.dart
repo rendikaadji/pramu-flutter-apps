@@ -113,6 +113,38 @@ void main() {
     expect(kalimatOngkos('PEKERJA'), 'Ongkos transport ditanggung pekerja');
   });
 
+  test('booking membaca jatah gratis periodik, bawaan bukan gratis', () {
+    Map<String, dynamic> dasar(Map<String, dynamic> tambah) => {
+      'id': 'b1',
+      'job': {'judul': 'ART'},
+      'pihak_lain': {
+        'id': 'p1',
+        'nama': 'Siti R.',
+        'terverifikasi': true,
+        'jumlah_ulasan': 0,
+        'jumlah_selesai': 0,
+        'pembatalan_120_hari': 0,
+        'badge_peringatan': false,
+        'baru': true,
+        'kecamatan': 'Kebayoran Baru',
+      },
+      'status': 'MENUNGGU_LOCK',
+      'harga_kesepakatan': {'nilai': 2400000, 'teks': 'Rp2.400.000'},
+      'biaya_admin': {'nilai': 0, 'teks': 'Rp0'},
+      'persetujuan': {'majikan_at': null, 'pekerja_at': null},
+      'batas_lock': {'sampai': '2026-11-01T00:46:00Z', 'teks': '23 jam lagi'},
+      'aksi_tersedia': <String>[],
+      'akibat': <String, String>{},
+      'alasan_nonaktif': <String, String>{},
+      ...tambah,
+    };
+    expect(
+      Booking.fromJson(dasar({'gratis_perkenalan': true})).gratisPerkenalan,
+      isTrue,
+    );
+    expect(Booking.fromJson(dasar({})).gratisPerkenalan, isFalse);
+  });
+
   test('Penugasan tanpa harga dan batas tetap terbaca', () {
     final p = Penugasan.fromJson({
       'id': 'p1',
