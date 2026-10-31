@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/models/pramu.dart';
+import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/url_launch.dart';
+import 'package:pramu_apps/shared/muat.dart';
 
-/// S-20 Akun: ganti peran aktif dan keluar.
+/// S-20 Akun: ganti peran aktif, ajak tetangga lewat WhatsApp (K-131), dan keluar.
 class AkunScreen extends ConsumerWidget {
   const AkunScreen({super.key});
+
+  // Tautan hanya membawa kode wilayah pengundang, tanpa identitas siapa pun; pesan siap kirim dari server.
+  Future<void> _ajak(BuildContext context, WidgetRef ref) async {
+    try {
+      final u = await ref.read(apiClientProvider).get('/me/undangan') as Json;
+      final ok = await openWhatsAppUrl(
+        ref.read(urlLauncherProvider),
+        u['tautan_wa'] as String,
+      );
+      if (!ok && context.mounted) {
+        AppSnack.show(context, 'WhatsApp tidak bisa dibuka.');
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) AppSnack.show(context, pesanGalat(e));
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,6 +70,12 @@ class AkunScreen extends ConsumerWidget {
           ],
           ListTileCard(
             children: [
+              SettingsRow(
+                icon: LucideIcons.share2,
+                title: 'Ajak tetangga lewat WhatsApp',
+                subtitle: 'Makin banyak yang bergabung, makin mudah menemukan yang cocok.',
+                onTap: () => _ajak(context, ref),
+              ),
               SettingsRow(
                 key: K.logout,
                 icon: LucideIcons.logOut,
