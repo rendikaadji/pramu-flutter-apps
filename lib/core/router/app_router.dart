@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/models/pramu.dart';
 import 'package:pramu_apps/core/router/arah.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/features/akun/akun_screen.dart';
+import 'package:pramu_apps/features/akun/ganti_nomor_screen.dart';
 import 'package:pramu_apps/features/akun/masuk_screen.dart';
 import 'package:pramu_apps/features/akun/onboarding_screens.dart';
 import 'package:pramu_apps/features/beranda/beranda_screen.dart';
@@ -83,6 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/jelajah', builder: (_, _) => const JelajahScreen()),
+      GoRoute(path: '/akun/nomor', builder: (_, _) => const GantiNomorScreen()),
       GoRoute(path: '/job/buat', builder: (_, _) => const BuatJobScreen()),
       GoRoute(
         path: '/job/:id',
