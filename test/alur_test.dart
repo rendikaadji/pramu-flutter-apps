@@ -358,6 +358,83 @@ void main() {
     expect(dibuka?.queryParameters['text'], 'Ayo gabung Pramu');
   });
 
+  testWidgets(
+    'Ganti nomor HP: bukti dari nomor sekarang lalu nomor baru, konfirmasi, dan sesi tetap masuk',
+    (tester) async {
+      var lamaDiterima = false;
+      var baruDiterima = false;
+      const idLama = '01a18f68-0000-7000-8000-0000000000b1';
+      const idBaru = '01a18f68-0000-7000-8000-0000000000b2';
+      final backend = await _pasang(tester, {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [],
+          'job_saya': [],
+        },
+        'POST /me/telepon/wa/tantangan': (o) {
+          final lama = (o.data as Map)['arah'] == 'LAMA';
+          return {
+            'id': lama ? idLama : idBaru,
+            'kode': lama ? 'LAMA23' : 'BARU23',
+            'token': lama ? 'tok-lama' : 'tok-baru',
+            'nomor_pramu': '6281200000000',
+            'tautan_wa': 'https://wa.me/6281200000000?text=Kode',
+            'berlaku_sampai': '2026-11-01T00:05:00Z',
+          };
+        },
+        'GET /auth/wa/tantangan/$idLama': (_) => {
+          'status': lamaDiterima ? 'DITERIMA' : 'MENUNGGU',
+          'telepon_tersamar': lamaDiterima ? '••••7890' : null,
+        },
+        'GET /auth/wa/tantangan/$idBaru': (_) => {
+          'status': baruDiterima ? 'DITERIMA' : 'MENUNGGU',
+          'telepon_tersamar': baruDiterima ? '••••0111' : null,
+        },
+        'POST /me/telepon/wa': (_) => _akun(),
+      });
+
+      await tester.tap(find.text('Akun'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Ganti nomor HP'));
+      await tester.tap(find.text('Ganti nomor HP'));
+      await tester.pumpAndSettle();
+
+      // Langkah 2 baru muncul setelah bukti dari nomor sekarang diterima.
+      expect(find.text('Langkah 2: dari nomor yang baru'), findsNothing);
+      await tester.tap(find.text('Mulai dari nomor sekarang'));
+      await tester.pumpAndSettle();
+      expect(find.text('LAMA23'), findsOneWidget);
+      lamaDiterima = true;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(find.text('Nomor ••••7890 terbaca.'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Mulai dari nomor baru'));
+      await tester.tap(find.text('Mulai dari nomor baru'));
+      await tester.pumpAndSettle();
+      baruDiterima = true;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('dari ••••7890 ke ••••0111'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Ya, ganti nomor'));
+      await tester.tap(find.text('Ya, ganti nomor'));
+      await tester.pumpAndSettle();
+
+      final ganti = backend.panggilan.lastWhere(
+        (o) => o.method == 'POST' && o.path == '/me/telepon/wa',
+      );
+      expect(ganti.data, {
+        'id_lama': idLama,
+        'token_lama': 'tok-lama',
+        'id_baru': idBaru,
+        'token_baru': 'tok-baru',
+      });
+      expect(find.text('Nomor HP berhasil diganti.'), findsOneWidget);
+    },
+  );
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {

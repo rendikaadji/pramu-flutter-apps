@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/models/pramu.dart';
@@ -75,6 +76,13 @@ class AkunScreen extends ConsumerWidget {
                 title: 'Ajak tetangga lewat WhatsApp',
                 subtitle: 'Makin banyak yang bergabung, makin mudah menemukan yang cocok.',
                 onTap: () => _ajak(context, ref),
+              ),
+              SettingsRow(
+                icon: LucideIcons.smartphone,
+                title: 'Ganti nomor HP',
+                subtitle:
+                    'Bukti lewat WhatsApp dari nomor sekarang dan nomor baru.',
+                onTap: () => context.push('/akun/nomor'),
               ),
               SettingsRow(
                 key: K.logout,
