@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart' show InkResponse;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,7 @@ import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/env.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/time.dart';
+import 'package:pramu_apps/shared/app_ui/rating_stars.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -565,6 +567,77 @@ void main() {
       expect(beli.headers['Idempotency-Key'], isNotNull);
       expect(find.text('Bayar tagihan'), findsOneWidget);
       expect(find.text('Rp49.000'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'Pekerjaan: beri ulasan lalu laporkan pihak lain dengan kunci idempoten',
+    (tester) async {
+      const id = '01a18f68-0000-7000-8000-0000000000e1';
+      final backend = await _pasang(tester, {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [
+            {
+              'id': id,
+              'judul': 'Bersih rumah',
+              'label_status': 'Selesai',
+              'pihak_lain': _profil,
+            },
+          ],
+          'job_saya': [],
+        },
+        'GET /penugasan/$id': (_) => {
+          'id': id,
+          'judul': 'Bersih rumah',
+          'label_status': 'Selesai',
+          'pihak_lain': _profil,
+          'aksi_tersedia': <String>[],
+        },
+        'POST /penugasan/$id/ulasan': (_) => {},
+        'POST /laporan': (_) => {},
+      });
+
+      await tester.tap(find.textContaining('Bersih rumah'));
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Beri ulasan'));
+      await tester.tap(find.text('Beri ulasan'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(RatingStars),
+              matching: find.byType(InkResponse),
+            )
+            .at(3),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Kirim ulasan'));
+      await tester.pumpAndSettle();
+      final ulasan = backend.panggilan.lastWhere(
+        (o) => o.method == 'POST' && o.path == '/penugasan/$id/ulasan',
+      );
+      expect(ulasan.data, {'bintang': 4});
+      expect(ulasan.headers['Idempotency-Key'], isNotNull);
+
+      await tester.ensureVisible(find.text('Laporkan'));
+      await tester.tap(find.text('Laporkan'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Identitas palsu'));
+      await tester.tap(find.text('Identitas palsu'));
+      await tester.pump();
+      await tester.ensureVisible(find.text('Kirim laporan'));
+      await tester.tap(find.text('Kirim laporan'));
+      await tester.pumpAndSettle();
+      final laporan = backend.panggilan.lastWhere(
+        (o) => o.method == 'POST' && o.path == '/laporan',
+      );
+      expect(laporan.data, {
+        'terlapor_profil_id': '01a18f68-0000-7000-8000-000000000002',
+        'kategori': 'IDENTITAS_PALSU',
+      });
     },
   );
 

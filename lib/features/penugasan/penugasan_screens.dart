@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/ids.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/penugasan/penugasan.dart';
+import 'package:pramu_apps/features/penugasan/ulasan_laporan.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/baris_info.dart';
 import 'package:pramu_apps/shared/batas_chip.dart';
@@ -176,6 +177,28 @@ class PenugasanDetailScreen extends ConsumerWidget {
                     onPressed: () =>
                         context.push('/percakapan/${p.percakapanId}'),
                   ),
+                AppButton(
+                  label: 'Beri ulasan',
+                  variant: AppButtonVariant.text,
+                  onPressed: () async {
+                    if (await tulisUlasan(context, p.id) && context.mounted) {
+                      AppSnack.show(context, 'Ulasan tersimpan. Terima kasih.');
+                    }
+                  },
+                ),
+                AppButton(
+                  label: 'Laporkan',
+                  variant: AppButtonVariant.text,
+                  onPressed: () async {
+                    if (await laporkan(context, p.pihakLain.id) &&
+                        context.mounted) {
+                      AppSnack.show(
+                        context,
+                        'Laporan diterima. Admin akan memeriksanya.',
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ),
