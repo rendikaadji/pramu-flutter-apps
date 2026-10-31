@@ -492,6 +492,82 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Langganan: majikan memilih paket, tagihan QRIS terbuka dengan kunci idempoten',
+    (tester) async {
+      const paketId = '01a18f68-0000-7000-8000-0000000000d1';
+      const tagihanId = '01a18f68-0000-7000-8000-0000000000d2';
+      final backend = await _pasang(tester, {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [],
+          'job_saya': [],
+        },
+        'GET /langganan': (_) => {
+          'paket': null,
+          'status': null,
+          'berakhir': null,
+          'job_aktif': 1,
+          'batas_job_aktif': 2,
+          'upgrade': [],
+        },
+        'GET /paket': (_) => [
+          {
+            'id': paketId,
+            'kode': 'BULANAN',
+            'nama': 'Paket Bulanan',
+            'durasi_bulan': 1,
+            'harga': {'nilai': 49000, 'teks': 'Rp49.000'},
+            'batas_job_aktif': 3,
+          },
+        ],
+        'POST /langganan': (_) => {
+          'id': tagihanId,
+          'judul': 'Langganan Paket Bulanan',
+          'nominal': {'nilai': 49000, 'teks': 'Rp49.000'},
+          'status': 'MENUNGGU',
+          'qr_payload': '000201QRIS-LANGGANAN',
+          'berlaku_sampai': {
+            'sampai': '2026-11-01T00:30:00Z',
+            'teks': '25 menit lagi',
+          },
+        },
+        'GET /tagihan/$tagihanId': (_) => {
+          'id': tagihanId,
+          'judul': 'Langganan Paket Bulanan',
+          'nominal': {'nilai': 49000, 'teks': 'Rp49.000'},
+          'status': 'MENUNGGU',
+          'qr_payload': '000201QRIS-LANGGANAN',
+          'berlaku_sampai': {
+            'sampai': '2026-11-01T00:30:00Z',
+            'teks': '25 menit lagi',
+          },
+        },
+      });
+
+      await tester.tap(find.text('Akun'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Langganan'));
+      await tester.tap(find.text('Langganan'));
+      await tester.pumpAndSettle();
+      expect(find.text('Job aktif: 1 dari 2'), findsOneWidget);
+      expect(find.text('Paket Bulanan · 1 bulan'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Pilih paket').last);
+      await tester.tap(find.text('Pilih paket').last);
+      await tester.pumpAndSettle();
+
+      final beli = backend.panggilan.lastWhere(
+        (o) => o.method == 'POST' && o.path == '/langganan',
+      );
+      expect(beli.data, {'paket_id': paketId});
+      expect(beli.headers['Idempotency-Key'], isNotNull);
+      expect(find.text('Bayar tagihan'), findsOneWidget);
+      expect(find.text('Rp49.000'), findsWidgets);
+    },
+  );
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {
