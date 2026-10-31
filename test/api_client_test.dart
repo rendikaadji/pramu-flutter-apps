@@ -229,18 +229,23 @@ void main() {
     );
   });
 
-  test('getPage membaca meta.next_cursor', () async {
-    final c = _make([
-      (_) => _json(200, {
-        'data': [
-          {'id': 'a'},
-          {'id': 'b'},
-        ],
-        'meta': {'next_cursor': 'abc'},
-      }),
-    ]);
-    final p = await c.api.getPage<String>('/x', (j) => j['id'] as String);
-    expect(p.items, ['a', 'b']);
-    expect(p.nextCursor, 'abc');
-  });
+  test(
+    'getPage membaca next_cursor di tingkat atas dan kunci tambahan',
+    () async {
+      final c = _make([
+        (_) => _json(200, {
+          'data': [
+            {'id': 'a'},
+            {'id': 'b'},
+          ],
+          'next_cursor': 'abc',
+          'belum_dibaca': 3,
+        }),
+      ]);
+      final p = await c.api.getPage<String>('/x', (j) => j['id'] as String);
+      expect(p.items, ['a', 'b']);
+      expect(p.nextCursor, 'abc');
+      expect(p.extra['belum_dibaca'], 3);
+    },
+  );
 }
