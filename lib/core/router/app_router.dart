@@ -15,6 +15,7 @@ import 'package:pramu_apps/features/interaksi/interaksi_screens.dart';
 import 'package:pramu_apps/features/jelajah/jelajah_screen.dart';
 import 'package:pramu_apps/features/job/job_screens.dart';
 import 'package:pramu_apps/features/penugasan/penugasan_screens.dart';
+import 'package:pramu_apps/features/tagihan/tagihan_screens.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/muat.dart';
 
@@ -85,6 +86,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/jelajah', builder: (_, _) => const JelajahScreen()),
       GoRoute(path: '/akun/nomor', builder: (_, _) => const GantiNomorScreen()),
+      GoRoute(path: '/tagihan', builder: (_, _) => const TagihanDaftarScreen()),
+      GoRoute(
+        path: '/tagihan/:id',
+        builder: (_, s) => TagihanDetailScreen(id: s.pathParameters['id']!),
+      ),
       GoRoute(path: '/job/buat', builder: (_, _) => const BuatJobScreen()),
       GoRoute(
         path: '/job/:id',
