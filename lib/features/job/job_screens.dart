@@ -101,6 +101,7 @@ class _CariJob extends ConsumerStatefulWidget {
 class _CariJobState extends ConsumerState<_CariJob> {
   String? _proses;
   final _galat = <String, String>{};
+  bool _lebihJauh = false;
 
   // Pekerja mengajukan diri ke job (PRD §12); harga dan batas waktu dihitung server.
   Future<void> _ajukan(String jobId) async {
@@ -125,17 +126,17 @@ class _CariJobState extends ConsumerState<_CariJob> {
 
   @override
   Widget build(BuildContext context) {
-    final daftar = ref.watch(cariJobProvider);
+    final daftar = ref.watch(cariJobProvider(_lebihJauh));
     return AppScaffold(
       title: 'Cari job',
       body: RefreshIndicator(
-        onRefresh: () => ref.refresh(cariJobProvider.future),
+        onRefresh: () => ref.refresh(cariJobProvider(_lebihJauh).future),
         child: ListView(
           padding: const EdgeInsets.all(AppSpace.s16),
           children: [
             Muat(
               nilai: daftar,
-              onUlangi: () => ref.invalidate(cariJobProvider),
+              onUlangi: () => ref.invalidate(cariJobProvider(_lebihJauh)),
               isi: (h) => h.items.isEmpty
                   ? const EmptyState(
                       title: 'Belum ada job',
@@ -182,11 +183,35 @@ class _CariJobState extends ConsumerState<_CariJob> {
                       ],
                     ),
             ),
+            _LihatLebihJauh(
+              aktif: _lebihJauh,
+              onTap: () => setState(() => _lebihJauh = true),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+/// Satu ketukan memperluas pencarian ke jarak maksimum jenis job (bukan pengaturan; tidak disimpan).
+class _LihatLebihJauh extends StatelessWidget {
+  const _LihatLebihJauh({required this.aktif, required this.onTap});
+
+  final bool aktif;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => aktif
+      ? Text(
+          'Menampilkan sampai jarak terjauh yang diizinkan untuk jenis pekerjaan ini.',
+          style: context.text.bodySm,
+        )
+      : AppButton(
+          label: 'Lihat lebih jauh',
+          variant: AppButtonVariant.secondary,
+          onPressed: onTap,
+        );
 }
 
 /// Detail job majikan: ringkasan, tutup, dan kandidat yang cocok dengan tombol Ajukan (S-08 majikan).
@@ -292,7 +317,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   }
 }
 
-class _Kandidat extends ConsumerWidget {
+class _Kandidat extends ConsumerStatefulWidget {
   const _Kandidat({
     required this.id,
     required this.proses,
@@ -306,9 +331,39 @@ class _Kandidat extends ConsumerWidget {
   final void Function(String profilId) ajukan;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Muat(
-    nilai: ref.watch(kandidatProvider(id)),
-    onUlangi: () => ref.invalidate(kandidatProvider(id)),
+  ConsumerState<_Kandidat> createState() => _KandidatState();
+}
+
+class _KandidatState extends ConsumerState<_Kandidat> {
+  bool _lebihJauh = false;
+
+  String get id => widget.id;
+  String? get proses => widget.proses;
+  Map<String, String> get galat => widget.galat;
+  void Function(String profilId) get ajukan => widget.ajukan;
+
+  @override
+  Widget build(BuildContext context) {
+    final kunci = (id: id, lebihJauh: _lebihJauh);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _daftar(context, kunci),
+        const SizedBox(height: AppSpace.s8),
+        _LihatLebihJauh(
+          aktif: _lebihJauh,
+          onTap: () => setState(() => _lebihJauh = true),
+        ),
+      ],
+    );
+  }
+
+  Widget _daftar(
+    BuildContext context,
+    ({String id, bool lebihJauh}) kunci,
+  ) => Muat(
+    nilai: ref.watch(kandidatProvider(kunci)),
+    onUlangi: () => ref.invalidate(kandidatProvider(kunci)),
     isi: (h) => h.items.isEmpty
         ? Text(
             'Belum ada pekerja yang cocok. Coba naikkan upah terendah atau perluas jarak.',

@@ -136,13 +136,25 @@ final jobProvider = FutureProvider.autoDispose.family<Job, String>(
       Job.fromJson(await ref.watch(apiClientProvider).get('/job/$id') as Json),
 );
 
+/// `lebihJauh` memperluas jarak dari batas pertama ke maksimum jenis job (PRD §9.5, K-115); tidak disimpan.
 final kandidatProvider = FutureProvider.autoDispose
-    .family<Paged<Kandidat>, String>(
-      (ref, id) => ref
+    .family<Paged<Kandidat>, ({String id, bool lebihJauh})>(
+      (ref, k) => ref
           .watch(apiClientProvider)
-          .getPage('/job/$id/kandidat', Kandidat.fromJson),
+          .getPage(
+            '/job/${k.id}/kandidat',
+            Kandidat.fromJson,
+            query: {if (k.lebihJauh) 'lebih_jauh': 'true'},
+          ),
     );
 
-final cariJobProvider = FutureProvider.autoDispose<Paged<KartuJob>>(
-  (ref) => ref.watch(apiClientProvider).getPage('/job', KartuJob.fromJson),
-);
+final cariJobProvider = FutureProvider.autoDispose
+    .family<Paged<KartuJob>, bool>(
+      (ref, lebihJauh) => ref
+          .watch(apiClientProvider)
+          .getPage(
+            '/job',
+            KartuJob.fromJson,
+            query: {if (lebihJauh) 'lebih_jauh': 'true'},
+          ),
+    );
