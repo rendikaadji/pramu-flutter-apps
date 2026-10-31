@@ -29,10 +29,14 @@ void main() {
       'peran': ['MAJIKAN', 'PEKERJA'],
       'status_verifikasi': 'TERVERIFIKASI',
       'langkah_onboarding_berikutnya': null,
+      'langkah_per_peran': {'MAJIKAN': null, 'PEKERJA': 'VIDEO'},
     });
     expect(a.peran, ['MAJIKAN', 'PEKERJA']);
     expect(a.onboardingSelesai, isTrue);
     expect(a.nama, 'Dewi L.');
+    expect(a.langkahPerPeran, {'MAJIKAN': null, 'PEKERJA': 'VIDEO'});
+    expect(a.langkahUntuk('PEKERJA'), 'VIDEO');
+    expect(a.peranSiap, 'MAJIKAN');
   });
 
   test('Booking membaca aksi, akibat, alasan nonaktif, batas, dan tagihan', () {

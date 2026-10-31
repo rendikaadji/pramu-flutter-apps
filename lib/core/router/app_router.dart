@@ -21,13 +21,17 @@ import 'package:pramu_apps/shared/muat.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final ubah = ValueNotifier(0);
   ref.listen(sessionProvider, (_, _) => ubah.value++);
+  ref.listen(peranAktifProvider, (_, _) => ubah.value++);
   ref.onDispose(ubah.dispose);
 
   return GoRouter(
     initialLocation: '/beranda',
     refreshListenable: ubah,
-    redirect: (_, state) =>
-        arahkan(ref.read(sessionProvider), state.matchedLocation),
+    redirect: (_, state) => arahkan(
+      ref.read(sessionProvider),
+      state.matchedLocation,
+      peran: ref.read(peranAktifProvider),
+    ),
     errorBuilder: (_, _) => const _TidakDitemukan(),
     routes: [
       GoRoute(path: '/memuat', builder: (_, _) => const _Memuat()),

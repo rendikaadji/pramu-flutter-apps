@@ -80,6 +80,7 @@ void main() {
         ) as Json,
       );
       expect(akun.peran, contains('MAJIKAN'));
+      expect(akun.langkahPerPeran.keys, ['MAJIKAN']);
       expect(akun.langkahBerikutnya, isNot(anyOf('PERSETUJUAN', 'PERAN')));
 
       final beranda =

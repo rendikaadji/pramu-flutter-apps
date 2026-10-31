@@ -53,4 +53,30 @@ void main() {
     expect(arahkan(selesai, '/penugasan/1'), '/beranda');
     expect(arahkan(selesai, '/percakapan/${_id.toUpperCase()}'), '/beranda');
   });
+
+  test(
+    'peran kedua yang belum lengkap tidak mengunci peran yang sudah siap',
+    () {
+      const akun = Akun(
+        id: _id,
+        peran: ['MAJIKAN', 'PEKERJA'],
+        langkahPerPeran: {'MAJIKAN': null, 'PEKERJA': 'DATA_PEKERJA'},
+      );
+      const sesi = AsyncData<Akun?>(akun);
+      expect(akun.peranSiap, 'MAJIKAN');
+      expect(arahkan(sesi, '/job', peran: 'MAJIKAN'), isNull);
+      expect(arahkan(sesi, '/job', peran: 'PEKERJA'), '/lanjutkan');
+      // Langkah akun (mis. KTP) tetap menghalangi semua peran.
+      const ktp = Akun(
+        id: _id,
+        peran: ['MAJIKAN'],
+        langkahBerikutnya: 'KTP',
+        langkahPerPeran: {'MAJIKAN': 'KTP'},
+      );
+      expect(
+        arahkan(const AsyncData<Akun?>(ktp), '/job', peran: 'MAJIKAN'),
+        '/lanjutkan',
+      );
+    },
+  );
 }
