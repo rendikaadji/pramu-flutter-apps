@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/models/pramu.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/batas_chip.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
 
@@ -25,12 +26,13 @@ class BerandaScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final peran = ref.watch(peranAktifProvider);
     final beranda = ref.watch(berandaProvider);
+    final nama = ref.watch(sessionProvider).value?.namaDepan;
     return AppScaffold(
-      title: 'Beranda',
+      title: nama == null ? 'Beranda' : 'Halo, $nama',
       actions: [
         AppIconButton(
           icon: LucideIcons.messageCircle,
-          label: 'Chat',
+          label: 'Pesan',
           onPressed: () => context.push('/percakapan'),
         ),
         AppIconButton(
@@ -122,7 +124,10 @@ class _Isi extends StatelessWidget {
           ),
           const SizedBox(height: AppSpace.s8),
           if (jobSaya.isEmpty)
-            Text('Kamu belum punya job.', style: context.text.bodySm),
+            Text(
+              'Belum ada job. Buat job pertama, lalu kami tunjukkan pekerja yang cocok.',
+              style: context.text.bodySm,
+            ),
           for (final j in jobSaya) ...[
             AppCard(
               onTap: () => context.push('/job/${j['id']}'),
@@ -163,9 +168,11 @@ class _KartuTindakan extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (batas != null) ...[
+            BatasChip(batas),
+            const SizedBox(height: AppSpace.s8),
+          ],
           Text(k['judul'] as String, style: context.text.h3),
-          if (batas != null)
-            Text('Sisa waktu: ${batas.teks}', style: context.text.bodySm),
           if (k['akibat_jika_diam'] != null)
             Text(k['akibat_jika_diam'] as String, style: context.text.bodySm),
           const SizedBox(height: AppSpace.s8),

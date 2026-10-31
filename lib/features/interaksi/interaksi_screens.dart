@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/ids.dart';
@@ -22,6 +23,11 @@ final _pesanProvider = FutureProvider.autoDispose.family<Paged<Json>, String>(
       ref.watch(apiClientProvider).getPage('/percakapan/$id/pesan', (j) => j),
 );
 
+final _percakapanSatuProvider = FutureProvider.autoDispose.family<Json, String>(
+  (ref, id) async =>
+      await ref.watch(apiClientProvider).get('/percakapan/$id') as Json,
+);
+
 final _notifikasiProvider = FutureProvider.autoDispose<Paged<Json>>(
   (ref) => ref.watch(apiClientProvider).getPage('/notifikasi', (j) => j),
 );
@@ -32,7 +38,7 @@ class PercakapanDaftarScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => AppScaffold(
-    title: 'Chat',
+    title: 'Pesan',
     body: ListView(
       padding: const EdgeInsets.all(AppSpace.s16),
       children: [
@@ -148,11 +154,33 @@ class _PercakapanScreenState extends ConsumerState<PercakapanScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
+    final info = ref.watch(_percakapanSatuProvider(widget.id)).value;
+    final hanyaBaca = info?['hanya_baca'] == true;
     return AppScaffold(
-      title: 'Chat',
+      title: info == null
+          ? 'Pesan'
+          : '${(info['pihak_lain'] as Json)['nama']} · ${info['judul_job']}',
       padded: false,
       body: Column(
         children: [
+          // Penyamaran kontak dijelaskan di tempatnya (brief §12).
+          Container(
+            width: double.infinity,
+            color: t.sunken,
+            padding: const EdgeInsets.all(AppSpace.s12),
+            child: Row(
+              children: [
+                Icon(LucideIcons.lock, size: 16, color: t.textMuted),
+                const SizedBox(width: AppSpace.s8),
+                Expanded(
+                  child: Text(
+                    'Nomor HP dan media sosial disamarkan otomatis.',
+                    style: context.text.bodySm,
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: Muat(
               nilai: ref.watch(_pesanProvider(widget.id)),
@@ -208,25 +236,32 @@ class _PercakapanScreenState extends ConsumerState<PercakapanScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'Tulis pesan',
-                          controller: _tulis,
-                          maxLength: 1000,
-                          onSubmitted: (_) => _kirim(),
+                  if (hanyaBaca)
+                    Text(
+                      'Percakapan ini hanya bisa dibaca.',
+                      textAlign: TextAlign.center,
+                      style: context.text.body,
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppTextField(
+                            label: 'Tulis pesan',
+                            controller: _tulis,
+                            maxLength: 1000,
+                            onSubmitted: (_) => _kirim(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: AppSpace.s8),
-                      AppButton(
-                        label: 'Kirim',
-                        expand: false,
-                        loading: _proses,
-                        onPressed: _proses ? null : _kirim,
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: AppSpace.s8),
+                        AppButton(
+                          label: 'Kirim',
+                          expand: false,
+                          loading: _proses,
+                          onPressed: _proses ? null : _kirim,
+                        ),
+                      ],
+                    ),
                   if (_galat != null) FieldErrorText(_galat!),
                 ],
               ),

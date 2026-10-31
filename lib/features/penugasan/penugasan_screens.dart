@@ -8,6 +8,7 @@ import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/penugasan/penugasan.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/baris_info.dart';
+import 'package:pramu_apps/shared/batas_chip.dart';
 import 'package:pramu_apps/shared/daftar_aksi.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
@@ -150,11 +151,10 @@ class PenugasanDetailScreen extends ConsumerWidget {
                 if (p.alamat != null) BarisInfo('Alamat', p.alamat!),
                 if (p.tanggalBerakhir != null)
                   BarisInfo('Berakhir pada', p.tanggalBerakhir!),
-                if (p.batasKonfirmasi != null)
-                  BarisInfo(
-                    'Batas konfirmasi',
-                    '${formatDateTime(p.batasKonfirmasi!.sampai)} (${p.batasKonfirmasi!.teks})',
-                  ),
+                if (p.batasKonfirmasi != null) ...[
+                  const SizedBox(height: AppSpace.s4),
+                  BatasChip(p.batasKonfirmasi!, label: 'Batas konfirmasi'),
+                ],
                 if (p.petaUrl != null)
                   AppButton(
                     label: 'Buka peta',
