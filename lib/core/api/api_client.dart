@@ -119,17 +119,26 @@ class ApiClient {
 
   Future<Object?> delete(String path) => _send('DELETE', path);
 
-  /// List berpaginasi: `{"data":[...], "meta":{"next_cursor":"..."}}`.
+  /// List berpaginasi: `{"data":[...], "next_cursor":"..."}` (Docs/openapi.yaml `Halaman`).
+  /// Kunci lain di samping `data` (mis. `belum_dibaca`) ada di [Paged.extra].
   Future<Paged<T>> getPage<T>(
     String path,
     T Function(Map<String, dynamic>) fromJson, {
     Map<String, dynamic>? query,
   }) async {
     final body = await _raw('GET', path, query: query);
-    final map = body as Map;
-    return Paged([
-      for (final e in map['data'] as List) fromJson(e as Map<String, dynamic>),
-    ], nextCursor: (map['meta'] as Map?)?['next_cursor'] as String?);
+    final map = body as Map<String, dynamic>;
+    return Paged(
+      [
+        for (final e in map['data'] as List)
+          fromJson(e as Map<String, dynamic>),
+      ],
+      nextCursor: map['next_cursor'] as String?,
+      extra: {
+        for (final e in map.entries)
+          if (e.key != 'data' && e.key != 'next_cursor') e.key: e.value,
+      },
+    );
   }
 
   Future<Object?> _send(

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/ids.dart';
+import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/storage/secure_token_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,7 +27,7 @@ final apiClientProvider = Provider<ApiClient>(
   (ref) => ApiClient(
     tokens: ref.watch(tokenStoreProvider),
     deviceId: ref.watch(deviceIdProvider),
-    // shortcut: sesi kedaluwarsa belum ditangani; modul Akun (Docs/15 §4.4 langkah 3) mengarahkan ke layar masuk.
-    onUnauthorized: () {},
+    // Token ditolak: sesi dihapus dan router mengarahkan ke layar masuk.
+    onUnauthorized: () => ref.read(sessionProvider.notifier).tokenDitolak(),
   ),
 );
