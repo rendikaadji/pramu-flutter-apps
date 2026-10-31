@@ -218,7 +218,7 @@ class _MasukWaPanelState extends ConsumerState<MasukWaPanel> {
 
   List<Widget> _menunggu(BuildContext context) => [
     Text(
-      'Buka WhatsApp dan kirim pesan berisi kode ini ke Pramu. Jangan ubah isinya.',
+      'Buka WhatsApp dan kirim pesan berisi kode ini ke Pramu. Jangan ubah isinya. Kirim hanya kode milikmu sendiri, dan jangan kirim kode atas permintaan orang lain.',
       style: context.text.body,
     ),
     const SizedBox(height: AppSpace.s12),
