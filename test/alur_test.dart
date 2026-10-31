@@ -11,6 +11,7 @@ import 'package:pramu_apps/core/env.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/memory_token_store.dart';
@@ -432,6 +433,62 @@ void main() {
         'token_baru': 'tok-baru',
       });
       expect(find.text('Nomor HP berhasil diganti.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Tagihan: daftar, detail dengan QRIS, lalu berubah lunas setelah dibayar',
+    (tester) async {
+      var lunas = false;
+      const id = '01a18f68-0000-7000-8000-0000000000c1';
+      Map<String, Object?> tagihan() => {
+        'id': id,
+        'judul': 'Fee pekerjaan sekali datang',
+        'nominal': {'nilai': 30000, 'teks': 'Rp30.000'},
+        'status': lunas ? 'LUNAS' : 'MENUNGGU',
+        'qr_payload': lunas ? null : '000201010212QRIS-UJI',
+        'berlaku_sampai': {
+          'sampai': '2026-11-01T00:30:00Z',
+          'teks': '25 menit lagi',
+        },
+        'referensi': lunas ? 'REF-123' : null,
+      };
+      await _pasang(tester, {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [],
+          'job_saya': [],
+        },
+        'GET /tagihan': (_) => {
+          'data': [tagihan()],
+          'next_cursor': null,
+        },
+        'GET /tagihan/$id': (_) => tagihan(),
+      });
+
+      await tester.tap(find.text('Akun'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Tagihan dan pembayaran'));
+      await tester.tap(find.text('Tagihan dan pembayaran'));
+      await tester.pumpAndSettle();
+      expect(find.text('Fee pekerjaan sekali datang'), findsOneWidget);
+      expect(find.text('Menunggu bayar'), findsOneWidget);
+
+      await tester.tap(find.text('Fee pekerjaan sekali datang'));
+      await tester.pumpAndSettle();
+      expect(find.byType(QrImageView), findsOneWidget);
+      expect(find.textContaining('25 menit lagi'), findsOneWidget);
+
+      lunas = true;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      expect(find.byType(QrImageView), findsNothing);
+      expect(
+        find.text('Pembayaran sudah kami terima. Terima kasih.'),
+        findsOneWidget,
+      );
+      expect(find.text('Nomor referensi: REF-123'), findsOneWidget);
     },
   );
 

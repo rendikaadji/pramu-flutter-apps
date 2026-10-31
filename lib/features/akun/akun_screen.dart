@@ -78,6 +78,12 @@ class AkunScreen extends ConsumerWidget {
                 onTap: () => _ajak(context, ref),
               ),
               SettingsRow(
+                icon: LucideIcons.receipt,
+                title: 'Tagihan dan pembayaran',
+                subtitle: 'Bayar lewat QRIS dan lihat bukti bayar.',
+                onTap: () => context.push('/tagihan'),
+              ),
+              SettingsRow(
                 icon: LucideIcons.smartphone,
                 title: 'Ganti nomor HP',
                 subtitle:
