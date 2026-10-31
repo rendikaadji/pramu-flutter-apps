@@ -159,6 +159,49 @@ void main() {
     },
   );
 
+  testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
+    tester,
+  ) async {
+    await _pasang(tester, {
+      'GET /me': (_) => _akun(),
+      'GET /perkenalan': (_) => {
+        'aktif': true,
+        'mulai_berbayar': null,
+        'pesan': 'Selama masa perkenalan, Pramu gratis digunakan.',
+      },
+      'GET /beranda': (_) => {
+        'kartu_tindakan': [],
+        'penugasan_berjalan': [],
+        'job_saya': [],
+      },
+    });
+
+    expect(
+      find.text('Selama masa perkenalan, Pramu gratis digunakan.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Beranda tanpa banner bila masa perkenalan sudah berakhir', (
+    tester,
+  ) async {
+    await _pasang(tester, {
+      'GET /me': (_) => _akun(),
+      'GET /perkenalan': (_) => {
+        'aktif': false,
+        'mulai_berbayar': null,
+        'pesan': 'Masa perkenalan sudah berakhir.',
+      },
+      'GET /beranda': (_) => {
+        'kartu_tindakan': [],
+        'penugasan_berjalan': [],
+        'job_saya': [],
+      },
+    });
+
+    expect(find.text('Masa perkenalan sudah berakhir.'), findsNothing);
+  });
+
   testWidgets(
     'kartu tindakan di Beranda membuka ajuan, lalu Setujui mengirim POST dengan Idempotency-Key',
     (tester) async {

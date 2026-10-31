@@ -18,6 +18,27 @@ final berandaProvider = FutureProvider.autoDispose<Json>((ref) async {
       as Json;
 });
 
+/// Status masa perkenalan (PRD §6.1). Teks dari server, tanpa angka kuota; gagal memuat = banner tidak tampil.
+final perkenalanProvider = FutureProvider.autoDispose<Json>(
+  (ref) async => await ref.watch(apiClientProvider).get('/perkenalan') as Json,
+);
+
+class _BannerPerkenalan extends ConsumerWidget {
+  const _BannerPerkenalan();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = ref.watch(perkenalanProvider).value;
+    if (p == null || p['aktif'] != true) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpace.s12),
+      child: AppCard(
+        child: Text(p['pesan'] as String, style: context.text.bodySm),
+      ),
+    );
+  }
+}
+
 /// S-05 Beranda: semua permintaan berbatas waktu tampil di atas sebagai kartu tindakan (brief v2 §8.1).
 class BerandaScreen extends ConsumerWidget {
   const BerandaScreen({super.key});
@@ -46,6 +67,7 @@ class BerandaScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(AppSpace.s16),
           children: [
+            const _BannerPerkenalan(),
             Muat(
               nilai: beranda,
               onUlangi: () => ref.invalidate(berandaProvider),
