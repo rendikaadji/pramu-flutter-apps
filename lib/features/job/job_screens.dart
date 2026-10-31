@@ -403,6 +403,12 @@ class _KandidatState extends ConsumerState<_Kandidat> {
                             ? () => ajukan(k.profil.id)
                             : null,
                       ),
+                      AppButton(
+                        label: 'Lihat profil',
+                        variant: AppButtonVariant.text,
+                        onPressed: () =>
+                            context.push('/profil/${k.profil.id}?job_id=$id'),
+                      ),
                       if (galat[k.profil.id] != null)
                         FieldErrorText(galat[k.profil.id]!),
                     ],
