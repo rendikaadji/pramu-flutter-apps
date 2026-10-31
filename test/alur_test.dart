@@ -641,6 +641,77 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Kandidat: Lihat profil membawa konteks job dan menampilkan ulasan',
+    (tester) async {
+      const jobId = '01a18f68-0000-7000-8000-0000000000f1';
+      final backend = await _pasang(tester, {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [],
+          'job_saya': [
+            {
+              'id': jobId,
+              'judul': 'Bersih rumah',
+              'label_status': 'Terbuka',
+              'status': 'TERBUKA',
+              'jumlah_kandidat_cocok': 1,
+            },
+          ],
+        },
+        'GET /job/$jobId': (_) => {
+          'id': jobId,
+          'judul': 'Bersih rumah',
+          'status': 'TERBUKA',
+          'kisaran': 'Rp2.000.000 – Rp2.500.000',
+          'mulai_kerja': '2026-11-05T01:00:00Z',
+          'kecamatan': 'Setiabudi',
+        },
+        'GET /job/$jobId/kandidat': (_) => {
+          'data': [
+            {
+              'profil': _profil,
+              'kelompok_jarak': '3-5',
+              'upah_di_kisaranmu': 'Rp2.000.000 – Rp2.500.000',
+            },
+          ],
+          'next_cursor': null,
+        },
+        'GET /profil/01a18f68-0000-7000-8000-000000000002': (_) => {
+          ..._profil,
+          'keahlian': 'Bersih-bersih dan memasak',
+          'terkunci': ['foto_rumah_url', 'alamat'],
+        },
+        'GET /profil/01a18f68-0000-7000-8000-000000000002/ulasan': (_) => {
+          'data': [
+            {'bintang': 5, 'catatan': 'Rapi dan tepat waktu.'},
+          ],
+          'next_cursor': null,
+        },
+      });
+
+      await tester.tap(find.textContaining('Bersih rumah'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Lihat profil'));
+      await tester.tap(find.text('Lihat profil'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bersih-bersih dan memasak'), findsOneWidget);
+      expect(find.text('Rapi dan tepat waktu.'), findsOneWidget);
+      expect(
+        find.textContaining('baru terbuka setelah kalian berdua sepakat'),
+        findsOneWidget,
+      );
+      final profil = backend.panggilan.lastWhere(
+        (o) =>
+            o.method == 'GET' &&
+            o.path == '/profil/01a18f68-0000-7000-8000-000000000002',
+      );
+      expect(profil.queryParameters, {'job_id': jobId});
+    },
+  );
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {
