@@ -43,6 +43,7 @@ String? validateNik(String? v) {
 
 const meetingHosts = {'meet.google.com'};
 const invoiceHosts = {'checkout.xendit.co', 'checkout-staging.xendit.co'};
+const whatsappHosts = {'wa.me'};
 
 /// https + host persis di allowlist, tanpa userinfo, port default.
 bool isAllowedUrl(String? url, Set<String> hosts) {
@@ -57,3 +58,6 @@ bool isAllowedUrl(String? url, Set<String> hosts) {
 bool isAllowedMeetingUrl(String? url) => isAllowedUrl(url, meetingHosts);
 
 bool isAllowedInvoiceUrl(String? url) => isAllowedUrl(url, invoiceHosts);
+
+/// Tautan WhatsApp dari server untuk verifikasi balik (K-112): hanya wa.me.
+bool isAllowedWhatsAppUrl(String? url) => isAllowedUrl(url, whatsappHosts);

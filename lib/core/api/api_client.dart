@@ -100,8 +100,16 @@ class ApiClient {
   static Options get upload =>
       Options(sendTimeout: _uploadTimeout, receiveTimeout: _uploadTimeout);
 
-  Future<Object?> get(String path, {Map<String, dynamic>? query}) =>
-      _send('GET', path, query: query);
+  Future<Object?> get(
+    String path, {
+    Map<String, dynamic>? query,
+    Map<String, dynamic>? headers,
+  }) => _send(
+    'GET',
+    path,
+    query: query,
+    options: headers == null ? null : Options(headers: headers),
+  );
 
   Future<Object?> post(
     String path, {

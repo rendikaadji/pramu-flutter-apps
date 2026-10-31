@@ -3,12 +3,14 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pramu_apps/app.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/env.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/time.dart';
+import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/memory_token_store.dart';
@@ -106,12 +108,14 @@ Map<String, Object?> _bookingJson({bool sudah = false}) => {
 
 Future<_Backend> _pasang(
   WidgetTester tester,
-  Map<String, Object? Function(RequestOptions)> rute,
-) async {
+  Map<String, Object? Function(RequestOptions)> rute, {
+  String? token = 'token-uji',
+  List<Override> tambahan = const [],
+}) async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
   final backend = _Backend(rute);
-  final tokens = MemoryTokenStore('token-uji');
+  final tokens = MemoryTokenStore(token);
   final dio = Dio(BaseOptions(baseUrl: Env.apiBaseUrl))
     ..httpClientAdapter = backend;
   await tester.pumpWidget(
@@ -119,6 +123,7 @@ Future<_Backend> _pasang(
       overrides: [
         prefsProvider.overrideWithValue(prefs),
         tokenStoreProvider.overrideWithValue(tokens),
+        ...tambahan,
         apiClientProvider.overrideWithValue(
           ApiClient(
             tokens: tokens,
@@ -197,6 +202,122 @@ void main() {
       await tester.tap(find.text('Lihat lebih jauh'));
       await tester.pumpAndSettle();
       expect(backend.panggilan.last.queryParameters['lebih_jauh'], 'true');
+    },
+  );
+
+  testWidgets(
+    'masuk lewat WhatsApp balik: kode, buka WhatsApp, pesan terbaca, lalu Ya lanjut membuat sesi',
+    (tester) async {
+      var diterima = false;
+      Uri? dibuka;
+      const id = '01a18f68-0000-7000-8000-0000000000aa';
+      final backend = await _pasang(
+        tester,
+        {
+          'GET /auth/jalur': (_) => {'wa': true, 'otp': true},
+          'POST /auth/wa/tantangan': (_) => {
+            'id': id,
+            'kode': 'K7M2QX',
+            'token': 'token-tantangan',
+            'nomor_pramu': '6281200000000',
+            'tautan_wa': 'https://wa.me/6281200000000?text=Kode%20K7M2QX',
+            'berlaku_sampai': '2026-11-01T00:05:00Z',
+          },
+          'GET /auth/wa/tantangan/$id': (_) => {
+            'status': diterima ? 'DITERIMA' : 'MENUNGGU',
+            'telepon_tersamar': diterima ? '••••7890' : null,
+          },
+          'POST /auth/wa/tantangan/$id/lanjut': (_) => {
+            'token': 'token-sesi',
+            'akun': _akun(),
+          },
+          'GET /me': (_) => _akun(),
+          'GET /beranda': (_) => {
+            'kartu_tindakan': [],
+            'penugasan_berjalan': [],
+            'job_saya': [],
+          },
+        },
+        token: null,
+        tambahan: [
+          urlLauncherProvider.overrideWithValue((uri, mode) async {
+            dibuka = uri;
+            return true;
+          }),
+        ],
+      );
+
+      await tester.tap(find.text('Masuk lewat WhatsApp'));
+      await tester.pumpAndSettle();
+      expect(find.text('K7M2QX'), findsOneWidget);
+
+      await tester.tap(find.text('Buka WhatsApp'));
+      await tester.pump();
+      expect(dibuka?.host, 'wa.me');
+
+      // Pesan masuk: pemeriksaan berkala memakai token tantangan dan menampilkan nomor tersamar.
+      diterima = true;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Nomor ••••7890 terbaca. Lanjut masuk dengan nomor ini?'),
+        findsOneWidget,
+      );
+      final cek = backend.panggilan.lastWhere(
+        (o) => o.method == 'GET' && o.path == '/auth/wa/tantangan/$id',
+      );
+      expect(cek.headers['X-Tantangan-Token'], 'token-tantangan');
+
+      await tester.tap(find.text('Ya, lanjut'));
+      await tester.pumpAndSettle();
+      expect(find.text('Masuk ke Pramu'), findsNothing);
+      expect(find.text('Halo, Dewi'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'tautan selain wa.me tidak dibuka, dan OTP tetap bisa dipilih bila tersedia',
+    (tester) async {
+      var dibuka = false;
+      const id = '01a18f68-0000-7000-8000-0000000000ab';
+      await _pasang(
+        tester,
+        {
+          'GET /auth/jalur': (_) => {'wa': true, 'otp': true},
+          'POST /auth/wa/tantangan': (_) => {
+            'id': id,
+            'kode': 'AB23CD',
+            'token': 't',
+            'nomor_pramu': '6281200000000',
+            'tautan_wa': 'https://contoh.example/wa',
+            'berlaku_sampai': '2026-11-01T00:05:00Z',
+          },
+          'GET /auth/wa/tantangan/$id': (_) => {
+            'status': 'MENUNGGU',
+            'telepon_tersamar': null,
+          },
+        },
+        token: null,
+        tambahan: [
+          urlLauncherProvider.overrideWithValue((uri, mode) async {
+            dibuka = true;
+            return true;
+          }),
+        ],
+      );
+
+      await tester.tap(find.text('Masuk lewat WhatsApp'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Buka WhatsApp'));
+      await tester.pumpAndSettle();
+      expect(dibuka, isFalse);
+      expect(find.textContaining('WhatsApp tidak bisa dibuka'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Pakai kode OTP saja'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pakai kode OTP saja'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kirim kode'), findsOneWidget);
     },
   );
 

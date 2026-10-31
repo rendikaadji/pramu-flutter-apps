@@ -30,6 +30,10 @@ Future<bool> _open(
 Future<bool> openMeetingUrl(UrlLauncher launcher, String? url) =>
     _open(launcher, url, isAllowedMeetingUrl, LaunchMode.externalApplication);
 
+/// Tautan wa.me ke nomor Pramu: aplikasi WhatsApp di luar aplikasi.
+Future<bool> openWhatsAppUrl(UrlLauncher launcher, String? url) =>
+    _open(launcher, url, isAllowedWhatsAppUrl, LaunchMode.externalApplication);
+
 /// Invoice Xendit: host allowlist, browser dalam aplikasi.
 Future<bool> openInvoiceUrl(UrlLauncher launcher, String? url) =>
     _open(launcher, url, isAllowedInvoiceUrl, LaunchMode.inAppBrowserView);

@@ -7,6 +7,7 @@ import 'package:pramu_apps/core/models/pramu.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/test_keys.dart';
+import 'package:pramu_apps/features/akun/masuk_wa.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/muat.dart';
 
@@ -21,6 +22,9 @@ class MasukScreen extends ConsumerStatefulWidget {
 class _MasukScreenState extends ConsumerState<MasukScreen> {
   final _telepon = TextEditingController();
   bool _kodeTerkirim = false;
+
+  // Null = ikuti jalur dari server (WhatsApp balik bila ada); true = pengguna memilih OTP.
+  bool? _pakaiOtp;
   bool _proses = false;
   ApiException? _galat;
 
@@ -76,8 +80,32 @@ class _MasukScreenState extends ConsumerState<MasukScreen> {
     final os => os.name,
   };
 
+  Future<void> _masukDenganToken(String token, Json akun) =>
+      ref.read(sessionProvider.notifier).masuk(token, akun);
+
   @override
   Widget build(BuildContext context) {
+    final jalur = ref.watch(jalurMasukProvider).value ?? (wa: false, otp: true);
+    if (jalur.wa && !(_pakaiOtp ?? false)) {
+      return AppScaffold(
+        title: 'Masuk',
+        scrollable: true,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Masuk ke Pramu', style: context.text.h1),
+            const SizedBox(height: AppSpace.s8),
+            MasukWaPanel(
+              namaPerangkat: _namaPerangkat(),
+              onMasuk: _masukDenganToken,
+              onPakaiOtp: jalur.otp
+                  ? () => setState(() => _pakaiOtp = true)
+                  : null,
+            ),
+          ],
+        ),
+      );
+    }
     final galatKolom = _galat?.fields;
     final galatUmum = _galat != null && (galatKolom?.isEmpty ?? true)
         ? pesanGalat(_galat!)
@@ -143,6 +171,16 @@ class _MasukScreenState extends ConsumerState<MasukScreen> {
           if (galatUmum != null) ...[
             const SizedBox(height: AppSpace.s12),
             FieldErrorText(galatUmum),
+          ],
+          if (jalur.wa) ...[
+            const SizedBox(height: AppSpace.s16),
+            AppButton(
+              label: 'Masuk lewat WhatsApp saja',
+              variant: AppButtonVariant.text,
+              onPressed: _proses
+                  ? null
+                  : () => setState(() => _pakaiOtp = false),
+            ),
           ],
         ],
       ),
