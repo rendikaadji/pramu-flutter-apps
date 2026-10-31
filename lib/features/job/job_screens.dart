@@ -163,6 +163,10 @@ class _CariJobState extends ConsumerState<_CariJob> {
                                     'Biaya admin kamu yang menanggung.',
                                     style: context.text.bodySm,
                                   ),
+                                Text(
+                                  kalimatOngkos(j.ongkosDitanggung),
+                                  style: context.text.bodySm,
+                                ),
                                 const SizedBox(height: AppSpace.s8),
                                 ProfilBaris(profil: j.majikan),
                                 const SizedBox(height: AppSpace.s8),
@@ -267,6 +271,10 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                   style: context.text.body,
                 ),
                 Text(formatDateTime(j.mulaiKerja), style: context.text.bodySm),
+                Text(
+                  kalimatOngkos(j.ongkosDitanggung),
+                  style: context.text.bodySm,
+                ),
                 if (j.deskripsi != null) ...[
                   const SizedBox(height: AppSpace.s8),
                   Text(j.deskripsi!, style: context.text.body),
@@ -425,6 +433,7 @@ class _BuatJobScreenState extends ConsumerState<BuatJobScreen> {
   DateTime? _mulai; // jam dinding WIB yang dipilih
   String _pola = 'HARIAN';
   String _pembayar = 'MAJIKAN';
+  String _ongkos = 'PEKERJA';
   bool _proses = false;
   ApiException? _galat;
 
@@ -483,6 +492,7 @@ class _BuatJobScreenState extends ConsumerState<BuatJobScreen> {
                       if (k?.periodik ?? false) ...{
                         'pola_kerja': _pola,
                         'biaya_admin_ditanggung': _pembayar,
+                        'ongkos_ditanggung': _ongkos,
                       },
                       if (k != null && !k.periodik && _jam.text.isNotEmpty)
                         'perkiraan_jam': int.tryParse(_jam.text),
@@ -594,7 +604,28 @@ class _BuatJobScreenState extends ConsumerState<BuatJobScreen> {
                 ],
                 onChanged: (v) => setState(() => _pembayar = v!),
               ),
+              const SizedBox(height: AppSpace.s12),
+              // Hanya informasi (K-116): tanpa nominal dan tanpa penagihan; jumlahnya dibicarakan lewat chat.
+              DropdownButtonFormField<String>(
+                initialValue: _ongkos,
+                decoration: InputDecoration(
+                  labelText: 'Ongkos transport ditanggung',
+                  helperText: 'Hanya informasi untuk pekerja. Jumlahnya kalian bicarakan sendiri lewat chat.',
+                  helperMaxLines: 2,
+                  errorText: _kolom('ongkos_ditanggung'),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'MAJIKAN', child: Text('Saya')),
+                  DropdownMenuItem(value: 'PEKERJA', child: Text('Pekerja')),
+                ],
+                onChanged: (v) => setState(() => _ongkos = v!),
+              ),
             ] else if (k != null) ...[
+              const SizedBox(height: AppSpace.s12),
+              Text(
+                'Ongkos transport pekerjaan sekali datang ditanggung pekerja. Jika kamu mau menanggung, sepakati di luar aplikasi.',
+                style: context.text.bodySm,
+              ),
               const SizedBox(height: AppSpace.s12),
               AppTextField(
                 label: 'Perkiraan jam kerja',

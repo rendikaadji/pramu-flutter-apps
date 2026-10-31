@@ -93,6 +93,26 @@ void main() {
     expect(j.jumlahAjuanMenunggu, 1);
   });
 
+  test('ongkos transport dibaca dari job dan kartu, bawaan pekerja', () {
+    Map<String, dynamic> job(Map<String, dynamic> tambah) => {
+      'id': 'j1',
+      'judul': 'ART',
+      'status': 'TERBUKA',
+      'mulai_kerja': '2026-11-05T01:00:00Z',
+      'aksi_tersedia': <String>[],
+      'akibat': <String, String>{},
+      'alasan_nonaktif': <String, String>{},
+      ...tambah,
+    };
+    expect(
+      Job.fromJson(job({'ongkos_ditanggung': 'MAJIKAN'})).ongkosDitanggung,
+      'MAJIKAN',
+    );
+    expect(Job.fromJson(job({})).ongkosDitanggung, 'PEKERJA');
+    expect(kalimatOngkos('MAJIKAN'), 'Ongkos transport ditanggung majikan');
+    expect(kalimatOngkos('PEKERJA'), 'Ongkos transport ditanggung pekerja');
+  });
+
   test('Penugasan tanpa harga dan batas tetap terbaca', () {
     final p = Penugasan.fromJson({
       'id': 'p1',
