@@ -11,6 +11,7 @@ import 'package:pramu_apps/features/akun/onboarding_screens.dart';
 import 'package:pramu_apps/features/beranda/beranda_screen.dart';
 import 'package:pramu_apps/features/booking/booking_screens.dart';
 import 'package:pramu_apps/features/interaksi/interaksi_screens.dart';
+import 'package:pramu_apps/features/jelajah/jelajah_screen.dart';
 import 'package:pramu_apps/features/job/job_screens.dart';
 import 'package:pramu_apps/features/penugasan/penugasan_screens.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
@@ -81,6 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      GoRoute(path: '/jelajah', builder: (_, _) => const JelajahScreen()),
       GoRoute(path: '/job/buat', builder: (_, _) => const BuatJobScreen()),
       GoRoute(
         path: '/job/:id',
