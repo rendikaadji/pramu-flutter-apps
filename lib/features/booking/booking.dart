@@ -20,6 +20,7 @@ class Booking {
     this.batasLock,
     this.tagihanTeks,
     this.percakapanId,
+    this.penanggungBiaya,
   });
 
   factory Booking.fromJson(Json j) {
@@ -40,6 +41,7 @@ class Booking {
           ? null
           : '${tagihan['judul']}: ${Uang.fromJson(tagihan['nominal']).teks}',
       percakapanId: j['percakapan_id'] as String?,
+      penanggungBiaya: j['penanggung_biaya'] as String?,
       aksi: Aksi.fromJson(j),
     );
   }
@@ -56,6 +58,9 @@ class Booking {
   final BatasWaktu? batasLock;
   final String? tagihanTeks;
   final String? percakapanId;
+
+  /// MAJIKAN atau PEKERJA untuk pekerjaan rutin; null untuk sekali datang (tanpa biaya admin).
+  final String? penanggungBiaya;
   final Aksi aksi;
 }
 

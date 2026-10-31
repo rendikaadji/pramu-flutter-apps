@@ -154,7 +154,7 @@ class _CariJobState extends ConsumerState<_CariJob> {
                                   style: context.text.bodySm,
                                 ),
                                 Text(
-                                  '${formatDateTime(j.mulaiKerja)} · Upah ${j.upah}',
+                                  '${formatDateTime(j.mulaiKerja)} · Upah pasti di dalam kisaranmu: ${j.upah}',
                                   style: context.text.bodySm,
                                 ),
                                 if (j.kamuMembayar == true)
@@ -310,7 +310,10 @@ class _Kandidat extends ConsumerWidget {
     nilai: ref.watch(kandidatProvider(id)),
     onUlangi: () => ref.invalidate(kandidatProvider(id)),
     isi: (h) => h.items.isEmpty
-        ? Text('Belum ada pekerja yang cocok.', style: context.text.bodySm)
+        ? Text(
+            'Belum ada pekerja yang cocok. Coba naikkan upah terendah atau perluas jarak.',
+            style: context.text.bodySm,
+          )
         : Column(
             children: [
               if (h.extra['sisa_ajuan_hari_ini'] != null)
@@ -326,7 +329,7 @@ class _Kandidat extends ConsumerWidget {
                       ProfilBaris(profil: k.profil),
                       const SizedBox(height: AppSpace.s8),
                       Text(
-                        '${k.kelompokJarak} km · Upah ${k.upah}',
+                        '${k.kelompokJarak} km · Upah pasti di dalam kisaranmu: ${k.upah}',
                         style: context.text.bodySm,
                       ),
                       const SizedBox(height: AppSpace.s8),

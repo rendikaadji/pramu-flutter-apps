@@ -199,11 +199,19 @@ void main() {
         find.text('Ajuan Bersih rumah menunggu persetujuanmu'),
         findsOneWidget,
       );
-      expect(find.text('Sisa waktu: 23 jam lagi'), findsOneWidget);
+      expect(find.text('23 jam lagi'), findsOneWidget);
 
       await tester.tap(find.text('Tinjau dan setujui'));
       await tester.pumpAndSettle();
       expect(find.text('Rp80.000'), findsOneWidget);
+      // Status persetujuan memakai nama, data detail ditandai terkunci, dan pekerjaan sekali datang tanpa biaya admin.
+      expect(find.text('Rina W. belum setuju'), findsOneWidget);
+      expect(find.text('Kamu belum setuju'), findsOneWidget);
+      expect(
+        find.textContaining('Terbuka setelah disepakati', findRichText: true),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Biaya admin'), findsNothing);
       expect(
         find.text('Setelah kalian berdua setuju, pekerjaan disepakati.'),
         findsOneWidget,
@@ -214,14 +222,15 @@ void main() {
       await tester.tap(find.text('Setujui').first);
       await tester.pumpAndSettle();
       // Dialog konfirmasi mengulang akibat; tombol konfirmasinya juga "Setujui".
-      expect(find.text('Batal'), findsOneWidget);
+      expect(find.text('Kembali'), findsOneWidget);
+      expect(find.text('Setujui ajuan ini?'), findsOneWidget);
       await tester.tap(find.text('Setujui').last);
       await tester.pumpAndSettle();
 
       final post = backend.panggilan.singleWhere((o) => o.method == 'POST');
       expect(post.path, '/booking/$_booking/setujui');
       expect(post.headers['Idempotency-Key'], isNotNull);
-      expect(find.text('Sudah setuju'), findsOneWidget);
+      expect(find.text('Kamu sudah setuju'), findsOneWidget);
     },
   );
 }
