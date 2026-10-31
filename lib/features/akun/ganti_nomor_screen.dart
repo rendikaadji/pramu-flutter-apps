@@ -294,7 +294,7 @@ class _BuktiPanelState extends ConsumerState<_BuktiPanel> {
           )
         else ...[
           Text(
-            'Buka WhatsApp dan kirim pesan berisi kode ini ke Pramu. Jangan ubah isinya.',
+            'Buka WhatsApp dan kirim pesan berisi kode ini ke Pramu. Jangan ubah isinya. Kirim hanya kode milikmu sendiri, dan jangan kirim kode atas permintaan orang lain.',
             style: context.text.bodySm,
           ),
           const SizedBox(height: AppSpace.s8),
