@@ -70,6 +70,23 @@ void main() {
       expect(isAllowedInvoiceUrl('http://checkout.xendit.co/web/abc'), isFalse);
       expect(isAllowedInvoiceUrl('https://meet.google.com/abc'), isFalse);
     });
+    test('WhatsApp balik hanya wa.me', () {
+      expect(
+        isAllowedWhatsAppUrl('https://wa.me/6281200000000?text=Kode%20K7M2QX'),
+        isTrue,
+      );
+      expect(
+        isAllowedWhatsAppUrl('https://wa.me.evil.io/6281200000000'),
+        isFalse,
+      );
+      expect(isAllowedWhatsAppUrl('http://wa.me/6281200000000'), isFalse);
+      expect(
+        isAllowedWhatsAppUrl('https://api.whatsapp.com/send?phone=1'),
+        isFalse,
+      );
+      expect(isAllowedWhatsAppUrl('https://user@wa.me/1'), isFalse);
+      expect(isAllowedWhatsAppUrl(null), isFalse);
+    });
   });
 
   group('ULID', () {
