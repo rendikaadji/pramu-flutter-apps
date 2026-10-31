@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pramu_apps/core/models/pramu.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/features/booking/booking.dart';
 import 'package:pramu_apps/features/job/job.dart';
@@ -144,6 +145,26 @@ void main() {
     );
     expect(Booking.fromJson(dasar({})).gratisPerkenalan, isFalse);
   });
+
+  test(
+    'ringkasan profil membaca badge laporan terverifikasi, bawaan tidak ada',
+    () {
+      Map<String, dynamic> profil(Map<String, dynamic> tambah) => {
+        'id': 'p1',
+        'nama': 'Siti R.',
+        ...tambah,
+      };
+      expect(
+        RingkasanProfil.fromJson(profil({'laporan_terverifikasi': true}))
+            .laporanTerverifikasi,
+        isTrue,
+      );
+      expect(
+        RingkasanProfil.fromJson(profil({})).laporanTerverifikasi,
+        isFalse,
+      );
+    },
+  );
 
   test('Penugasan tanpa harga dan batas tetap terbaca', () {
     final p = Penugasan.fromJson({

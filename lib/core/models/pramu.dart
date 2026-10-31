@@ -64,6 +64,7 @@ class RingkasanProfil {
     this.jumlahSelesai = 0,
     this.pembatalan120Hari = 0,
     this.badgePeringatan = false,
+    this.laporanTerverifikasi = false,
     this.baru = false,
     this.kecamatan = '',
   });
@@ -77,6 +78,7 @@ class RingkasanProfil {
     jumlahSelesai: (j['jumlah_selesai'] as num?)?.toInt() ?? 0,
     pembatalan120Hari: (j['pembatalan_120_hari'] as num?)?.toInt() ?? 0,
     badgePeringatan: j['badge_peringatan'] as bool? ?? false,
+    laporanTerverifikasi: j['laporan_terverifikasi'] as bool? ?? false,
     baru: j['baru'] as bool? ?? false,
     kecamatan: j['kecamatan'] as String? ?? '',
   );
@@ -89,6 +91,9 @@ class RingkasanProfil {
   final int jumlahSelesai;
   final int pembatalan120Hari;
   final bool badgePeringatan;
+
+  /// Ada laporan yang diputuskan admin benar (K-126); bukan sekadar pembatasan otomatis.
+  final bool laporanTerverifikasi;
   final bool baru;
   final String kecamatan;
 }
