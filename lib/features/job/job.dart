@@ -40,6 +40,7 @@ class Job {
     this.deskripsi,
     this.kecamatan = '',
     this.jumlahAjuanMenunggu = 0,
+    this.ongkosDitanggung = 'PEKERJA',
   });
   factory Job.fromJson(Json j) => Job(
     id: j['id'] as String,
@@ -50,6 +51,7 @@ class Job {
     deskripsi: j['deskripsi'] as String?,
     kecamatan: j['kecamatan'] as String? ?? '',
     jumlahAjuanMenunggu: (j['jumlah_ajuan_menunggu'] as num?)?.toInt() ?? 0,
+    ongkosDitanggung: j['ongkos_ditanggung'] as String? ?? 'PEKERJA',
     aksi: Aksi.fromJson(j),
   );
   final String id;
@@ -60,8 +62,15 @@ class Job {
   final String? deskripsi;
   final String kecamatan;
   final int jumlahAjuanMenunggu;
+
+  /// MAJIKAN atau PEKERJA; hanya informasi (K-116), insidental selalu PEKERJA.
+  final String ongkosDitanggung;
   final Aksi aksi;
 }
+
+/// Kalimat ongkos transport untuk kartu dan detail job.
+String kalimatOngkos(String pihak) =>
+    'Ongkos transport ditanggung ${pihak == 'MAJIKAN' ? 'majikan' : 'pekerja'}';
 
 const labelStatusJob = {
   'TERBUKA': 'Terbuka',
@@ -99,6 +108,7 @@ class KartuJob {
     required this.upah,
     required this.majikan,
     this.kamuMembayar,
+    this.ongkosDitanggung = 'PEKERJA',
   });
   factory KartuJob.fromJson(Json j) => KartuJob(
     id: j['id'] as String,
@@ -109,6 +119,7 @@ class KartuJob {
     mulaiKerja: parseApiTime(j['mulai_kerja'] as String),
     upah: j['upah_di_kisaranmu'] as String? ?? '',
     kamuMembayar: j['penanggung_biaya_kamu'] as bool?,
+    ongkosDitanggung: j['ongkos_ditanggung'] as String? ?? 'PEKERJA',
     majikan: RingkasanProfil.fromJson(j['majikan'] as Json),
   );
   final String id;
@@ -119,6 +130,7 @@ class KartuJob {
   final DateTime mulaiKerja;
   final String upah;
   final bool? kamuMembayar;
+  final String ongkosDitanggung;
   final RingkasanProfil majikan;
 }
 
