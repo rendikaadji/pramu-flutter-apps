@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Flutter hanya menambah INTERNET di manifest debug/profile; build rilis wajib mendeklarasikannya sendiri. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Lokasi rumah sekali saat onboarding (PRD §7.3); tidak dilacak di latar. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:enableOnBackInvokedCallback="true"
         android:label="Pramu"

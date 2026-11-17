@@ -5,8 +5,10 @@ import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/ids.dart';
 import 'package:pramu_apps/core/models/pramu.dart';
+import 'package:pramu_apps/core/platform/secure_screen.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
+import 'package:pramu_apps/features/akun/langkah_ktp_profil.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:pramu_apps/shared/muat.dart';
@@ -258,8 +260,8 @@ const _namaLangkah = {
   'BAYAR_REGISTRASI': 'Biaya registrasi',
 };
 
-/// Langkah onboarding yang layarnya belum dibangun di aplikasi ini.
-/// shortcut: KTP, foto, lokasi, data pekerja, video, dan biaya registrasi belum punya layar; bangun bersama integrasi langkah 9 (OCR, peta, S3, pembayaran).
+/// Langkah onboarding berikutnya dari server. KTP dan profil (foto, lokasi) punya layar di sini.
+/// shortcut: data pekerja, video, dan biaya registrasi belum punya layar; bangun berikutnya.
 class LanjutkanScreen extends ConsumerWidget {
   const LanjutkanScreen({super.key});
 
@@ -271,18 +273,22 @@ class LanjutkanScreen extends ConsumerWidget {
     // Peran lain yang sudah siap: pengguna bisa kembali memakainya tanpa menunggu langkah peran ini.
     final siap = akun?.peranSiap;
     const namaPeran = {Peran.majikan: 'majikan', Peran.pekerja: 'pekerja'};
-    return AppScaffold(
+    final layar = AppScaffold(
       title: 'Lanjutkan pendaftaran',
       scrollable: true,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          EmptyState(
-            title: _namaLangkah[langkah] ?? 'Langkah berikutnya',
-            message: 'Langkah ini sedang disiapkan di aplikasi. Kami beri tahu begitu bisa dilanjutkan.',
-            actionLabel: 'Periksa lagi',
-            onAction: () => ref.read(sessionProvider.notifier).muatUlang(),
-          ),
+          switch (langkah) {
+            'KTP' => const LangkahKtp(),
+            'FOTO_DIRI' || 'FOTO_RUMAH' || 'LOKASI' => const LangkahProfil(),
+            _ => EmptyState(
+              title: _namaLangkah[langkah] ?? 'Langkah berikutnya',
+              message: 'Langkah ini sedang disiapkan di aplikasi. Kami beri tahu begitu bisa dilanjutkan.',
+              actionLabel: 'Periksa lagi',
+              onAction: () => ref.read(sessionProvider.notifier).muatUlang(),
+            ),
+          },
           if (siap != null && siap != aktif)
             AppButton(
               label: 'Pakai sebagai ${namaPeran[siap] ?? siap}',
@@ -295,5 +301,6 @@ class LanjutkanScreen extends ConsumerWidget {
         ],
       ),
     );
+    return langkah == 'KTP' ? SecureScreenGuard(child: layar) : layar;
   }
 }
