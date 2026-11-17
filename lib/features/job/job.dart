@@ -12,6 +12,7 @@ class Kategori {
     required this.tipe,
     this.namaBebas = false,
     this.kelipatanTitik = 1,
+    this.lebarRentang = 0,
   });
   factory Kategori.fromJson(Json j) => Kategori(
     id: j['id'] as String,
@@ -19,12 +20,14 @@ class Kategori {
     tipe: j['tipe'] as String,
     namaBebas: j['nama_bebas'] as bool? ?? false,
     kelipatanTitik: (j['kelipatan_titik'] as num?)?.toInt() ?? 1,
+    lebarRentang: (j['lebar_rentang'] as num?)?.toInt() ?? 0,
   );
   final String id;
   final String nama;
   final String tipe; // PERIODIK | INSIDENTAL
   final bool namaBebas;
   final int kelipatanTitik;
+  final int lebarRentang;
   bool get periodik => tipe == 'PERIODIK';
 }
 

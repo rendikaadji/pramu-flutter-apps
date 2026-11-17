@@ -39,6 +39,32 @@ final ambilFotoProvider = Provider<AmbilFoto>(
   },
 );
 
+/// Ambil satu video dari kamera, paling lama [detikMaks] detik. null = pengguna batal.
+typedef AmbilVideo = Future<Uint8List?> Function(int detikMaks);
+
+final ambilVideoProvider = Provider<AmbilVideo>(
+  (_) => (int detikMaks) async {
+    final picker = ImagePicker();
+    var x = await picker.pickVideo(
+      source: ImageSource.camera,
+      maxDuration: Duration(seconds: detikMaks),
+    );
+    // Sama seperti foto: layar aplikasi bisa dimatikan sistem selagi kamera terbuka.
+    if (x == null && Platform.isAndroid) {
+      final hilang = await picker.retrieveLostData();
+      x = hilang.file ?? hilang.files?.firstOrNull;
+    }
+    if (x == null) return null;
+    final isi = await x.readAsBytes();
+    try {
+      await File(x.path).delete();
+    } on FileSystemException {
+      // Sisa dibersihkan sweepSensitiveFiles / sistem.
+    }
+    return isi;
+  },
+);
+
 /// Galat lokasi yang bisa dibaca pengguna.
 class LokasiGagal implements Exception {
   const LokasiGagal(this.pesan);
@@ -96,8 +122,16 @@ Future<String> unggahFoto(
   Dio storage,
   String jenis,
   Uint8List isi,
+) => unggahBerkas(api, storage, jenis, isi, _mime(isi));
+
+/// Sama untuk berkas apa pun (foto atau video MP4); [mime] sudah ditentukan pemanggil.
+Future<String> unggahBerkas(
+  ApiClient api,
+  Dio storage,
+  String jenis,
+  Uint8List isi,
+  String mime,
 ) async {
-  final mime = _mime(isi);
   final u = await api.post(
     '/berkas/unggah',
     data: {'jenis': jenis, 'tipe_mime': mime, 'ukuran': isi.length},

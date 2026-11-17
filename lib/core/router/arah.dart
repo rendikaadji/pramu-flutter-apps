@@ -32,7 +32,12 @@ String? arahkan(AsyncValue<Akun?> sesi, String lokasi, {String? peran}) {
   if (akun == null) return lokasi == '/masuk' ? null : '/masuk';
 
   // Langkah untuk peran aktif: peran lain yang belum lengkap tidak menghalangi.
-  final tujuan = switch (akun.langkahUntuk(peran)) {
+  final langkah = akun.langkahUntuk(peran);
+  // Biaya registrasi dibayar lewat layar tagihan, jadi layar itu terbuka selama langkah ini.
+  if (langkah == 'BAYAR_REGISTRASI' && lokasi.startsWith('/tagihan/')) {
+    return null;
+  }
+  final tujuan = switch (langkah) {
     null => null,
     'PERSETUJUAN' => '/persetujuan',
     'PERAN' => '/peran',

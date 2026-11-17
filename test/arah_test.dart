@@ -26,6 +26,17 @@ void main() {
     expect(arahkan(masuk, '/profil/$_id'), isNull);
   });
 
+  test('layar tagihan terbuka hanya saat langkah biaya registrasi', () {
+    expect(
+      arahkan(AsyncData(_akun(langkah: 'BAYAR_REGISTRASI')), '/tagihan/$_id'),
+      isNull,
+    );
+    expect(
+      arahkan(AsyncData(_akun(langkah: 'KTP')), '/tagihan/$_id'),
+      '/lanjutkan',
+    );
+  });
+
   test('belum masuk selalu ke /masuk', () {
     expect(arahkan(const AsyncData(null), '/beranda'), '/masuk');
     expect(arahkan(const AsyncData(null), '/booking/$_id'), '/masuk');
