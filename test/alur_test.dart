@@ -961,6 +961,26 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Onboarding: kamera yang gagal dibuka memberi pesan, tidak diam',
+    (tester) async {
+      await _pasang(
+        tester,
+        {'GET /me': (_) => _akun(langkah: 'KTP')},
+        tambahan: [
+          ambilFotoProvider.overrideWithValue(({bool galeri = false}) async {
+            throw StateError('kamera tidak tersedia');
+          }),
+        ],
+      );
+
+      await tester.tap(find.text('Ambil foto').first);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Kamera tidak bisa dibuka'), findsOneWidget);
+    },
+  );
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {
