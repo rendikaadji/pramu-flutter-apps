@@ -12,6 +12,7 @@ import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/job/job.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/daftar_aksi.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
@@ -48,41 +49,52 @@ class _JobSaya extends ConsumerWidget {
             Muat(
               nilai: daftar,
               onUlangi: () => ref.invalidate(jobSayaProvider),
-              isi: (h) => h.items.isEmpty
-                  ? const EmptyState(
-                      title: 'Belum ada job',
-                      message: 'Buat job untuk melihat pekerja yang cocok.',
-                    )
-                  : Column(
-                      children: [
-                        for (final j in h.items) ...[
-                          AppCard(
-                            onTap: () => context.push('/job/${j.id}'),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${j.judul} · ${labelStatusJob[j.status] ?? j.status}',
-                                  style: context.text.h3,
-                                ),
-                                Text(
-                                  '${j.kisaran} · ${formatDateTime(j.mulaiKerja)}',
-                                  style: context.text.bodySm,
-                                ),
-                                if (j.jumlahAjuanMenunggu > 0)
-                                  Text(
-                                    '${j.jumlahAjuanMenunggu} ajuan menunggu',
-                                    style: context.text.bodySm.copyWith(
-                                      color: context.tokens.warning,
-                                    ),
+              isi: (h) => Berhalaman(
+                awal: h,
+                isi: (baris, muatLagi) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    baris.isEmpty
+                        ? const EmptyState(
+                            title: 'Belum ada job',
+                            message:
+                                'Buat job untuk melihat pekerja yang cocok.',
+                          )
+                        : Column(
+                            children: [
+                              for (final j in baris) ...[
+                                AppCard(
+                                  onTap: () => context.push('/job/${j.id}'),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${j.judul} · ${labelStatusJob[j.status] ?? j.status}',
+                                        style: context.text.h3,
+                                      ),
+                                      Text(
+                                        '${j.kisaran} · ${formatDateTime(j.mulaiKerja)}',
+                                        style: context.text.bodySm,
+                                      ),
+                                      if (j.jumlahAjuanMenunggu > 0)
+                                        Text(
+                                          '${j.jumlahAjuanMenunggu} ajuan menunggu',
+                                          style: context.text.bodySm.copyWith(
+                                            color: context.tokens.warning,
+                                          ),
+                                        ),
+                                    ],
                                   ),
+                                ),
+                                const SizedBox(height: AppSpace.s12),
                               ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: AppSpace.s12),
-                        ],
-                      ],
-                    ),
+                    ?muatLagi,
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -137,55 +149,65 @@ class _CariJobState extends ConsumerState<_CariJob> {
             Muat(
               nilai: daftar,
               onUlangi: () => ref.invalidate(cariJobProvider(_lebihJauh)),
-              isi: (h) => h.items.isEmpty
-                  ? const EmptyState(
-                      title: 'Belum ada job',
-                      message: 'Belum ada job yang cocok dengan jenis pekerjaan dan kisaran upahmu.',
-                    )
-                  : Column(
-                      children: [
-                        for (final j in h.items) ...[
-                          AppCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Text(j.judul, style: context.text.h3),
-                                Text(
-                                  '${j.labelTipe} · ${j.kecamatan} · ${j.kelompokJarak} km',
-                                  style: context.text.bodySm,
-                                ),
-                                Text(
-                                  '${formatDateTime(j.mulaiKerja)} · Upah pasti di dalam kisaranmu: ${j.upah}',
-                                  style: context.text.bodySm,
-                                ),
-                                if (j.kamuMembayar == true)
-                                  Text(
-                                    'Biaya admin kamu yang menanggung.',
-                                    style: context.text.bodySm,
+              isi: (h) => Berhalaman(
+                awal: h,
+                isi: (baris, muatLagi) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    baris.isEmpty
+                        ? const EmptyState(
+                            title: 'Belum ada job',
+                            message: 'Belum ada job yang cocok dengan jenis pekerjaan dan kisaran upahmu.',
+                          )
+                        : Column(
+                            children: [
+                              for (final j in baris) ...[
+                                AppCard(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(j.judul, style: context.text.h3),
+                                      Text(
+                                        '${j.labelTipe} · ${j.kecamatan} · ${j.kelompokJarak} km',
+                                        style: context.text.bodySm,
+                                      ),
+                                      Text(
+                                        '${formatDateTime(j.mulaiKerja)} · Upah pasti di dalam kisaranmu: ${j.upah}',
+                                        style: context.text.bodySm,
+                                      ),
+                                      if (j.kamuMembayar == true)
+                                        Text(
+                                          'Biaya admin kamu yang menanggung.',
+                                          style: context.text.bodySm,
+                                        ),
+                                      Text(
+                                        kalimatOngkos(j.ongkosDitanggung),
+                                        style: context.text.bodySm,
+                                      ),
+                                      const SizedBox(height: AppSpace.s8),
+                                      ProfilBaris(profil: j.majikan),
+                                      const SizedBox(height: AppSpace.s8),
+                                      AppButton(
+                                        label: 'Ajukan',
+                                        loading: _proses == j.id,
+                                        onPressed: _proses == null
+                                            ? () => _ajukan(j.id)
+                                            : null,
+                                      ),
+                                      if (_galat[j.id] != null)
+                                        FieldErrorText(_galat[j.id]!),
+                                    ],
                                   ),
-                                Text(
-                                  kalimatOngkos(j.ongkosDitanggung),
-                                  style: context.text.bodySm,
                                 ),
-                                const SizedBox(height: AppSpace.s8),
-                                ProfilBaris(profil: j.majikan),
-                                const SizedBox(height: AppSpace.s8),
-                                AppButton(
-                                  label: 'Ajukan',
-                                  loading: _proses == j.id,
-                                  onPressed: _proses == null
-                                      ? () => _ajukan(j.id)
-                                      : null,
-                                ),
-                                if (_galat[j.id] != null)
-                                  FieldErrorText(_galat[j.id]!),
+                                const SizedBox(height: AppSpace.s12),
                               ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: AppSpace.s12),
-                        ],
-                      ],
-                    ),
+                    ?muatLagi,
+                  ],
+                ),
+              ),
             ),
             _LihatLebihJauh(
               aktif: _lebihJauh,
@@ -231,6 +253,8 @@ class JobDetailScreen extends ConsumerStatefulWidget {
 class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   String? _proses;
   final _galat = <String, String>{};
+  // Satu kunci per kandidat sampai ajuan berhasil: coba ulang setelah timeout tidak membuat ajuan kedua.
+  final _kunci = <String, String>{};
 
   Future<void> _ajukan(String profilId) async {
     setState(() => _proses = profilId);
@@ -241,9 +265,12 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                   .post(
                     '/booking',
                     data: {'job_id': widget.id, 'pekerja_profil_id': profilId},
-                    options: ApiClient.idempotent(newIdempotencyKey()),
+                    options: ApiClient.idempotent(
+                      _kunci.putIfAbsent(profilId, newIdempotencyKey),
+                    ),
                   )
               as Json;
+      _kunci.remove(profilId);
       if (mounted) context.push('/booking/${b['id']}');
     } on ApiException catch (e) {
       if (mounted) setState(() => _galat[profilId] = pesanGalat(e));
@@ -372,52 +399,62 @@ class _KandidatState extends ConsumerState<_Kandidat> {
   ) => Muat(
     nilai: ref.watch(kandidatProvider(kunci)),
     onUlangi: () => ref.invalidate(kandidatProvider(kunci)),
-    isi: (h) => h.items.isEmpty
-        ? Text(
-            'Belum ada pekerja yang cocok. Coba naikkan upah terendah atau perluas jarak.',
-            style: context.text.bodySm,
-          )
-        : Column(
-            children: [
-              if (h.extra['sisa_ajuan_hari_ini'] != null)
-                Text(
-                  'Sisa ajuan hari ini: ${h.extra['sisa_ajuan_hari_ini']}',
-                  style: context.text.caption,
-                ),
-              for (final k in h.items) ...[
-                AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ProfilBaris(profil: k.profil),
-                      const SizedBox(height: AppSpace.s8),
+    isi: (h) => Berhalaman(
+      awal: h,
+      isi: (baris, muatLagi) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          baris.isEmpty
+              ? Text(
+                  'Belum ada pekerja yang cocok. Coba naikkan upah terendah atau perluas jarak.',
+                  style: context.text.bodySm,
+                )
+              : Column(
+                  children: [
+                    if (h.extra['sisa_ajuan_hari_ini'] != null)
                       Text(
-                        '${k.kelompokJarak} km · Upah pasti di dalam kisaranmu: ${k.upah}',
-                        style: context.text.bodySm,
+                        'Sisa ajuan hari ini: ${h.extra['sisa_ajuan_hari_ini']}',
+                        style: context.text.caption,
                       ),
-                      const SizedBox(height: AppSpace.s8),
-                      AppButton(
-                        label: 'Ajukan',
-                        loading: proses == k.profil.id,
-                        onPressed: proses == null
-                            ? () => ajukan(k.profil.id)
-                            : null,
+                    for (final k in baris) ...[
+                      AppCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ProfilBaris(profil: k.profil),
+                            const SizedBox(height: AppSpace.s8),
+                            Text(
+                              '${k.kelompokJarak} km · Upah pasti di dalam kisaranmu: ${k.upah}',
+                              style: context.text.bodySm,
+                            ),
+                            const SizedBox(height: AppSpace.s8),
+                            AppButton(
+                              label: 'Ajukan',
+                              loading: proses == k.profil.id,
+                              onPressed: proses == null
+                                  ? () => ajukan(k.profil.id)
+                                  : null,
+                            ),
+                            AppButton(
+                              label: 'Lihat profil',
+                              variant: AppButtonVariant.text,
+                              onPressed: () => context.push(
+                                '/profil/${k.profil.id}?job_id=$id',
+                              ),
+                            ),
+                            if (galat[k.profil.id] != null)
+                              FieldErrorText(galat[k.profil.id]!),
+                          ],
+                        ),
                       ),
-                      AppButton(
-                        label: 'Lihat profil',
-                        variant: AppButtonVariant.text,
-                        onPressed: () =>
-                            context.push('/profil/${k.profil.id}?job_id=$id'),
-                      ),
-                      if (galat[k.profil.id] != null)
-                        FieldErrorText(galat[k.profil.id]!),
+                      const SizedBox(height: AppSpace.s12),
                     ],
-                  ),
+                  ],
                 ),
-                const SizedBox(height: AppSpace.s12),
-              ],
-            ],
-          ),
+          ?muatLagi,
+        ],
+      ),
+    ),
   );
 }
 

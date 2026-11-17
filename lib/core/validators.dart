@@ -44,6 +44,7 @@ String? validateNik(String? v) {
 const meetingHosts = {'meet.google.com'};
 const invoiceHosts = {'checkout.xendit.co', 'checkout-staging.xendit.co'};
 const whatsappHosts = {'wa.me'};
+const mapHosts = {'www.google.com', 'maps.google.com'};
 
 /// https + host persis di allowlist, tanpa userinfo, port default.
 bool isAllowedUrl(String? url, Set<String> hosts) {
@@ -61,3 +62,12 @@ bool isAllowedInvoiceUrl(String? url) => isAllowedUrl(url, invoiceHosts);
 
 /// Tautan WhatsApp dari server untuk verifikasi balik (K-112): hanya wa.me.
 bool isAllowedWhatsAppUrl(String? url) => isAllowedUrl(url, whatsappHosts);
+
+/// Tautan peta alamat kerja dari server: Google Maps saja.
+bool isAllowedMapUrl(String? url) =>
+    isAllowedUrl(url, mapHosts) &&
+    Uri.parse(url!.trim()).path.startsWith('/maps');
+
+/// Dokumen persetujuan: disajikan server Pramu sendiri, di host yang sama dengan API.
+bool isAllowedDocumentUrl(String? url, String apiBaseUrl) =>
+    isAllowedUrl(url, {Uri.parse(apiBaseUrl).host.toLowerCase()});

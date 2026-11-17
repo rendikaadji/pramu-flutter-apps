@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pramu_apps/core/env.dart';
 import 'package:pramu_apps/core/validators.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,6 +34,18 @@ Future<bool> openMeetingUrl(UrlLauncher launcher, String? url) =>
 /// Tautan wa.me ke nomor Pramu: aplikasi WhatsApp di luar aplikasi.
 Future<bool> openWhatsAppUrl(UrlLauncher launcher, String? url) =>
     _open(launcher, url, isAllowedWhatsAppUrl, LaunchMode.externalApplication);
+
+/// Peta alamat kerja: aplikasi peta di luar aplikasi.
+Future<bool> openMapUrl(UrlLauncher launcher, String? url) =>
+    _open(launcher, url, isAllowedMapUrl, LaunchMode.externalApplication);
+
+/// Dokumen persetujuan dari server Pramu: browser di luar aplikasi.
+Future<bool> openDocumentUrl(UrlLauncher launcher, String? url) => _open(
+  launcher,
+  url,
+  (u) => isAllowedDocumentUrl(u, Env.apiBaseUrl),
+  LaunchMode.externalApplication,
+);
 
 /// Invoice Xendit: host allowlist, browser dalam aplikasi.
 Future<bool> openInvoiceUrl(UrlLauncher launcher, String? url) =>

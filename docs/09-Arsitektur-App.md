@@ -22,7 +22,7 @@ Flutter 3.47 / Dart 3.13 · `flutter_riverpod` 3.x (`Notifier`/`AsyncNotifier` t
 lib/
   main.dart, app.dart               # ProviderScope, MaterialApp.router (AppTheme dari core/theme)
   core/
-    env.dart                        # --dart-define: USE_MOCK, API_BASE_URL, APP_VERSION, PINNED_SPKI
+    env.dart                        # --dart-define: USE_MOCK, API_BASE_URL, APP_VERSION
     providers.dart                  # prefsProvider, tokenStoreProvider, deviceIdProvider, apiClientProvider, mockBackendProvider
     api/api_client.dart             # SATU Dio (header, 401, retry GET, upload, Idempotency-Key)
     api/api_exception.dart          # error envelope (docs/06 §5.1)
@@ -85,7 +85,7 @@ flutter test test/api_contract_live_test.dart --dart-define=LIVE_API=true --dart
 
 Uji ini dilewati di `flutter test` biasa. Data seed server sama dengan akun mock di §5.1, tetapi tanpa reaksi bot. Driver lokal server: tagihan fake lunas saat status dicek, Meet fake, OTP `123456`.
 
-Pinning: `PINNED_SPKI` kosong = nonaktif. Bila diisi, isi `pinValidator` (api_client.dart) dengan pemeriksaan hash SPKI; tanpa validator koneksi ditolak (fail closed). Tidak ada `badCertificateCallback`.
+Pinning: belum ada (MOB-SEC-04, `shortcut:` di api_client.dart). Flag `PINNED_SPKI` dan hook `pinValidator` dihapus karena hook tidak pernah diisi, sehingga build dengan flag itu menolak semua koneksi. Pasang pemeriksaan hash SPKI di `IOHttpClientAdapter.validateCertificate` sebelum rilis publik. Tidak ada `badCertificateCallback`.
 
 ### 5.1 Akun mock (sandi semua: `Rahasia123`)
 

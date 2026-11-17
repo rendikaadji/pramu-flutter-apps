@@ -10,6 +10,7 @@ import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/features/booking/booking.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/batas_chip.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/daftar_aksi.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
@@ -31,38 +32,47 @@ class BookingDaftarScreen extends ConsumerWidget {
             Muat(
               nilai: daftar,
               onUlangi: () => ref.invalidate(bookingDaftarProvider),
-              isi: (h) => h.items.isEmpty
-                  ? const EmptyState(
-                      title: 'Belum ada ajuan',
-                      message:
-                          'Ajuan yang kamu kirim atau terima tampil di sini.',
-                    )
-                  : Column(
-                      children: [
-                        for (final b in h.items) ...[
-                          AppCard(
-                            onTap: () => context.push('/booking/${b.id}'),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${b.judulJob} · ${b.labelStatus}',
-                                  style: context.text.h3,
+              isi: (h) => Berhalaman(
+                awal: h,
+                isi: (baris, muatLagi) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    baris.isEmpty
+                        ? const EmptyState(
+                            title: 'Belum ada ajuan',
+                            message: 'Ajuan yang kamu kirim atau terima tampil di sini.',
+                          )
+                        : Column(
+                            children: [
+                              for (final b in baris) ...[
+                                AppCard(
+                                  onTap: () => context.push('/booking/${b.id}'),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${b.judulJob} · ${b.labelStatus}',
+                                        style: context.text.h3,
+                                      ),
+                                      const SizedBox(height: AppSpace.s8),
+                                      ProfilBaris(profil: b.pihakLain),
+                                      const SizedBox(height: AppSpace.s8),
+                                      Text(
+                                        'Upah disepakati: ${b.harga.teks}',
+                                        style: context.text.bodySm,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(height: AppSpace.s8),
-                                ProfilBaris(profil: b.pihakLain),
-                                const SizedBox(height: AppSpace.s8),
-                                Text(
-                                  'Upah disepakati: ${b.harga.teks}',
-                                  style: context.text.bodySm,
-                                ),
+                                const SizedBox(height: AppSpace.s12),
                               ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: AppSpace.s12),
-                        ],
-                      ],
-                    ),
+                    ?muatLagi,
+                  ],
+                ),
+              ),
             ),
           ],
         ),

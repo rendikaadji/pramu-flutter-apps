@@ -6,6 +6,7 @@ import 'package:pramu_apps/core/models/shared.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/features/job/job.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/muat.dart';
 
 /// Kartu terbatas untuk akun yang belum KTP (PRD §7.7, K-113): tanpa id, nama, foto, kecamatan, atau kontak.
@@ -101,38 +102,47 @@ class _JelajahScreenState extends ConsumerState<JelajahScreen> {
           Muat(
             nilai: daftar,
             onUlangi: () => ref.invalidate(jelajahProvider(kunci)),
-            isi: (h) => Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (h.extra['sisa_hari_ini'] != null)
-                  Text(
-                    'Sisa kartu yang bisa dilihat hari ini: ${h.extra['sisa_hari_ini']}',
-                    style: context.text.caption,
-                  ),
-                if (h.items.isEmpty)
-                  const EmptyState(
-                    title: 'Belum ada',
-                    message: 'Belum ada yang cocok di sekitarmu.',
-                  )
-                else
-                  for (final k in h.items) ...[
-                    AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(k.kategori, style: context.text.h3),
-                          Text(_ringkas(k), style: context.text.bodySm),
-                          if (k.ongkosDitanggung != null)
-                            Text(
-                              kalimatOngkos(k.ongkosDitanggung!),
-                              style: context.text.bodySm,
+            isi: (h) => Berhalaman(
+              awal: h,
+              isi: (baris, muatLagi) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (h.extra['sisa_hari_ini'] != null)
+                        Text(
+                          'Sisa kartu yang bisa dilihat hari ini: ${h.extra['sisa_hari_ini']}',
+                          style: context.text.caption,
+                        ),
+                      if (baris.isEmpty)
+                        const EmptyState(
+                          title: 'Belum ada',
+                          message: 'Belum ada yang cocok di sekitarmu.',
+                        )
+                      else
+                        for (final k in baris) ...[
+                          AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(k.kategori, style: context.text.h3),
+                                Text(_ringkas(k), style: context.text.bodySm),
+                                if (k.ongkosDitanggung != null)
+                                  Text(
+                                    kalimatOngkos(k.ongkosDitanggung!),
+                                    style: context.text.bodySm,
+                                  ),
+                              ],
                             ),
+                          ),
+                          const SizedBox(height: AppSpace.s12),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpace.s12),
-                  ],
-              ],
+                    ],
+                  ),
+                  ?muatLagi,
+                ],
+              ),
             ),
           ),
           if (!_lebihJauh)

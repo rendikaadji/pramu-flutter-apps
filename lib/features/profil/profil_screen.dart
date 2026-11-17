@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pramu_apps/features/profil/profil.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
 
@@ -52,28 +53,40 @@ class ProfilScreen extends ConsumerWidget {
           Muat(
             nilai: ulasan,
             onUlangi: () => ref.invalidate(ulasanProfilProvider(id)),
-            isi: (h) => h.items.isEmpty
-                ? Text('Belum ada ulasan.', style: context.text.bodySm)
-                : Column(
-                    children: [
-                      for (final u in h.items) ...[
-                        AppCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              RatingStars(value: u.bintang.toDouble()),
-                              if (u.catatan != null &&
-                                  u.catatan!.isNotEmpty) ...[
-                                const SizedBox(height: AppSpace.s4),
-                                Text(u.catatan!, style: context.text.body),
-                              ],
+            isi: (h) => Berhalaman(
+              awal: h,
+              isi: (baris, muatLagi) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  baris.isEmpty
+                      ? Text('Belum ada ulasan.', style: context.text.bodySm)
+                      : Column(
+                          children: [
+                            for (final u in baris) ...[
+                              AppCard(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    RatingStars(value: u.bintang.toDouble()),
+                                    if (u.catatan != null &&
+                                        u.catatan!.isNotEmpty) ...[
+                                      const SizedBox(height: AppSpace.s4),
+                                      Text(
+                                        u.catatan!,
+                                        style: context.text.body,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: AppSpace.s8),
                             ],
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: AppSpace.s8),
-                      ],
-                    ],
-                  ),
+                  ?muatLagi,
+                ],
+              ),
+            ),
           ),
         ],
       ),

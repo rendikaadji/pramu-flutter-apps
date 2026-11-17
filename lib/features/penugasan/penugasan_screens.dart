@@ -8,12 +8,13 @@ import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/features/penugasan/penugasan.dart';
 import 'package:pramu_apps/features/penugasan/ulasan_laporan.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:pramu_apps/shared/baris_info.dart';
 import 'package:pramu_apps/shared/batas_chip.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/daftar_aksi.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Daftar pekerjaan (penugasan) untuk peran aktif.
 class PenugasanDaftarScreen extends ConsumerWidget {
@@ -32,33 +33,43 @@ class PenugasanDaftarScreen extends ConsumerWidget {
             Muat(
               nilai: daftar,
               onUlangi: () => ref.invalidate(penugasanDaftarProvider),
-              isi: (h) => h.items.isEmpty
-                  ? const EmptyState(
-                      title: 'Belum ada pekerjaan',
-                      message:
-                          'Pekerjaan yang sudah disepakati tampil di sini.',
-                    )
-                  : Column(
-                      children: [
-                        for (final p in h.items) ...[
-                          AppCard(
-                            onTap: () => context.push('/penugasan/${p.id}'),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${p.judul} · ${p.labelStatus}',
-                                  style: context.text.h3,
+              isi: (h) => Berhalaman(
+                awal: h,
+                isi: (baris, muatLagi) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    baris.isEmpty
+                        ? const EmptyState(
+                            title: 'Belum ada pekerjaan',
+                            message: 'Pekerjaan yang sudah disepakati tampil di sini.',
+                          )
+                        : Column(
+                            children: [
+                              for (final p in baris) ...[
+                                AppCard(
+                                  onTap: () =>
+                                      context.push('/penugasan/${p.id}'),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${p.judul} · ${p.labelStatus}',
+                                        style: context.text.h3,
+                                      ),
+                                      const SizedBox(height: AppSpace.s8),
+                                      ProfilBaris(profil: p.pihakLain),
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(height: AppSpace.s8),
-                                ProfilBaris(profil: p.pihakLain),
+                                const SizedBox(height: AppSpace.s12),
                               ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: AppSpace.s12),
-                        ],
-                      ],
-                    ),
+                    ?muatLagi,
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -66,6 +77,8 @@ class PenugasanDaftarScreen extends ConsumerWidget {
     );
   }
 }
+
+final _kunciAksi = <String, String>{};
 
 /// S-12 Pekerjaan berjalan: semua aksi (PRD §14–16) dari `aksi_tersedia`; batalkan meminta alasan, usulan meminta tanggal.
 class PenugasanDetailScreen extends ConsumerWidget {
@@ -113,13 +126,16 @@ class PenugasanDetailScreen extends ConsumerWidget {
             '${tgl.year}-${tgl.month.toString().padLeft(2, '0')}-${tgl.day.toString().padLeft(2, '0')}',
       };
     }
+    // Kunci tetap sampai aksi berhasil, agar coba ulang setelah timeout tidak menjalankan aksi dua kali.
+    final kunci = _kunciAksi.putIfAbsent('$id/$kode', newIdempotencyKey);
     await ref
         .read(apiClientProvider)
         .post(
           '/penugasan/$id/$kode',
           data: badan,
-          options: ApiClient.idempotent(newIdempotencyKey()),
+          options: ApiClient.idempotent(kunci),
         );
+    _kunciAksi.remove('$id/$kode');
     ref.invalidate(penugasanProvider(id));
     ref.invalidate(penugasanDaftarProvider);
   }
@@ -160,10 +176,8 @@ class PenugasanDetailScreen extends ConsumerWidget {
                   AppButton(
                     label: 'Buka peta',
                     variant: AppButtonVariant.text,
-                    onPressed: () => launchUrl(
-                      Uri.parse(p.petaUrl!),
-                      mode: LaunchMode.externalApplication,
-                    ),
+                    onPressed: () =>
+                        openMapUrl(ref.read(urlLauncherProvider), p.petaUrl),
                   ),
                 const SizedBox(height: AppSpace.s16),
                 DaftarAksi(

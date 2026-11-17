@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart' show InkResponse;
+import 'package:flutter/material.dart' show InkResponse, TextField;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:pramu_apps/app.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/env.dart';
@@ -709,6 +710,102 @@ void main() {
             o.path == '/profil/01a18f68-0000-7000-8000-000000000002',
       );
       expect(profil.queryParameters, {'job_id': jobId});
+    },
+  );
+
+  testWidgets(
+    'Chat: balasan baru muncul sendiri, pesan lama lewat Muat lagi, dan coba ulang memakai kunci yang sama',
+    (tester) async {
+      const id = '01a18f68-0000-7000-8000-0000000000a9';
+      var balasan = false;
+      var gagalSekali = true;
+      Map<String, Object?> pesan(String pid, String isi, {bool saya = false}) =>
+          {
+            'id': pid,
+            'dari_saya': saya,
+            'isi': isi,
+            'ada_samaran': false,
+            'dibuat_at': '2026-11-01T01:00:00Z',
+          };
+      final backend = await _pasang(tester, {
+        'GET /me': (_) => _akun(),
+        'GET /beranda': (_) => {
+          'kartu_tindakan': [],
+          'penugasan_berjalan': [],
+          'job_saya': [],
+        },
+        'GET /percakapan': (_) => {
+          'data': [
+            {
+              'id': id,
+              'pihak_lain': _profil,
+              'judul_job': 'Bersih rumah',
+              'pesan_terakhir': 'Halo',
+              'belum_dibaca': 0,
+            },
+          ],
+          'next_cursor': null,
+        },
+        'GET /percakapan/$id': (_) => {
+          'id': id,
+          'pihak_lain': _profil,
+          'judul_job': 'Bersih rumah',
+          'hanya_baca': false,
+        },
+        'POST /percakapan/$id/baca': (_) => null,
+        'GET /percakapan/$id/pesan': (o) => o.queryParameters['cursor'] == 'k2'
+            ? {
+                'data': [pesan('p0', 'Pesan paling lama')],
+                'next_cursor': null,
+              }
+            : {
+                'data': [
+                  if (balasan) pesan('p2', 'Bisa, besok pagi'),
+                  pesan('p1', 'Halo'),
+                ],
+                'next_cursor': 'k2',
+              },
+        'POST /percakapan/$id/pesan': (_) {
+          if (gagalSekali) {
+            gagalSekali = false;
+            throw Exception('putus');
+          }
+          return pesan('p3', 'Oke', saya: true);
+        },
+      });
+
+      await tester.tap(find.byIcon(LucideIcons.messageCircle));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bersih rumah'));
+      await tester.pumpAndSettle();
+      expect(find.text('Halo'), findsOneWidget);
+
+      // Pesan lebih lama dari halaman pertama.
+      await tester.tap(find.text('Muat lagi'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pesan paling lama'), findsOneWidget);
+
+      // Balasan masuk tanpa membuka ulang layar; pesan lama tetap ada.
+      balasan = true;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      expect(find.text('Bisa, besok pagi'), findsOneWidget);
+      expect(find.text('Pesan paling lama'), findsOneWidget);
+
+      // Kirim gagal lalu dicoba lagi: kunci idempoten sama.
+      await tester.enterText(find.byType(TextField), 'Oke');
+      await tester.tap(find.text('Kirim'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Kirim'));
+      await tester.pumpAndSettle();
+      final kirim = backend.panggilan
+          .where((o) => o.method == 'POST' && o.path == '/percakapan/$id/pesan')
+          .toList();
+      expect(kirim, hasLength(2));
+      expect(
+        kirim[0].headers['Idempotency-Key'],
+        kirim[1].headers['Idempotency-Key'],
+      );
     },
   );
 
