@@ -981,6 +981,148 @@ void main() {
     },
   );
 
+  testWidgets(
+    'Langkah pekerja: jenis pekerjaan, upah, dan hari disimpan lalu video dan biaya registrasi',
+    (tester) async {
+      var langkah = 'DATA_PEKERJA';
+      const tagihanId = '01a18f68-0000-7000-8000-0000000000f9';
+      final storage = _Penyimpanan();
+      final backend = await _pasang(
+        tester,
+        {
+          'GET /me': (_) => _akun(langkah: langkah),
+          'GET /kategori': (_) => [
+            {
+              'id': 'k1',
+              'kode': 'BERSIH_RUMAH',
+              'nama': 'Bersih rumah',
+              'tipe': 'PERIODIK',
+              'nama_bebas': false,
+              'kelipatan_titik': 50000,
+              'lebar_rentang': 500000,
+            },
+            {
+              'id': 'k2',
+              'kode': 'LAINNYA',
+              'nama': 'Lainnya',
+              'tipe': 'INSIDENTAL',
+              'nama_bebas': true,
+              'kelipatan_titik': 10000,
+              'lebar_rentang': 50000,
+            },
+          ],
+          'PUT /me/pekerja': (_) {
+            langkah = 'VIDEO';
+            return {
+              'video_id': null,
+              'hari_tersedia': ['SEN'],
+              'kategori': [],
+            };
+          },
+          'POST /berkas/unggah': (o) => {
+            'berkas_id': 'b-video',
+            'url_unggah': 'https://storage.test/video',
+            'berlaku_sampai': '2026-11-01T01:00:00Z',
+          },
+          'POST /berkas/b-video/selesai': (_) {
+            langkah = 'BAYAR_REGISTRASI';
+            return {
+              'id': 'b-video',
+              'jenis': 'VIDEO_PERKENALAN',
+              'status': 'SIAP',
+            };
+          },
+          'POST /tagihan': (_) => {
+            'id': tagihanId,
+            'judul': 'Biaya registrasi',
+            'nominal': {'nilai': 30000, 'teks': 'Rp30.000'},
+            'status': 'MENUNGGU',
+            'qr_payload': '000201QRIS-REG',
+          },
+          'GET /tagihan/$tagihanId': (_) => {
+            'id': tagihanId,
+            'judul': 'Biaya registrasi',
+            'nominal': {'nilai': 30000, 'teks': 'Rp30.000'},
+            'status': 'MENUNGGU',
+            'qr_payload': '000201QRIS-REG',
+          },
+          'GET /beranda': (_) => {
+            'kartu_tindakan': [],
+            'penugasan_berjalan': [],
+            'job_saya': [],
+          },
+        },
+        tambahan: [
+          ambilVideoProvider.overrideWithValue(
+            (detik) async =>
+                Uint8List.fromList([0, 0, 0, 24, 102, 116, 121, 112]),
+          ),
+          unggahDioProvider.overrideWithValue(
+            Dio()..httpClientAdapter = storage,
+          ),
+        ],
+      );
+
+      // Data pekerja: upah yang bukan kelipatan ditolak sebelum dikirim.
+      expect(find.text('Pekerjaan yang kamu terima'), findsOneWidget);
+      await tester.tap(find.text('Bersih rumah'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, '2310000');
+      await tester.pump();
+      await tester.ensureVisible(find.text('Senin'));
+      await tester.tap(find.text('Senin'));
+      await tester.pump();
+      await tester.ensureVisible(find.text('Simpan'));
+      await tester.tap(find.text('Simpan'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('kelipatan'), findsWidgets);
+      expect(
+        backend.panggilan.where(
+          (o) => o.method == 'PUT' && o.path == '/me/pekerja',
+        ),
+        isEmpty,
+      );
+
+      await tester.enterText(find.byType(TextField).first, '2300000');
+      await tester.pump();
+      expect(find.textContaining('Majikan melihat kisaran'), findsOneWidget);
+      await tester.ensureVisible(find.text('Simpan'));
+      await tester.tap(find.text('Simpan'));
+      await tester.pumpAndSettle();
+      final simpan = backend.panggilan.lastWhere(
+        (o) => o.method == 'PUT' && o.path == '/me/pekerja',
+      );
+      expect(simpan.data, {
+        'hari_tersedia': ['SEN'],
+        'kategori': [
+          {'kategori_id': 'k1', 'titik_awal': 2300000},
+        ],
+      });
+
+      // Video perkenalan: diunggah sebagai MP4 langsung ke storage.
+      expect(find.text('Video perkenalan'), findsOneWidget);
+      await tester.tap(find.text('Rekam video'));
+      await tester.pumpAndSettle();
+      final unggah = backend.panggilan.lastWhere(
+        (o) => o.path == '/berkas/unggah',
+      );
+      expect((unggah.data as Map)['jenis'], 'VIDEO_PERKENALAN');
+      expect((unggah.data as Map)['tipe_mime'], 'video/mp4');
+      expect(storage.put.single.headers['content-type'], 'video/mp4');
+
+      // Biaya registrasi: QR terbuka dengan kunci idempoten.
+      expect(find.text('Biaya registrasi'), findsOneWidget);
+      await tester.tap(find.text('Bayar sekarang'));
+      await tester.pumpAndSettle();
+      final bayar = backend.panggilan.lastWhere(
+        (o) => o.method == 'POST' && o.path == '/tagihan',
+      );
+      expect(bayar.data, {'jenis': 'REGISTRASI'});
+      expect(bayar.headers['Idempotency-Key'], isNotNull);
+      expect(find.byType(QrImageView), findsOneWidget);
+    },
+  );
+
   testWidgets('Beranda menampilkan banner masa perkenalan dari server', (
     tester,
   ) async {

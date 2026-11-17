@@ -9,6 +9,7 @@ import 'package:pramu_apps/core/platform/secure_screen.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/features/akun/langkah_ktp_profil.dart';
+import 'package:pramu_apps/features/akun/langkah_pekerja.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:pramu_apps/shared/muat.dart';
@@ -98,10 +99,18 @@ class _PersetujuanScreenState extends ConsumerState<PersetujuanScreen> {
                 ),
                 title: Text(_namaDokumen[d['jenis']] ?? d['jenis'] as String),
                 subtitle: InkWell(
-                  onTap: () => openDocumentUrl(
-                    ref.read(urlLauncherProvider),
-                    d['url'] as String?,
-                  ),
+                  onTap: () async {
+                    final ok = await openDocumentUrl(
+                      ref.read(urlLauncherProvider),
+                      d['url'] as String?,
+                    );
+                    if (!ok && context.mounted) {
+                      AppSnack.show(
+                        context,
+                        'Dokumen ini tidak bisa dibuka sekarang. Coba lagi nanti.',
+                      );
+                    }
+                  },
                   child: Text(
                     'Baca (versi ${d['versi']})',
                     style: TextStyle(
@@ -260,8 +269,7 @@ const _namaLangkah = {
   'BAYAR_REGISTRASI': 'Biaya registrasi',
 };
 
-/// Langkah onboarding berikutnya dari server. KTP dan profil (foto, lokasi) punya layar di sini.
-/// shortcut: data pekerja, video, dan biaya registrasi belum punya layar; bangun berikutnya.
+/// Langkah onboarding berikutnya dari server; semua langkah (KTP, profil, data pekerja, video, registrasi) punya layar.
 class LanjutkanScreen extends ConsumerWidget {
   const LanjutkanScreen({super.key});
 
@@ -282,6 +290,9 @@ class LanjutkanScreen extends ConsumerWidget {
           switch (langkah) {
             'KTP' => const LangkahKtp(),
             'FOTO_DIRI' || 'FOTO_RUMAH' || 'LOKASI' => const LangkahProfil(),
+            'DATA_PEKERJA' => const LangkahDataPekerja(),
+            'VIDEO' => const LangkahVideo(),
+            'BAYAR_REGISTRASI' => const LangkahRegistrasi(),
             _ => EmptyState(
               title: _namaLangkah[langkah] ?? 'Langkah berikutnya',
               message: 'Langkah ini sedang disiapkan di aplikasi. Kami beri tahu begitu bisa dilanjutkan.',
