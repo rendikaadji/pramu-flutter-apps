@@ -14,13 +14,20 @@ typedef AmbilFoto = Future<Uint8List?> Function({bool galeri});
 
 final ambilFotoProvider = Provider<AmbilFoto>(
   (_) => ({bool galeri = false}) async {
-    final x = await ImagePicker().pickImage(
+    final picker = ImagePicker();
+    var x = await picker.pickImage(
       source: galeri ? ImageSource.gallery : ImageSource.camera,
       maxWidth: 1600,
       maxHeight: 1600,
       imageQuality: 80,
       requestFullMetadata: false,
     );
+    // HP dengan RAM kecil mematikan layar aplikasi selagi kamera terbuka; fotonya tetap ada di plugin dan diambil di sini.
+    // Tanpa ini pengguna sudah memotret tetapi layar kembali kosong.
+    if (x == null && Platform.isAndroid) {
+      final hilang = await picker.retrieveLostData();
+      x = hilang.file ?? hilang.files?.firstOrNull;
+    }
     if (x == null) return null;
     final isi = await x.readAsBytes();
     try {

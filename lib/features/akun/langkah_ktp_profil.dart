@@ -277,9 +277,24 @@ class SlotFoto extends ConsumerWidget {
   final ValueChanged<Uint8List> onAmbil;
   final bool bolehGaleri;
 
-  Future<void> _ambil(WidgetRef ref, {bool galeri = false}) async {
-    final b = await ref.read(ambilFotoProvider)(galeri: galeri);
-    if (b != null) onAmbil(b);
+  /// Kamera atau galeri yang gagal dibuka tidak boleh diam saja: pengguna diberi tahu dan boleh mencoba lagi.
+  Future<void> _ambil(
+    BuildContext context,
+    WidgetRef ref, {
+    bool galeri = false,
+  }) async {
+    try {
+      final b = await ref.read(ambilFotoProvider)(galeri: galeri);
+      if (b != null) onAmbil(b);
+    } catch (e) {
+      debugPrint('ambil foto gagal: $e');
+      if (context.mounted) {
+        AppSnack.show(
+          context,
+          galeri ? 'Galeri tidak bisa dibuka. Coba lagi.' : 'Kamera tidak bisa dibuka atau fotonya gagal dibaca. Coba lagi.',
+        );
+      }
+    }
   }
 
   @override
@@ -308,13 +323,13 @@ class SlotFoto extends ConsumerWidget {
           variant: isi == null
               ? AppButtonVariant.primary
               : AppButtonVariant.secondary,
-          onPressed: () => _ambil(ref),
+          onPressed: () => _ambil(context, ref),
         ),
         if (bolehGaleri)
           AppButton(
             label: 'Pilih dari galeri',
             variant: AppButtonVariant.text,
-            onPressed: () => _ambil(ref, galeri: true),
+            onPressed: () => _ambil(context, ref, galeri: true),
           ),
       ],
     ),
