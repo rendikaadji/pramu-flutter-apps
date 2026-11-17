@@ -18,6 +18,14 @@ void main() {
     expect(arahkan(const AsyncLoading(), '/memuat'), isNull);
   });
 
+  test('tagihan dan profil hanya menerima id UUID', () {
+    final masuk = AsyncData(_akun());
+    expect(arahkan(masuk, '/tagihan/..%2Fme'), '/beranda');
+    expect(arahkan(masuk, '/profil/bukan-uuid'), '/beranda');
+    expect(arahkan(masuk, '/tagihan/$_id'), isNull);
+    expect(arahkan(masuk, '/profil/$_id'), isNull);
+  });
+
   test('belum masuk selalu ke /masuk', () {
     expect(arahkan(const AsyncData(null), '/beranda'), '/masuk');
     expect(arahkan(const AsyncData(null), '/booking/$_id'), '/masuk');

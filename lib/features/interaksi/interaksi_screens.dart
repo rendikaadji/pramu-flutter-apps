@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/core/time.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:pramu_apps/shared/profil_baris.dart';
 
@@ -50,44 +53,48 @@ class PercakapanDaftarScreen extends ConsumerWidget {
                   title: 'Belum ada percakapan',
                   message: 'Chat terbuka setelah ada ajuan.',
                 )
-              : Column(
-                  children: [
-                    for (final c in h.items) ...[
-                      AppCard(
-                        onTap: () => context.push('/percakapan/${c['id']}'),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ProfilBaris(
-                              profil: RingkasanProfil.fromJson(
-                                c['pihak_lain'] as Json,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpace.s8),
-                            Text(
-                              c['judul_job'] as String,
-                              style: context.text.label,
-                            ),
-                            if (c['pesan_terakhir'] != null)
-                              Text(
-                                c['pesan_terakhir'] as String,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: context.text.bodySm,
-                              ),
-                            if ((c['belum_dibaca'] as num? ?? 0) > 0)
-                              Text(
-                                '${c['belum_dibaca']} belum dibaca',
-                                style: context.text.caption.copyWith(
-                                  color: context.tokens.primary,
+              : Berhalaman(
+                  awal: h,
+                  isi: (baris, muatLagi) => Column(
+                    children: [
+                      for (final c in baris) ...[
+                        AppCard(
+                          onTap: () => context.push('/percakapan/${c['id']}'),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ProfilBaris(
+                                profil: RingkasanProfil.fromJson(
+                                  c['pihak_lain'] as Json,
                                 ),
                               ),
-                          ],
+                              const SizedBox(height: AppSpace.s8),
+                              Text(
+                                c['judul_job'] as String,
+                                style: context.text.label,
+                              ),
+                              if (c['pesan_terakhir'] != null)
+                                Text(
+                                  c['pesan_terakhir'] as String,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: context.text.bodySm,
+                                ),
+                              if ((c['belum_dibaca'] as num? ?? 0) > 0)
+                                Text(
+                                  '${c['belum_dibaca']} belum dibaca',
+                                  style: context.text.caption.copyWith(
+                                    color: context.tokens.primary,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpace.s12),
+                        const SizedBox(height: AppSpace.s12),
+                      ],
+                      ?muatLagi,
                     ],
-                  ],
+                  ),
                 ),
         ),
       ],
@@ -97,9 +104,16 @@ class PercakapanDaftarScreen extends ConsumerWidget {
 
 /// Satu percakapan. Kontak di pesan disamarkan server sebelum disimpan (PRD §20).
 class PercakapanScreen extends ConsumerStatefulWidget {
-  const PercakapanScreen({super.key, required this.id});
+  const PercakapanScreen({
+    super.key,
+    required this.id,
+    this.intervalSegar = const Duration(seconds: 5),
+  });
 
   final String id;
+
+  /// Realtime (Reverb) belum ada: pesan baru diambil berkala selama layar terbuka.
+  final Duration intervalSegar;
 
   @override
   ConsumerState<PercakapanScreen> createState() => _PercakapanScreenState();
@@ -107,12 +121,19 @@ class PercakapanScreen extends ConsumerStatefulWidget {
 
 class _PercakapanScreenState extends ConsumerState<PercakapanScreen> {
   final _tulis = TextEditingController();
+  // Satu kunci per pesan: coba ulang setelah timeout tidak menggandakan pesan.
+  String _kunci = newIdempotencyKey();
+  Timer? _segar;
   bool _proses = false;
   String? _galat;
 
   @override
   void initState() {
     super.initState();
+    _segar = Timer.periodic(
+      widget.intervalSegar,
+      (_) => ref.invalidate(_pesanProvider(widget.id)),
+    );
     // Tandai dibaca saat dibuka; gagal tidak mengganggu membaca.
     ref
         .read(apiClientProvider)
@@ -122,6 +143,7 @@ class _PercakapanScreenState extends ConsumerState<PercakapanScreen> {
 
   @override
   void dispose() {
+    _segar?.cancel();
     _tulis.dispose();
     super.dispose();
   }
@@ -138,8 +160,9 @@ class _PercakapanScreenState extends ConsumerState<PercakapanScreen> {
           .post(
             '/percakapan/${widget.id}/pesan',
             data: {'isi': _tulis.text},
-            options: ApiClient.idempotent(newIdempotencyKey()),
+            options: ApiClient.idempotent(_kunci),
           );
+      _kunci = newIdempotencyKey();
       _tulis.clear();
       ref.invalidate(_pesanProvider(widget.id));
     } on ApiException catch (e) {
@@ -185,47 +208,56 @@ class _PercakapanScreenState extends ConsumerState<PercakapanScreen> {
             child: Muat(
               nilai: ref.watch(_pesanProvider(widget.id)),
               onUlangi: () => ref.invalidate(_pesanProvider(widget.id)),
-              isi: (h) => ListView(
-                reverse: true, // server mengirim terbaru dulu
-                padding: const EdgeInsets.all(AppSpace.s16),
-                children: [
-                  for (final m in h.items)
-                    Align(
-                      alignment: m['dari_saya'] == true
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: AppSpace.s8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpace.s12,
-                          vertical: AppSpace.s8,
-                        ),
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        decoration: BoxDecoration(
-                          color: m['dari_saya'] == true
-                              ? t.primaryContainer
-                              : t.surface,
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(m['isi'] as String, style: context.text.body),
-                            Text(
-                              [
-                                formatTime(
-                                  parseApiTime(m['dibuat_at'] as String),
-                                ),
-                                if (m['ada_samaran'] == true)
-                                  'Kontak disamarkan',
-                              ].join(' · '),
-                              style: context.text.caption,
-                            ),
-                          ],
+              isi: (h) => Berhalaman(
+                awal: h,
+                // Pesan lama yang sudah dimuat tetap ada saat pesan baru diambil.
+                kunci: (m) => m['id'],
+                isi: (baris, muatLagi) => ListView(
+                  reverse: true, // server mengirim terbaru dulu
+                  padding: const EdgeInsets.all(AppSpace.s16),
+                  children: [
+                    for (final m in baris)
+                      Align(
+                        alignment: m['dari_saya'] == true
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: AppSpace.s8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpace.s12,
+                            vertical: AppSpace.s8,
+                          ),
+                          constraints: const BoxConstraints(maxWidth: 300),
+                          decoration: BoxDecoration(
+                            color: m['dari_saya'] == true
+                                ? t.primaryContainer
+                                : t.surface,
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                m['isi'] as String,
+                                style: context.text.body,
+                              ),
+                              Text(
+                                [
+                                  formatTime(
+                                    parseApiTime(m['dibuat_at'] as String),
+                                  ),
+                                  if (m['ada_samaran'] == true)
+                                    'Kontak disamarkan',
+                                ].join(' · '),
+                                style: context.text.caption,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                    ?muatLagi,
+                  ],
+                ),
               ),
             ),
           ),
@@ -320,37 +352,41 @@ class NotifikasiScreen extends ConsumerWidget {
                     message:
                         'Kabar tentang ajuan dan pekerjaanmu tampil di sini.',
                   )
-                : Column(
-                    children: [
-                      for (final n in h.items) ...[
-                        AppCard(
-                          onTap: () => _buka(context, ref, n),
-                          borderColor: n['dibaca_at'] == null
-                              ? context.tokens.primary
-                              : null,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                n['judul'] as String,
-                                style: context.text.h3,
-                              ),
-                              Text(
-                                n['isi'] as String,
-                                style: context.text.bodySm,
-                              ),
-                              Text(
-                                formatDateTime(
-                                  parseApiTime(n['dibuat_at'] as String),
+                : Berhalaman(
+                    awal: h,
+                    isi: (baris, muatLagi) => Column(
+                      children: [
+                        for (final n in baris) ...[
+                          AppCard(
+                            onTap: () => _buka(context, ref, n),
+                            borderColor: n['dibaca_at'] == null
+                                ? context.tokens.primary
+                                : null,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  n['judul'] as String,
+                                  style: context.text.h3,
                                 ),
-                                style: context.text.caption,
-                              ),
-                            ],
+                                Text(
+                                  n['isi'] as String,
+                                  style: context.text.bodySm,
+                                ),
+                                Text(
+                                  formatDateTime(
+                                    parseApiTime(n['dibuat_at'] as String),
+                                  ),
+                                  style: context.text.caption,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpace.s8),
+                          const SizedBox(height: AppSpace.s8),
+                        ],
+                        ?muatLagi,
                       ],
-                    ],
+                    ),
                   ),
           ),
         ],

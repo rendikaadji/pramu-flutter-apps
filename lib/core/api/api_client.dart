@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/env.dart';
@@ -9,16 +6,6 @@ import 'package:pramu_apps/core/models/shared.dart';
 import 'package:pramu_apps/core/storage/secure_token_store.dart';
 
 typedef Json = Map<String, dynamic>;
-
-typedef PinValidator = bool Function(
-  X509Certificate? cert,
-  String host,
-  int port,
-);
-
-/// Hook certificate pinning. Diisi app saat `PINNED_SPKI` dipasang (hitung hash SPKI di sini).
-/// Pinning aktif tetapi hook null = tolak semua koneksi (fail closed).
-PinValidator? pinValidator;
 
 const _uploadTimeout = Duration(seconds: 30);
 final _apiHost = Uri.parse(Env.apiBaseUrl).host;
@@ -46,11 +33,8 @@ class ApiClient {
                },
              ),
            ) {
-    final adapter = _dio.httpClientAdapter;
-    if (Env.pinningEnabled && adapter is IOHttpClientAdapter) {
-      adapter.validateCertificate = (c, h, p) =>
-          pinValidator?.call(c, h, p) ?? false;
-    }
+    // shortcut: belum ada certificate pinning (MOB-SEC-04). Pasang pemeriksaan hash SPKI di
+    // IOHttpClientAdapter.validateCertificate sebelum rilis publik, dengan pin aktif dan cadangan.
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (o, h) {
@@ -136,16 +120,20 @@ class ApiClient {
   }) async {
     final body = await _raw('GET', path, query: query);
     final map = body as Map<String, dynamic>;
+    final kursor = map['next_cursor'] as String?;
     return Paged(
       [
         for (final e in map['data'] as List)
           fromJson(e as Map<String, dynamic>),
       ],
-      nextCursor: map['next_cursor'] as String?,
+      nextCursor: kursor,
       extra: {
         for (final e in map.entries)
           if (e.key != 'data' && e.key != 'next_cursor') e.key: e.value,
       },
+      berikutnya: kursor == null
+          ? null
+          : () => getPage(path, fromJson, query: {...?query, 'cursor': kursor}),
     );
   }
 

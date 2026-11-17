@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pramu_apps/features/tagihan/tagihan.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/berhalaman.dart';
 import 'package:pramu_apps/shared/muat.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -38,31 +39,44 @@ class TagihanDaftarScreen extends ConsumerWidget {
             Muat(
               nilai: daftar,
               onUlangi: () => ref.invalidate(tagihanDaftarProvider),
-              isi: (h) => h.items.isEmpty
-                  ? const EmptyState(
-                      title: 'Belum ada tagihan',
-                      message: 'Tagihan dan bukti bayar tampil di sini.',
-                    )
-                  : Column(
-                      children: [
-                        for (final t in h.items) ...[
-                          AppCard(
-                            onTap: () => context.push('/tagihan/${t.id}'),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(t.judul, style: context.text.h3),
-                                const SizedBox(height: AppSpace.s4),
-                                Text(t.nominal.teks, style: context.text.body),
-                                const SizedBox(height: AppSpace.s8),
-                                _chip(t.status),
+              isi: (h) => Berhalaman(
+                awal: h,
+                isi: (baris, muatLagi) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    baris.isEmpty
+                        ? const EmptyState(
+                            title: 'Belum ada tagihan',
+                            message: 'Tagihan dan bukti bayar tampil di sini.',
+                          )
+                        : Column(
+                            children: [
+                              for (final t in baris) ...[
+                                AppCard(
+                                  onTap: () => context.push('/tagihan/${t.id}'),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(t.judul, style: context.text.h3),
+                                      const SizedBox(height: AppSpace.s4),
+                                      Text(
+                                        t.nominal.teks,
+                                        style: context.text.body,
+                                      ),
+                                      const SizedBox(height: AppSpace.s8),
+                                      _chip(t.status),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: AppSpace.s12),
                               ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: AppSpace.s12),
-                        ],
-                      ],
-                    ),
+                    ?muatLagi,
+                  ],
+                ),
+              ),
             ),
           ],
         ),

@@ -8,8 +8,8 @@ import 'package:pramu_apps/core/models/pramu.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
+import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:pramu_apps/shared/muat.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 const _namaDokumen = {
   'KETENTUAN_LAYANAN': 'Ketentuan layanan',
@@ -96,9 +96,9 @@ class _PersetujuanScreenState extends ConsumerState<PersetujuanScreen> {
                 ),
                 title: Text(_namaDokumen[d['jenis']] ?? d['jenis'] as String),
                 subtitle: InkWell(
-                  onTap: () => launchUrl(
-                    Uri.parse(d['url'] as String),
-                    mode: LaunchMode.externalApplication,
+                  onTap: () => openDocumentUrl(
+                    ref.read(urlLauncherProvider),
+                    d['url'] as String?,
                   ),
                   child: Text(
                     'Baca (versi ${d['versi']})',

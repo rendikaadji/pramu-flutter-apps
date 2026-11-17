@@ -87,6 +87,32 @@ void main() {
       expect(isAllowedWhatsAppUrl('https://user@wa.me/1'), isFalse);
       expect(isAllowedWhatsAppUrl(null), isFalse);
     });
+
+    test('peta hanya Google Maps https', () {
+      expect(
+        isAllowedMapUrl(
+          'https://www.google.com/maps/search/?api=1&query=-6.2,106.8',
+        ),
+        isTrue,
+      );
+      expect(isAllowedMapUrl('https://www.google.com/search?q=x'), isFalse);
+      expect(isAllowedMapUrl('intent://maps#Intent;end'), isFalse);
+      expect(isAllowedMapUrl('tel:0812'), isFalse);
+      expect(isAllowedMapUrl(null), isFalse);
+    });
+
+    test('dokumen hanya dari host API', () {
+      const api = 'https://api.pramu.id/api/v1';
+      expect(
+        isAllowedDocumentUrl('https://api.pramu.id/dokumen/privasi', api),
+        isTrue,
+      );
+      expect(
+        isAllowedDocumentUrl('https://api.pramu.id.evil.io/x', api),
+        isFalse,
+      );
+      expect(isAllowedDocumentUrl('http://api.pramu.id/x', api), isFalse);
+    });
   });
 
   group('ULID', () {

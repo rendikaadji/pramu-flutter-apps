@@ -13,7 +13,9 @@ const rutePraMasuk = {
 final _uuid = RegExp(
   r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
 );
-final _rinci = RegExp(r'^/(job|booking|penugasan|percakapan)/([^/]+)$');
+final _rinci = RegExp(
+  r'^/(job|booking|penugasan|percakapan|tagihan|profil)/([^/]+)$',
+);
 
 /// Ke mana pengguna diarahkan, atau null bila boleh tetap di [lokasi].
 /// Murni (tanpa BuildContext) agar bisa diuji: sesi → layar masuk → langkah onboarding dari server → aplikasi.

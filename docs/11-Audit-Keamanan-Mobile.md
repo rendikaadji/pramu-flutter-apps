@@ -22,7 +22,7 @@ versi: 1.0
 | 1. MOB-SEC-01..07 tertutup | GAGAL | 04 terbuka; 07, 02, 05 sebagian |
 | 2. obfuscation + split-debug-info; allowBackup/cleartext; exported | GAGAL sebagian | allowBackup/cleartext/exported OK; obfuscation belum ada skrip/CI |
 | 3. token di secure storage; bayar dari deep link | LOLOS | secure_token_store.dart; payment_routes.dart:32-37 |
-| 4. pinning teruji, tak ada override | GAGAL | pinValidator tidak pernah diisi; pinning mati default |
+| 4. pinning teruji, tak ada override | GAGAL | Belum ada pinning; hook `pinValidator` yang tak pernah diisi dihapus (`shortcut:` di api_client.dart) |
 | 5. KTP/EXIF | LOLOS (KTP/selfie/SKCK) | foto bukti laporan sebagian (F-05) |
 | 6. rahasia di binary / keystore | GAGAL sebagian | tak ada rahasia server; release signing = debug key; mock aktif default (F-01) |
 | 7. Data Safety / Privacy Labels | BELUM DINILAI | di luar kode |

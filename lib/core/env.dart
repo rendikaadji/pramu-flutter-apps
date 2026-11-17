@@ -28,8 +28,4 @@ abstract final class Env {
       throw StateError('API_BASE_URL belum diisi untuk build rilis.');
     }
   }
-
-  /// Hash SPKI (base64, dipisah koma) untuk certificate pinning. Kosong = nonaktif.
-  static const pinnedSpki = String.fromEnvironment('PINNED_SPKI');
-  static bool get pinningEnabled => pinnedSpki.isNotEmpty;
 }
