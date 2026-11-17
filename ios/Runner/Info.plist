@@ -66,6 +66,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Pramu memakai lokasi sekali untuk menyimpan titik rumah Anda, agar pekerjaan dan pekerja yang dekat bisa ditemukan. Lokasi tidak dibagikan ke pengguna lain.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Pramu memakai kamera untuk memotret KTP, selfie bersama KTP, SKCK, dan foto profil Anda hanya untuk verifikasi identitas.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

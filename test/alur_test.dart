@@ -12,6 +12,7 @@ import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/env.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/time.dart';
+import 'package:pramu_apps/features/akun/unggah.dart';
 import 'package:pramu_apps/shared/app_ui/rating_stars.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -56,6 +57,24 @@ class _Backend implements HttpClientAdapter {
               Headers.contentTypeHeader: [Headers.jsonContentType],
             },
           );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Storage tiruan untuk URL unggah bertanda tangan.
+class _Penyimpanan implements HttpClientAdapter {
+  final put = <RequestOptions>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions o,
+    Stream<Uint8List>? _,
+    Future<void>? _,
+  ) async {
+    put.add(o);
+    return ResponseBody.fromString('', 200);
   }
 
   @override
@@ -190,6 +209,10 @@ void main() {
         },
       });
 
+      // Tautan ada di bawah layar langkah KTP.
+      await tester.ensureVisible(
+        find.text('Lihat dulu pekerja dan pekerjaan di sekitarmu'),
+      );
       await tester.tap(
         find.text('Lihat dulu pekerja dan pekerjaan di sekitarmu'),
       );
@@ -806,6 +829,135 @@ void main() {
         kirim[0].headers['Idempotency-Key'],
         kirim[1].headers['Idempotency-Key'],
       );
+    },
+  );
+
+  testWidgets(
+    'Onboarding: KTP dikirim, lalu foto diri, foto rumah, lokasi, dan alamat disimpan sampai Beranda',
+    (tester) async {
+      var langkah = 'KTP';
+      final unggahan = <String>[];
+      // PNG 1x1 yang sah, agar pratinjau bisa ditampilkan.
+      final png = base64Decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      );
+      final storage = _Penyimpanan();
+      Map<String, Object?> unggah(RequestOptions o) {
+        final jenis = (o.data as Map)['jenis'] as String;
+        unggahan.add(jenis);
+        return {
+          'berkas_id': 'b-$jenis',
+          'url_unggah': 'https://storage.test/$jenis',
+          'berlaku_sampai': '2026-11-01T01:00:00Z',
+        };
+      }
+
+      final backend = await _pasang(
+        tester,
+        {
+          'GET /me': (_) => _akun(langkah: langkah),
+          'GET /verifikasi': (_) => {
+            'status': 'BELUM',
+            'alasan': null,
+            'sisa_percobaan': 3,
+          },
+          'POST /berkas/unggah': unggah,
+          for (final j in [
+            'FOTO_KTP',
+            'SWAFOTO_KTP',
+            'FOTO_DIRI',
+            'FOTO_RUMAH',
+          ])
+            'POST /berkas/b-$j/selesai': (_) => {
+              'id': 'b-$j',
+              'jenis': j,
+              'status': 'SIAP',
+            },
+          'POST /verifikasi': (_) {
+            langkah = 'FOTO_DIRI';
+            return {
+              'status': 'MENUNGGU_TINJAUAN',
+              'alasan': null,
+              'sisa_percobaan': 2,
+            };
+          },
+          'PUT /me/profil': (_) => _akun(),
+          'GET /beranda': (_) => {
+            'kartu_tindakan': [],
+            'penugasan_berjalan': [],
+            'job_saya': [],
+          },
+        },
+        tambahan: [
+          ambilFotoProvider.overrideWithValue(
+            ({bool galeri = false}) async => png,
+          ),
+          ambilLokasiProvider.overrideWithValue(
+            () async => (lintang: -6.2, bujur: 106.8),
+          ),
+          unggahDioProvider.overrideWithValue(
+            Dio()..httpClientAdapter = storage,
+          ),
+        ],
+      );
+
+      // Langkah KTP.
+      expect(find.text('Verifikasi KTP'), findsWidgets);
+      await tester.tap(find.text('Ambil foto').first);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Ambil foto'));
+      await tester.tap(find.text('Ambil foto'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Kirim untuk diperiksa'));
+      await tester.tap(find.text('Kirim untuk diperiksa'));
+      await tester.pumpAndSettle();
+
+      final ajukan = backend.panggilan.lastWhere(
+        (o) => o.path == '/verifikasi' && o.method == 'POST',
+      );
+      expect(ajukan.data, {
+        'foto_ktp_id': 'b-FOTO_KTP',
+        'swafoto_ktp_id': 'b-SWAFOTO_KTP',
+      });
+      expect(ajukan.headers['Idempotency-Key'], isNotNull);
+
+      // Langkah profil.
+      expect(find.text('Foto dan alamat rumah'), findsOneWidget);
+      await tester.tap(find.text('Ambil foto').first);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Ambil foto'));
+      await tester.tap(find.text('Ambil foto'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Pakai lokasi saya sekarang'));
+      await tester.tap(find.text('Pakai lokasi saya sekarang'));
+      await tester.pumpAndSettle();
+      expect(find.text('Titik rumah sudah diambil.'), findsOneWidget);
+      await tester.ensureVisible(find.byType(TextField).last);
+      await tester.enterText(
+        find.byType(TextField).last,
+        'Jl. Melati 3, RT 01/02',
+      );
+      await tester.pump();
+      await tester.ensureVisible(find.text('Simpan'));
+      await tester.tap(find.text('Simpan'));
+      await tester.pumpAndSettle();
+
+      final profil = backend.panggilan.lastWhere((o) => o.path == '/me/profil');
+      expect(profil.data, {
+        'foto_diri_id': 'b-FOTO_DIRI',
+        'foto_rumah_id': 'b-FOTO_RUMAH',
+        'lokasi': {'lintang': -6.2, 'bujur': 106.8},
+        'alamat': 'Jl. Melati 3, RT 01/02',
+      });
+      expect(unggahan, ['FOTO_KTP', 'SWAFOTO_KTP', 'FOTO_DIRI', 'FOTO_RUMAH']);
+      // Foto dikirim ke storage tanpa token pengguna.
+      expect(storage.put, hasLength(4));
+      expect(
+        storage.put.every((o) => !o.headers.containsKey('Authorization')),
+        isTrue,
+      );
+      expect(storage.put.first.headers['content-type'], 'image/png');
+      expect(find.text('Lanjutkan pendaftaran'), findsNothing);
     },
   );
 
