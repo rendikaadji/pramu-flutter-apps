@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
@@ -287,7 +288,7 @@ class SlotFoto extends ConsumerWidget {
       final b = await ref.read(ambilFotoProvider)(galeri: galeri);
       if (b != null) onAmbil(b);
     } catch (e) {
-      debugPrint('ambil foto gagal: $e');
+      if (kDebugMode) debugPrint('ambil foto gagal: $e');
       if (context.mounted) {
         AppSnack.show(
           context,
