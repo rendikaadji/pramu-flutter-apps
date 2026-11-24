@@ -25,6 +25,34 @@ jobs:
           name: coverage
           path: coverage/lcov.info
 
+  # Build APK rilis: R8 hanya berjalan di build rilis, jadi galat seperti "Missing class" (ML Kit) tidak terlihat di tes
+  # maupun build debug. Hasilnya tidak diunggah: ditandatangani kunci debug dan hanya untuk memastikan build lolos.
+  build-rilis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # `env -u CI`: build.gradle.kts menolak build rilis di CI tanpa kunci rilis dan APP_LINK_HOST produksi, agar APK
+      # bertanda debug tidak pernah terkirim. Pemeriksaan ini tidak menghasilkan berkas yang dikirim, jadi aturan itu dilewati.
+      - name: Bangun APK rilis (periksa R8)
+        run: env -u CI flutter build apk --release --split-per-abi
+      - name: Ukuran APK (target brief: di bawah 30 MB)
+        run: |
+          {
+            echo '### Ukuran APK rilis'
+            ls -l build/app/outputs/flutter-apk/*.apk | awk '{printf "- %s: %.1f MB\n", $9, $5/1048576}'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
   # Kontrak Flutter <-> Laravel: menjalankan tes live terhadap backend asli (seed segar).
   # Butuh secret BACKEND_REPO_TOKEN (PAT dengan akses baca ke repo backend privat).
   contract:
