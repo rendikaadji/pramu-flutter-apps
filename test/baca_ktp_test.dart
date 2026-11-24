@@ -145,9 +145,9 @@ void main() {
       'bercak putih kecil di bingkai (pantulan) ditolak walau tepinya tajam',
       () {
         final p = _piksel(100, 100, 170, garis: true);
-        // Blok 14x14 (sekitar 2% bingkai) menjadi putih: pantulan lokal di atas kartu.
-        for (var y = 10; y < 24; y++) {
-          for (var x = 10; x < 24; x++) {
+        // Blok 20x20 (4% bingkai) menjadi putih: pantulan lokal di atas kartu.
+        for (var y = 10; y < 30; y++) {
+          for (var x = 10; x < 30; x++) {
             final i = (y * 100 + x) * 4;
             p[i] = p[i + 1] = p[i + 2] = 255;
           }
