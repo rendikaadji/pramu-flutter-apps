@@ -62,6 +62,8 @@ android {
             if (System.getenv("CI") != null && releaseTask && (appLinkHost.isEmpty() || appLinkHost.endsWith(".example"))) {
                 throw GradleException("APP_LINK_HOST belum diisi dengan domain produksi untuk build rilis.")
             }
+            // Aturan R8 tambahan: ML Kit merujuk model bahasa lain yang sengaja tidak kita sertakan (hanya Latin).
+            proguardFiles("proguard-rules.pro")
             if (keystoreProps.isNotEmpty()) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
