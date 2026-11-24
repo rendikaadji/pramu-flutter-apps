@@ -46,8 +46,13 @@ dependencies:
   lucide_icons_flutter: ^3.1.24
   qr_flutter: ^4.1.0
   geolocator: ^14.1.2
+  google_mlkit_text_recognition: ^1.0.3
+
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  # Tes di perangkat (integration_test/): OCR KTP butuh ML Kit asli yang tidak ada di `flutter test` biasa.
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to

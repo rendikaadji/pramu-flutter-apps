@@ -12,6 +12,7 @@ import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/env.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/time.dart';
+import 'package:pramu_apps/features/akun/baca_ktp.dart';
 import 'package:pramu_apps/features/akun/unggah.dart';
 import 'package:pramu_apps/shared/app_ui/rating_stars.dart';
 import 'package:pramu_apps/shared/app_ui/url_launch.dart';
@@ -80,6 +81,11 @@ class _Penyimpanan implements HttpClientAdapter {
   @override
   void close({bool force = false}) {}
 }
+
+/// PNG 1x1 yang sah, agar pratinjau foto bisa tampil di tes.
+final _pngSah = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+);
 
 Map<String, Object?> _akun({String? langkah}) => {
   'id': '01a18f68-0000-7000-8000-000000000001',
@@ -892,6 +898,10 @@ void main() {
           ambilFotoProvider.overrideWithValue(
             ({bool galeri = false}) async => png,
           ),
+          periksaKualitasProvider.overrideWithValue((_) async => null),
+          bacaTeksProvider.overrideWithValue(
+            (_) async => 'PROVINSI DKI JAKARTA\nNIK : 3171011203900001\nNama : SITI RAHAYU\n',
+          ),
           ambilLokasiProvider.overrideWithValue(
             () async => (lintang: -6.2, bujur: 106.8),
           ),
@@ -915,9 +925,12 @@ void main() {
       final ajukan = backend.panggilan.lastWhere(
         (o) => o.path == '/verifikasi' && o.method == 'POST',
       );
+      // NIK dan nama hasil OCR ikut sebagai petunjuk untuk admin.
       expect(ajukan.data, {
         'foto_ktp_id': 'b-FOTO_KTP',
         'swafoto_ktp_id': 'b-SWAFOTO_KTP',
+        'nik_petunjuk': '3171011203900001',
+        'nama_petunjuk': 'SITI RAHAYU',
       });
       expect(ajukan.headers['Idempotency-Key'], isNotNull);
 
@@ -958,6 +971,118 @@ void main() {
       );
       expect(storage.put.first.headers['content-type'], 'image/png');
       expect(find.text('Lanjutkan pendaftaran'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'KTP: foto buram ditolak dengan petunjuk, percobaan ke-3 tetap diterima tanpa petunjuk NIK',
+    (tester) async {
+      await _pasang(
+        tester,
+        {
+          'GET /me': (_) => _akun(langkah: 'KTP'),
+          'GET /verifikasi': (_) => {
+            'status': 'BELUM',
+            'alasan': null,
+            'sisa_percobaan': 3,
+          },
+        },
+        tambahan: [
+          ambilFotoProvider.overrideWithValue(
+            ({bool galeri = false}) async => _pngSah,
+          ),
+          periksaKualitasProvider.overrideWithValue(
+            (_) async => 'Foto buram. Tahan HP dengan stabil.',
+          ),
+          bacaTeksProvider.overrideWithValue((_) async => ''),
+        ],
+      );
+
+      for (var i = 0; i < 2; i++) {
+        await tester.tap(find.text('Ambil foto').first);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('Foto KTP kurang jelas'), findsOneWidget);
+        expect(find.text('Data di KTP'), findsNothing);
+      }
+      // Percobaan ke-3: pengguna tidak boleh terjebak, foto diterima dan admin yang memeriksa.
+      await tester.tap(find.text('Ambil foto').first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Foto KTP kurang jelas'), findsNothing);
+      expect(find.text('Data di KTP'), findsOneWidget);
+      expect(find.textContaining('tidak terbaca otomatis'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'KTP: OCR tidak tersedia di perangkat, foto diterima tanpa menghalangi pengguna',
+    (tester) async {
+      await _pasang(
+        tester,
+        {
+          'GET /me': (_) => _akun(langkah: 'KTP'),
+          'GET /verifikasi': (_) => {
+            'status': 'BELUM',
+            'alasan': null,
+            'sisa_percobaan': 3,
+          },
+        },
+        tambahan: [
+          ambilFotoProvider.overrideWithValue(
+            ({bool galeri = false}) async => _pngSah,
+          ),
+          periksaKualitasProvider.overrideWithValue((_) async => null),
+          bacaTeksProvider.overrideWithValue((_) async {
+            throw StateError('OCR tidak tersedia');
+          }),
+        ],
+      );
+
+      await tester.tap(find.text('Ambil foto').first);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Foto KTP kurang jelas'), findsNothing);
+      expect(find.text('Data di KTP'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'KTP: NIK hasil OCR yang dikoreksi salah menampilkan galat dan menahan tombol kirim',
+    (tester) async {
+      await _pasang(
+        tester,
+        {
+          'GET /me': (_) => _akun(langkah: 'KTP'),
+          'GET /verifikasi': (_) => {
+            'status': 'BELUM',
+            'alasan': null,
+            'sisa_percobaan': 3,
+          },
+        },
+        tambahan: [
+          ambilFotoProvider.overrideWithValue(
+            ({bool galeri = false}) async => _pngSah,
+          ),
+          periksaKualitasProvider.overrideWithValue((_) async => null),
+          bacaTeksProvider.overrideWithValue(
+            (_) async => 'NIK : 3171011203900001\nNama : SITI RAHAYU',
+          ),
+        ],
+      );
+
+      await tester.tap(find.text('Ambil foto').first);
+      await tester.pumpAndSettle();
+      expect(find.text('3171011203900001'), findsOneWidget);
+      expect(find.text('SITI RAHAYU'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, '3171011203900001'),
+        '9971011203900001',
+      );
+      await tester.pump();
+      expect(
+        find.text('NIK tidak valid. Periksa 16 angka di KTP.'),
+        findsOneWidget,
+      );
     },
   );
 
