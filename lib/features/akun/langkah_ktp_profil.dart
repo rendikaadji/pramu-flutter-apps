@@ -159,7 +159,7 @@ class _LangkahKtpState extends ConsumerState<LangkahKtp> {
         const SizedBox(height: AppSpace.s16),
         SlotFoto(
           judul: '1. Foto KTP',
-          petunjuk: 'Letakkan KTP di meja, seluruh kartu terlihat, tulisan terbaca, tanpa pantulan cahaya.',
+          petunjuk: 'Letakkan KTP di meja. Dekatkan kamera sampai kartu memenuhi lebar layar, seluruh sudutnya terlihat, tulisan tajam, tanpa pantulan cahaya.',
           isi: _ktp,
           onAmbil: _ktpDiambil,
         ),
