@@ -2,12 +2,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pramu_apps/core/api/api_client.dart';
 import 'package:pramu_apps/core/api/api_exception.dart';
 import 'package:pramu_apps/core/ids.dart';
 import 'package:pramu_apps/core/providers.dart';
 import 'package:pramu_apps/core/session/session_controller.dart';
+import 'package:pramu_apps/features/akun/baca_ktp.dart';
 import 'package:pramu_apps/features/akun/unggah.dart';
 import 'package:pramu_apps/shared/app_ui/app_ui.dart';
 import 'package:pramu_apps/shared/muat.dart';
@@ -26,11 +28,90 @@ class LangkahKtp extends ConsumerStatefulWidget {
 }
 
 class _LangkahKtpState extends ConsumerState<LangkahKtp> {
+  /// Setelah sekian kali foto KTP tidak lolos pemeriksaan, foto tetap diterima dan admin yang memeriksa, agar pengguna
+  /// dengan HP atau KTP yang sulit dibaca tidak terjebak.
+  static const _maksTolak = 3;
+
   Uint8List? _ktp;
   Uint8List? _swafoto;
+  final _nik = TextEditingController();
+  final _nama = TextEditingController();
+  int _ditolak = 0;
+  bool _membaca = false;
+  bool _tanpaOtomatis = false;
+  String? _masalahFoto;
   String _kunci = newIdempotencyKey();
   bool _proses = false;
   String? _galat;
+
+  @override
+  void dispose() {
+    _nik.dispose();
+    _nama.dispose();
+    super.dispose();
+  }
+
+  /// Foto KTP baru: periksa kejelasannya, lalu baca NIK dan nama. Yang kurang jelas tidak diterima (sampai batas
+  /// [_maksTolak]) dengan petunjuk yang bisa langsung dilakukan; yang lolos tampil untuk dikonfirmasi pengguna.
+  Future<void> _ktpDiambil(Uint8List foto) async {
+    setState(() {
+      _membaca = true;
+      _masalahFoto = null;
+      _ktp = null;
+      _nik.clear();
+      _nama.clear();
+      _tanpaOtomatis = false;
+    });
+    String? masalah = await ref.read(periksaKualitasProvider)(foto);
+    HasilBacaKtp? hasil;
+    var ocrAda = true;
+    if (masalah == null) {
+      try {
+        hasil = uraiKtp(await ref.read(bacaTeksProvider)(foto));
+        if (hasil.nik == null) {
+          masalah = 'NIK di KTP belum terbaca. Pastikan seluruh KTP masuk bingkai, tulisan tajam, dan tanpa pantulan cahaya.';
+        }
+      } catch (e) {
+        // OCR tidak tersedia di perangkat ini: foto diterima apa adanya dan admin yang mengisi.
+        if (kDebugMode) debugPrint('OCR KTP tidak tersedia: $e');
+        ocrAda = false;
+      }
+    }
+    if (!mounted) return;
+    if (masalah != null && _ditolak + 1 < _maksTolak) {
+      setState(() {
+        _ditolak++;
+        _membaca = false;
+        _masalahFoto = masalah;
+      });
+      return;
+    }
+    setState(() {
+      _membaca = false;
+      _ktp = foto;
+      _tanpaOtomatis = masalah != null || !ocrAda;
+      if (masalah != null) _ditolak = 0;
+      _nik.text = hasil?.nik ?? '';
+      _nama.text = hasil?.nama ?? '';
+    });
+  }
+
+  String? get _galatNik {
+    final nik = _nik.text.trim();
+    return nik.isEmpty ? null : periksaNik(nik);
+  }
+
+  /// NIK dan nama yang dikirim sebagai petunjuk. Hanya bila keduanya terisi dan NIK sah.
+  Map<String, String> get _petunjuk {
+    final nik = _nik.text.trim();
+    final nama = _nama.text.trim();
+    if (nik.isEmpty || nama.isEmpty || _galatNik != null) return const {};
+    return {'nik_petunjuk': nik, 'nama_petunjuk': nama};
+  }
+
+  bool get _isianSiap => _nik.text.trim().isEmpty
+      ? _nama.text.trim().isEmpty
+      : _galatNik == null && _nama.text.trim().isNotEmpty;
 
   Future<void> _kirim() async {
     setState(() {
@@ -44,7 +125,7 @@ class _LangkahKtpState extends ConsumerState<LangkahKtp> {
       final swafoto = await unggahFoto(api, storage, 'SWAFOTO_KTP', _swafoto!);
       await api.post(
         '/verifikasi',
-        data: {'foto_ktp_id': ktp, 'swafoto_ktp_id': swafoto},
+        data: {'foto_ktp_id': ktp, 'swafoto_ktp_id': swafoto, ..._petunjuk},
         options: ApiClient.idempotent(_kunci),
       );
       _kunci = newIdempotencyKey();
@@ -80,8 +161,64 @@ class _LangkahKtpState extends ConsumerState<LangkahKtp> {
           judul: '1. Foto KTP',
           petunjuk: 'Letakkan KTP di meja, seluruh kartu terlihat, tulisan terbaca, tanpa pantulan cahaya.',
           isi: _ktp,
-          onAmbil: (b) => setState(() => _ktp = b),
+          onAmbil: _ktpDiambil,
         ),
+        if (_membaca) ...[
+          const SizedBox(height: AppSpace.s8),
+          Row(
+            children: [
+              const SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: AppSpace.s8),
+              Expanded(
+                child: Text('Memeriksa foto KTP...', style: context.text.body),
+              ),
+            ],
+          ),
+        ],
+        if (_masalahFoto != null) ...[
+          const SizedBox(height: AppSpace.s8),
+          FieldErrorText('Foto KTP kurang jelas. $_masalahFoto Ambil ulang.'),
+        ],
+        if (_ktp != null) ...[
+          const SizedBox(height: AppSpace.s8),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Data di KTP', style: context.text.h3),
+                const SizedBox(height: AppSpace.s4),
+                Text(
+                  _tanpaOtomatis
+                      ? 'Data tidak terbaca otomatis. Isi sesuai KTP bila bisa; bila tidak, kosongkan dan tim Pramu yang memeriksa fotonya.'
+                      : 'Periksa dan betulkan bila ada yang salah.',
+                  style: context.text.bodySm,
+                ),
+                const SizedBox(height: AppSpace.s8),
+                AppTextField(
+                  label: 'NIK (16 angka)',
+                  controller: _nik,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  maxLength: 16,
+                  sensitive: true,
+                  errorText: _galatNik,
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: AppSpace.s8),
+                AppTextField(
+                  label: 'Nama sesuai KTP',
+                  controller: _nama,
+                  keyboardType: TextInputType.name,
+                  maxLength: 80,
+                  onChanged: (_) => setState(() {}),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpace.s12),
         SlotFoto(
           judul: '2. Foto diri memegang KTP',
@@ -98,7 +235,7 @@ class _LangkahKtpState extends ConsumerState<LangkahKtp> {
           label: 'Kirim untuk diperiksa',
           loading: _proses,
           expand: true,
-          onPressed: _ktp == null || _swafoto == null || _proses
+          onPressed: _ktp == null || _swafoto == null || _proses || !_isianSiap
               ? null
               : _kirim,
         ),
