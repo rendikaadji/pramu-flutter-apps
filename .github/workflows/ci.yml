@@ -46,7 +46,7 @@ jobs:
       # bertanda debug tidak pernah terkirim. Pemeriksaan ini tidak menghasilkan berkas yang dikirim, jadi aturan itu dilewati.
       - name: Bangun APK rilis (periksa R8)
         run: env -u CI flutter build apk --release --split-per-abi
-      - name: Ukuran APK (target brief: di bawah 30 MB)
+      - name: 'Ukuran APK (target brief: di bawah 30 MB)'
         run: |
           {
             echo '### Ukuran APK rilis'
