@@ -295,7 +295,8 @@ class LanjutkanScreen extends ConsumerWidget {
             'BAYAR_REGISTRASI' => const LangkahRegistrasi(),
             _ => EmptyState(
               title: _namaLangkah[langkah] ?? 'Langkah berikutnya',
-              message: 'Langkah ini sedang disiapkan di aplikasi. Kami beri tahu begitu bisa dilanjutkan.',
+              // Kode langkah baru dari server yang belum dikenal versi aplikasi ini.
+              message: 'Langkah ini butuh versi aplikasi terbaru. Perbarui Pramu di Play Store, lalu buka lagi.',
               actionLabel: 'Periksa lagi',
               onAction: () => ref.read(sessionProvider.notifier).muatUlang(),
             ),

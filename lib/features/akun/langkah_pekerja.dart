@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -315,7 +316,7 @@ class _LangkahVideoState extends ConsumerState<LangkahVideo> {
         setState(() => _galat = e.fields['berkas']?.first ?? pesanGalat(e));
       }
     } catch (e) {
-      debugPrint('rekam video gagal: $e');
+      if (kDebugMode) debugPrint('rekam video gagal: $e');
       if (mounted) {
         setState(
           () => _galat =
