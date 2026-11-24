@@ -289,7 +289,8 @@ class LangkahVideo extends ConsumerStatefulWidget {
 
 class _LangkahVideoState extends ConsumerState<LangkahVideo> {
   static const _detikMaks = 60;
-  static const _byteMaks = 50 * 1024 * 1024;
+  // Sama dengan batas server: kamera HP merekam sekitar 1 MB per detik, jadi 60 detik hampir 65 MB.
+  static const _byteMaks = 100 * 1024 * 1024;
 
   bool _proses = false;
   String? _galat;
@@ -304,7 +305,7 @@ class _LangkahVideoState extends ConsumerState<LangkahVideo> {
       if (isi == null) return;
       if (isi.length > _byteMaks) {
         setState(
-          () => _galat = 'Videonya terlalu besar. Rekam lebih singkat, paling lama 1 menit.',
+          () => _galat = 'Videonya terlalu besar (maksimal 100 MB). Rekam lebih singkat, lalu coba lagi.',
         );
         return;
       }

@@ -1,7 +1,7 @@
-import 'dart:io';
-import 'dart:typed_data';
+﻿import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -116,7 +116,7 @@ final unggahDioProvider = Provider<Dio>(
   ),
 );
 
-/// Unggah satu foto (PRD §7.3): minta URL, kirim langsung ke storage, lalu minta server memeriksa. Hasil: id berkas.
+/// Unggah satu foto (PRD Â§7.3): minta URL, kirim langsung ke storage, lalu minta server memeriksa. Hasil: id berkas.
 Future<String> unggahFoto(
   ApiClient api,
   Dio storage,
