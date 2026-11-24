@@ -141,6 +141,21 @@ void main() {
       );
     });
 
+    test(
+      'bercak putih kecil di bingkai (pantulan) ditolak walau tepinya tajam',
+      () {
+        final p = _piksel(100, 100, 170, garis: true);
+        // Blok 20x20 (4% bingkai) menjadi putih: pantulan lokal di atas kartu.
+        for (var y = 10; y < 30; y++) {
+          for (var x = 10; x < 30; x++) {
+            final i = (y * 100 + x) * 4;
+            p[i] = p[i + 1] = p[i + 2] = 255;
+          }
+        }
+        expect(nilaiKualitas(p, 100, 100), contains('pantulan'));
+      },
+    );
+
     test('kartu putih dengan teks tajam bukan silau', () {
       // Latar 255 dan garis 175: tepi sangat tajam walau lebih dari 25% piksel putih.
       expect(

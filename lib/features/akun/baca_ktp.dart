@@ -196,8 +196,37 @@ Future<String?> periksaKualitasFoto(Uint8List foto) async {
   }
 }
 
-/// Inti penilaian pada piksel RGBA (dipisah agar bisa diuji tanpa kamera). null = jelas.
-String? nilaiKualitas(Uint8List rgba, int w, int h) {
+/// Ukuran mentah sebuah foto: rata-rata terang (0-255), porsi piksel hampir putih (0-1), dan ketajaman tepi (simpangan
+/// baku Laplacian; makin tinggi makin tajam). Dipisah dari ambang agar bisa diukur pada foto contoh.
+class UkuranFoto {
+  const UkuranFoto({
+    required this.terang,
+    required this.silau,
+    required this.tajam,
+  });
+
+  final double terang;
+  final double silau;
+  final double tajam;
+
+  @override
+  String toString() =>
+      'terang=${terang.toStringAsFixed(1)} silau=${silau.toStringAsFixed(3)} tajam=${tajam.toStringAsFixed(1)}';
+}
+
+/// Ambang penilaian, disetel dari 20 foto contoh di dua HP (vivo 1727 dan satu HP lain; 3000-4000 piksel, kamera bawaan):
+/// - Terang: kamera menaikkan eksposur sendiri; foto "redup" tetap 80-133. Hanya foto sangat gelap yang kena.
+/// - Silau: foto bagus di HP kedua sudah punya 0,5-0,7% piksel putih (area putih alami), sedangkan pantulan di HP pertama
+///   0,8-0,9%. Jumlah piksel putih tidak membedakan keduanya, jadi ambangnya 2%: hanya pantulan besar. Pantulan yang
+///   menutupi angka NIK ditangkap pemeriksaan OCR. Bingkai serba putih (>30%) dengan tepi tajam bukan pantulan.
+/// - Buram: HP pertama goyang 9,5 dan 13,7, agak buram 10,1; foto tajam di kedua HP 14,9-35,5. Ambang 14, celahnya tipis.
+/// Foto "jauh" tidak terdeteksi metrik apa pun di sini; gerbang OCR yang menolaknya.
+const ambangGelap = 55.0;
+const ambangSilau = 0.02;
+const batasBingkaiPutih = 0.30;
+const ambangSilauTajam = 15.0;
+const ambangBuram = 14.0;
+UkuranFoto ukurFoto(Uint8List rgba, int w, int h) {
   final abu = Uint8List(w * h);
   var jumlah = 0;
   var silau = 0;
@@ -209,11 +238,6 @@ String? nilaiKualitas(Uint8List rgba, int w, int h) {
     jumlah += g;
     if (g >= 250) silau++;
   }
-  final rata = jumlah / (w * h);
-  if (rata < 55) {
-    return 'Foto terlalu gelap. Pindah ke tempat yang lebih terang.';
-  }
-  // Variansi Laplacian: rendah berarti tepi huruf tidak tajam (buram atau goyang).
   var total = 0.0;
   var totalKuadrat = 0.0;
   var n = 0;
@@ -228,13 +252,25 @@ String? nilaiKualitas(Uint8List rgba, int w, int h) {
     }
   }
   final rataLap = total / n;
-  final variansi = totalKuadrat / n - rataLap * rataLap;
-  final ketajaman = math.sqrt(variansi);
-  // Silau hanya dinilai bila tepi huruf ikut hilang: kartu putih dengan teks tajam bukan pantulan.
-  if (silau / (w * h) > 0.25 && ketajaman < 15) {
+  return UkuranFoto(
+    terang: jumlah / (w * h),
+    silau: silau / (w * h),
+    tajam: math.sqrt(totalKuadrat / n - rataLap * rataLap),
+  );
+}
+
+/// Inti penilaian pada piksel RGBA (dipisah agar bisa diuji tanpa kamera). null = jelas.
+String? nilaiKualitas(Uint8List rgba, int w, int h) {
+  final u = ukurFoto(rgba, w, h);
+  if (u.terang < ambangGelap) {
+    return 'Foto terlalu gelap. Pindah ke tempat yang lebih terang.';
+  }
+  // Pantulan = bercak putih di bingkai yang selebihnya tidak putih; bingkai serba putih dengan tepi tajam bukan pantulan.
+  if (u.silau > ambangSilau &&
+      (u.silau < batasBingkaiPutih || u.tajam < ambangSilauTajam)) {
     return 'Ada pantulan cahaya yang menutupi KTP. Miringkan sedikit atau pindah dari cahaya langsung.';
   }
-  if (ketajaman < 6) {
+  if (u.tajam < ambangBuram) {
     return 'Foto buram. Tahan HP dengan stabil dan tunggu fokus sebelum memotret.';
   }
   return null;
